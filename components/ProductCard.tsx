@@ -2,6 +2,7 @@
 
 import Reveal from './Reveal';
 import SmartImg from './SmartImg';
+import Icon from './Icon';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/lib/toast';
 import { fmt, type Product } from '@/lib/data';
@@ -28,7 +29,8 @@ export default function ProductCard({ p }: { p: Product }) {
               toast(`${p.name} ajouté au panier`);
             }}
           >
-            Ajouter +
+            Ajouter
+            <Icon name="plus" size={13} strokeWidth={2.4} />
           </button>
         </div>
       </div>

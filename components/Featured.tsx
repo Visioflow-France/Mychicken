@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import ProductCard from './ProductCard';
+import Icon from './Icon';
 import { PRODUCTS } from '@/lib/data';
 
 export default function Featured() {
@@ -22,9 +24,9 @@ export default function Featured() {
         ))}
       </div>
       <p style={{ textAlign: 'center' }}>
-        <a href="#carte" className="link-arrow">
-          Découvrir toute la carte <span aria-hidden="true">⟶</span>
-        </a>
+        <Link href="/la-carte" className="link-arrow">
+          Découvrir toute la carte <Icon name="arrowRight" size={16} strokeWidth={2} />
+        </Link>
       </p>
     </div>
   );

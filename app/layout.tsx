@@ -3,6 +3,8 @@ import { Cormorant_Garamond, Montserrat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cart';
 import { ToastProvider } from '@/lib/toast';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const serif = Cormorant_Garamond({
   subsets: ['latin'],
@@ -30,7 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={`${serif.variable} ${sans.variable}`}>
       <body>
         <ToastProvider>
-          <CartProvider>{children}</CartProvider>
+          <CartProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </CartProvider>
         </ToastProvider>
       </body>
     </html>

@@ -2,31 +2,31 @@
 
 import { useRef } from 'react';
 import Reveal from './Reveal';
-import SmartImg from './SmartImg';
+import Icon, { type IconName } from './Icon';
 import { useToast } from '@/lib/toast';
 
-const INFOS = [
+const INFOS: { title: string; icon: IconName; alt: string; content: React.ReactNode }[] = [
   {
     title: 'Adresse',
-    img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=70',
-    alt: 'Devanture du restaurant',
+    icon: 'pin',
+    alt: 'Adresse du restaurant',
     content: <>Avenue Jacques Vogt<br />95340 Persan</>,
   },
   {
     title: 'Téléphone',
-    img: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=300&q=70',
+    icon: 'phone',
     alt: 'Téléphone',
     content: <a href="tel:+33751565951">07.51.56.59.51</a>,
   },
   {
     title: 'Horaires',
-    img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=300&q=70',
-    alt: 'Salle du restaurant le soir',
+    icon: 'clock',
+    alt: 'Horaires d\'ouverture',
     content: <>7j/7 · 11h–14h / 18h–22h30</>,
   },
   {
     title: 'Livraison',
-    img: 'https://images.unsplash.com/photo-1600854401200-3dc4631766b6?auto=format&fit=crop&w=300&q=70',
+    icon: 'scooter',
     alt: 'Livraison à domicile',
     content: <>Persan &amp; communes alentour, dès 25&nbsp;€ d&apos;achat.</>,
   },
@@ -70,7 +70,7 @@ export default function Contact() {
             {INFOS.map((info) => (
               <div className="c-line" key={info.title}>
                 <span className="c-ico">
-                  <SmartImg src={info.img} alt={info.alt} loading="lazy" />
+                  <Icon name={info.icon} size={22} />
                 </span>
                 <div>
                   <h4>{info.title}</h4>

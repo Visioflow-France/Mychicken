@@ -1,3 +1,6 @@
+import Link from 'next/link';
+import Icon from './Icon';
+
 export default function Footer() {
   return (
     /* Footer — photo en filigrane */
@@ -16,11 +19,11 @@ export default function Footer() {
           <div>
             <h4>Navigation</h4>
             <ul>
-              <li><a href="#accueil">Accueil</a></li>
-              <li><a href="#carte">La Carte</a></li>
-              <li><a href="#histoire">Notre Histoire</a></li>
-              <li><a href="#contact">Contact</a></li>
-              <li><a href="#panier">Mon Panier</a></li>
+              <li><Link href="/">Accueil</Link></li>
+              <li><Link href="/la-carte">La Carte</Link></li>
+              <li><Link href="/notre-histoire">Notre Histoire</Link></li>
+              <li><Link href="/contact">Contact</Link></li>
+              <li><Link href="/commander">Mon Panier</Link></li>
             </ul>
           </div>
           <div>
@@ -34,9 +37,18 @@ export default function Footer() {
           <div>
             <h4>Contact</h4>
             <ul className="footer-contact">
-              <li><b>📍</b><span>Avenue Jacques Vogt, 95340 Persan</span></li>
-              <li><b>📞</b><a href="tel:+33751565951">07.51.56.59.51</a></li>
-              <li><b>🛵</b><span>Livraison dès 25&nbsp;€ — Persan &amp; alentours</span></li>
+              <li>
+                <span className="f-ico"><Icon name="pin" size={16} /></span>
+                <span>Avenue Jacques Vogt, 95340 Persan</span>
+              </li>
+              <li>
+                <span className="f-ico"><Icon name="phone" size={16} /></span>
+                <a href="tel:+33751565951">07.51.56.59.51</a>
+              </li>
+              <li>
+                <span className="f-ico"><Icon name="scooter" size={16} /></span>
+                <span>Livraison dès 25&nbsp;€ — Persan &amp; alentours</span>
+              </li>
             </ul>
           </div>
         </div>
@@ -46,7 +58,8 @@ export default function Footer() {
       </div>
       <div className="footer-bottom">
         © <span id="year" suppressHydrationWarning>{new Date().getFullYear()}</span>{' '}
-        <b>My CHICKEN</b> — Persan · Fait avec ❤️ et beaucoup de sauce
+        <b>My CHICKEN</b> — Persan · Fait avec{' '}
+        <span className="f-ico f-heart"><Icon name="heart" size={13} /></span> et beaucoup de sauce
       </div>
     </footer>
   );

@@ -1,22 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useCart } from '@/lib/cart';
+import Icon, { RoosterMark } from './Icon';
 
 const LINKS = [
-  { href: '#accueil', label: 'Accueil' },
-  { href: '#carte', label: 'La Carte' },
-  { href: '#histoire', label: 'Notre Histoire' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/la-carte', label: 'La Carte' },
+  { href: '/notre-histoire', label: 'Notre Histoire' },
+  { href: '/contact', label: 'Contact' },
 ];
-
-const SPIED_SECTIONS = ['accueil', 'carte', 'histoire', 'contact', 'panier'];
 
 export default function Navbar() {
   const { count } = useCart();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState('');
 
   /* Fond de la navbar au scroll */
   useEffect(() => {
@@ -34,65 +34,65 @@ export default function Navbar() {
     };
   }, [open]);
 
-  /* Scrollspy : met en évidence le lien de la section visible */
-  useEffect(() => {
-    const spy = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) setActive(en.target.id);
-        });
-      },
-      { rootMargin: '-40% 0px -55% 0px' }
-    );
-    SPIED_SECTIONS.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) spy.observe(el);
-    });
-    return () => spy.disconnect();
-  }, []);
-
   const closeMenu = () => setOpen(false);
 
   return (
     <header className={`navbar${scrolled ? ' scrolled' : ''}`} id="navbar">
       <div className="nav-container">
-        <a href="#accueil" className="brand">
-          <span className="my">My</span>
-          <span className="ck">Chicken</span>
-        </a>
-        <button
-          className="burger"
-          aria-label="Ouvrir le menu"
-          aria-expanded={open}
-          onClick={() => setOpen((o) => !o)}
-        >
-          {open ? '✕' : '☰'}
-        </button>
+        {/* Marque — logo coq + wordmark, retour accueil */}
+        <Link href="/" className="brand" onClick={closeMenu} aria-label="My Chicken — Accueil">
+          <span className="brand-mark" aria-hidden="true">
+            <RoosterMark />
+          </span>
+          <span className="brand-text">
+            <span className="my">My</span>
+            <span className="ck">Chicken</span>
+          </span>
+        </Link>
+
+        {/* Liens centrés */}
         <nav
           className={`nav-links${open ? ' open' : ''}`}
           onClick={(e) => {
-            if ((e.target as HTMLElement).tagName === 'A') closeMenu();
+            if ((e.target as HTMLElement).closest('a')) closeMenu();
           }}
         >
           {LINKS.map((l) => (
-            <a key={l.href} href={l.href} className={active === l.href.slice(1) ? 'active' : ''}>
-              {l.label}
-            </a>
-          ))}
-          <a
-            href="#panier"
-            className={`cart-link${active === 'panier' ? ' active' : ''}`}
-          >
-            Panier
-            {/* key={count} : le badge se remonte à chaque ajout et rejoue son animation */}
-            <span
-              key={count}
-              className={`cart-badge${count > 0 ? ' badge-bounce' : ''}`}
+            <Link
+              key={l.href}
+              href={l.href}
+              className={pathname === l.href ? 'active' : ''}
             >
-              {count}
-            </span>
-          </a>
+              {l.label}
+            </Link>
+          ))}
         </nav>
+
+        {/* CTA Commander + panier */}
+        <div className="nav-end">
+          <Link
+            href="/commander"
+            className={`nav-cta${pathname === '/commander' ? ' active' : ''}`}
+            onClick={closeMenu}
+          >
+            <Icon name="bag" size={17} strokeWidth={2} />
+            <span className="nav-cta-label">Commander</span>
+            {/* key={count} : le badge se remonte à chaque ajout et rejoue son animation */}
+            {count > 0 && (
+              <span key={count} className="cart-badge badge-bounce">
+                {count}
+              </span>
+            )}
+          </Link>
+          <button
+            className="burger"
+            aria-label="Ouvrir le menu"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+          >
+            <Icon name={open ? 'close' : 'menu'} size={24} />
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -1,15 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import SmartImg from './SmartImg';
+import Icon, { type IconName } from './Icon';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/lib/toast';
 import { CONFIG, byId, fmt } from '@/lib/data';
 
-const MODES = [
-  { value: 'takeaway', label: 'À emporter' },
-  { value: 'dinein', label: 'Sur place' },
-  { value: 'delivery', label: '🛵 Livraison (dès 25\u00a0€)' },
+const MODES: { value: string; label: string; icon: IconName }[] = [
+  { value: 'takeaway', label: 'À emporter', icon: 'bag' },
+  { value: 'dinein', label: 'Sur place', icon: 'utensils' },
+  { value: 'delivery', label: 'Livraison (dès 25\u00a0€)', icon: 'scooter' },
 ];
 
 export default function CartSection() {
@@ -53,9 +55,7 @@ export default function CartSection() {
     clear();
     formRef.current?.reset();
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document
-      .getElementById('panier')
-      ?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     toast(`Commande ${num} enregistrée !`);
   };
 
@@ -96,9 +96,9 @@ export default function CartSection() {
             </span>
             <h2>Votre panier est vide</h2>
             <p>Le poulet mijoté n&apos;attend que vous — jetez un œil à nos best-sellers&nbsp;!</p>
-            <a href="#carte" className="btn btn-solid">
+            <Link href="/la-carte" className="btn btn-solid">
               Voir la carte
-            </a>
+            </Link>
           </div>
         )}
 
@@ -114,7 +114,7 @@ export default function CartSection() {
                   toast('Panier vidé');
                 }}
               >
-                Vider le panier ✕
+                <Icon name="trash" size={13} /> Vider le panier
               </button>
               <div id="cartItems">
                 {Object.entries(cart).map(([id, q]) => {
@@ -134,7 +134,7 @@ export default function CartSection() {
                             onClick={() => setQty(id, -1)}
                             aria-label={`Retirer un ${p.name}`}
                           >
-                            −
+                            <Icon name="minus" size={13} strokeWidth={2.4} />
                           </button>
                           <span className="qty-value">{q}</span>
                           <button
@@ -142,7 +142,7 @@ export default function CartSection() {
                             onClick={() => setQty(id, 1)}
                             aria-label={`Ajouter un ${p.name}`}
                           >
-                            +
+                            <Icon name="plus" size={13} strokeWidth={2.4} />
                           </button>
                         </div>
                       </div>
@@ -153,7 +153,7 @@ export default function CartSection() {
                           onClick={() => remove(id)}
                           aria-label={`Supprimer ${p.name}`}
                         >
-                          ✕
+                          <Icon name="close" size={15} strokeWidth={2.2} />
                         </button>
                       </div>
                     </div>
@@ -183,7 +183,7 @@ export default function CartSection() {
                   {mode === 'delivery'
                     ? deliveryBlocked
                       ? `Livraison possible à partir de ${fmt(CONFIG.minDelivery)} d'achat.`
-                      : '🛵 Livraison disponible à Persan et alentour.'
+                      : <span className="note-ico"><Icon name="scooter" size={14} /> Livraison disponible à Persan et alentour.</span>
                     : ''}
                 </p>
               </div>
@@ -200,6 +200,7 @@ export default function CartSection() {
                         checked={mode === m.value}
                         onChange={() => setMode(m.value)}
                       />
+                      <Icon name={m.icon} size={17} />
                       {m.label}
                     </label>
                   ))}
@@ -250,8 +251,7 @@ export default function CartSection() {
                   Confirmer la commande
                 </button>
                 <p className="secure-note">
-                  <span aria-hidden="true">🔒</span> Commande confirmée par téléphone avant
-                  préparation
+                  <Icon name="lock" size={13} /> Commande confirmée par téléphone avant préparation
                 </p>
               </form>
             </aside>
@@ -270,14 +270,14 @@ export default function CartSection() {
               {orderNum}
             </span>
             <p>Votre commande est enregistrée. Nous vous appelons très vite pour la confirmer.</p>
-            <p>Gardez votre téléphone à portée de main — à tout de suite&nbsp;! 🍗</p>
+            <p>Gardez votre téléphone à portée de main — à tout de suite&nbsp;!</p>
             <div className="os-actions">
-              <a href="#accueil" className="btn btn-ghost">
+              <Link href="/" className="btn btn-ghost">
                 Retour à l&apos;accueil
-              </a>
-              <a href="#carte" className="btn btn-solid">
+              </Link>
+              <Link href="/la-carte" className="btn btn-solid">
                 Voir la carte
-              </a>
+              </Link>
             </div>
           </div>
         )}

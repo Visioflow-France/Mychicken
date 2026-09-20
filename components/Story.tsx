@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Reveal from './Reveal';
 import SmartImg from './SmartImg';
 
@@ -110,9 +111,9 @@ export default function Story() {
 
         <div className="story-cta">
           <Reveal>
-            <a href="#carte" className="btn btn-solid">
+            <Link href="/la-carte" className="btn btn-solid">
               Goûter la différence
-            </a>
+            </Link>
           </Reveal>
         </div>
       </div>
