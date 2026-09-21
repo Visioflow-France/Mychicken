@@ -5,7 +5,7 @@ import { PRODUCTS } from '@/lib/data';
 
 export default function Featured() {
   return (
-    <div className="section container">
+    <section className="section container" id="best-sellers">
       <div className="s-head">
         <span className="eyebrow">
           <span className="n">01</span>Les incontournables
@@ -28,6 +28,6 @@ export default function Featured() {
           Découvrir toute la carte <Icon name="arrowRight" size={16} strokeWidth={2} />
         </Link>
       </p>
-    </div>
+    </section>
   );
 }

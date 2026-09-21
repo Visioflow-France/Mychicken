@@ -47,6 +47,10 @@ export default function Hero() {
             <Icon name="clock" size={15} /> 7j/7 · <b>11h–14h / 18h–22h30</b>
           </span>
         </div>
+        {/* Indicateur de scroll vers les best-sellers */}
+        <a className="hero-scroll" href="#best-sellers" aria-label="Voir nos best-sellers">
+          <Icon name="arrowUp" size={19} strokeWidth={2.2} />
+        </a>
       </div>
 
       <div className="ticker" aria-hidden="true">

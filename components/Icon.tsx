@@ -21,7 +21,8 @@ export type IconName =
   | 'plus'
   | 'minus'
   | 'utensils'
-  | 'flame';
+  | 'flame'
+  | 'arrowUp';
 
 const PATHS: Record<IconName, ReactNode> = {
   pin: (
@@ -85,6 +86,7 @@ const PATHS: Record<IconName, ReactNode> = {
   flame: (
     <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5Z" />
   ),
+  arrowUp: <path d="M12 19.5V5M5.5 11 12 4.5 18.5 11" />,
 };
 
 type IconProps = SVGProps<SVGSVGElement> & {

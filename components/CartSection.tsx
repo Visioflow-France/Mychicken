@@ -179,6 +179,39 @@ export default function CartSection() {
                   <span>Total</span>
                   <span id="sumTotal">{fmt(sub + fee)}</span>
                 </div>
+                {mode === 'delivery' && (
+                  <div className="delivery-progress">
+                    <div className="dp-head">
+                      <span>
+                        {deliveryBlocked
+                          ? `Encore ${fmt(lacks)} pour la livraison`
+                          : 'Objectif livraison atteint'}
+                      </span>
+                      <b>
+                        {Math.min(Math.round((sub / CONFIG.minDelivery) * 100), 100)}%
+                      </b>
+                    </div>
+                    <div
+                      className="dp-track"
+                      role="progressbar"
+                      aria-label={`Progression vers le minimum de ${fmt(CONFIG.minDelivery)} pour la livraison`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.min(Math.round((sub / CONFIG.minDelivery) * 100), 100)}
+                    >
+                      <div
+                        className={`dp-fill${deliveryBlocked ? '' : ' done'}`}
+                        style={{ width: `${Math.min((sub / CONFIG.minDelivery) * 100, 100)}%` }}
+                      />
+                    </div>
+                    {!deliveryBlocked && (
+                      <p className="dp-done">
+                        <Icon name="check" size={13} strokeWidth={2.4} /> Livraison débloquée —
+                        on arrive chez vous&nbsp;!
+                      </p>
+                    )}
+                  </div>
+                )}
                 <p className={`sum-note${mode === 'delivery' && deliveryBlocked ? ' warn' : ''}`} id="sumNote">
                   {mode === 'delivery'
                     ? deliveryBlocked
