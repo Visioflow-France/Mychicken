@@ -78,15 +78,27 @@
 html{scroll-behavior:smooth;scrollbar-color:var(--wood-700) var(--wood-975)}
 body{
   font-family:var(--sans);font-size:1rem;line-height:1.8;color:var(--parchment);
-  background-color:var(--wood-950);
+  background-color:var(--wood-975);
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+/* Fond du site — photo « bois brûlé » plein écran, fixe (pseudo-élément :
+   contrairement à background-attachment:fixed, reste correct sur iOS/Android) */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background-color:var(--wood-975);
   background-image:
     radial-gradient(1000px 620px at 88% -8%,var(--e-08),transparent 60%),
     radial-gradient(900px 620px at -5% 38%,var(--o-06),transparent 60%),
     radial-gradient(1200px 800px at 50% 115%,rgba(95,60,30,.32),transparent 62%),
-    linear-gradient(180deg,var(--wood-975),var(--wood-950) 38%,#1f0f07);
-  background-attachment:fixed;
-  -webkit-font-smoothing:antialiased;
-  -webkit-tap-highlight-color:transparent;
+    linear-gradient(180deg,rgba(23,11,5,.62),rgba(36,18,9,.38) 38%,rgba(23,11,5,.68)),
+    url('/fond-bois.png');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
 }
 body::after{content:'';position:fixed;inset:0;z-index:2500;pointer-events:none;opacity:.035;background:var(--noise)}
 img{max-width:100%;display:block}
@@ -170,14 +182,12 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
   .nav-links a::after{top:auto;bottom:-6px}
 }
 
-/* ========== 4. HERO — photo poulet rôti ========== */
+/* ========== 4. HERO — fond site bois brûlé + voile ========== */
 .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 1.2rem 6.5rem;overflow:hidden}
-.hero-bg{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=1920&q=75');background-size:cover;background-position:center;opacity:.34;filter:saturate(.92) contrast(1.02);animation:heroZoom 26s var(--ease) infinite alternate;will-change:transform}
-@keyframes heroZoom{from{transform:scale(1.02)}to{transform:scale(1.12)}}
 .hero-veil{position:absolute;inset:0;background:
-  radial-gradient(ellipse 70% 55% at 50% 42%,var(--e-16),transparent 65%),
-  radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--wood-975) 25%,transparent),color-mix(in srgb,var(--wood-975) 88%,transparent) 80%),
-  linear-gradient(180deg,color-mix(in srgb,var(--wood-975) 72%,transparent),transparent 30%,color-mix(in srgb,var(--wood-975) 55%,transparent) 70%,var(--wood-975))}
+  radial-gradient(ellipse 70% 55% at 50% 42%,var(--e-08),transparent 65%),
+  radial-gradient(ellipse at 50% 45%,transparent 30%,color-mix(in srgb,var(--wood-975) 78%,transparent) 88%),
+  linear-gradient(180deg,color-mix(in srgb,var(--wood-975) 62%,transparent),transparent 34%,color-mix(in srgb,var(--wood-975) 42%,transparent) 68%,var(--wood-975))}
 .hero-content{position:relative;z-index:3;max-width:860px}
 .hero-content>*{animation:rise 1s var(--ease) both}
 .hero-content>*:nth-child(2){animation-delay:.12s}

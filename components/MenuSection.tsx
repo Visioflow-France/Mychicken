@@ -8,36 +8,38 @@ import { useCart } from '@/lib/cart';
 import { useToast } from '@/lib/toast';
 import { CATEGORIES, PRODUCTS, byId } from '@/lib/data';
 
+const F = 'https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/';
+
 const SIGNATURES = [
   {
-    id: 'menu-solo',
-    name: 'Menu Solo',
-    forText: 'pour une faim normale',
-    price: '9,50\u00a0€',
-    img: 'https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?auto=format&fit=crop&w=800&q=70',
-    alt: 'Menu Solo — quart de poulet et frites',
-    lines: ['Quart de poulet mijoté', 'Frites maison', '1 sauce au choix', 'Boisson 33\u00a0cl'],
+    id: 'menu-demi',
+    name: 'Menu Demi Poulet',
+    forText: 'pour une belle faim',
+    price: '8,90\u00a0€',
+    img: `${F}45dd2550dad9.jpg`,
+    alt: 'Menu Demi Poulet — poulet braisé doré au four',
+    lines: ['1 demi poulet', '1 accompagnement au choix', '1 boisson 33\u00a0cl'],
     solid: false,
   },
   {
-    id: 'menu-duo',
-    name: 'Menu Duo',
-    forText: 'pour deux gourmands',
-    price: '17,90\u00a0€',
-    img: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?auto=format&fit=crop&w=800&q=70',
-    alt: 'Menu Duo — poulet à partager',
-    lines: ['Demi poulet + 2 pilons', 'Grandes frites', '2 sauces au choix', '2 boissons 33\u00a0cl'],
-    solid: false,
+    id: 'menu-special',
+    name: 'Menu Spécial',
+    forText: 'le poulet entier braisé',
+    price: '25\u00a0€',
+    img: `${F}02f572b69cfe.jpg`,
+    alt: 'Menu Spécial — poulet entier braisé au feu de bois',
+    lines: ['1 poulet entier braisé', '2 accompagnements au choix', '1 boisson 1,5\u00a0L'],
+    solid: true,
   },
   {
     id: 'menu-familial',
     name: 'Menu Familial',
     forText: 'pour toute la tablée',
-    price: '29,90\u00a0€',
-    img: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=800&q=70',
-    alt: 'Menu Familial — grand festin de poulet',
-    lines: ['Poulet entier', '6 pilons mijotés', 'Grand plateau de frites', '4 sauces · 4 boissons'],
-    solid: true,
+    price: '25\u00a0€',
+    img: `${F}a1fc59d6204b.jpg`,
+    alt: 'Menu Familial — deux demi-poulets à partager',
+    lines: ['2 demi-poulets', '2 accompagnements au choix', '1 boisson 1,5\u00a0L'],
+    solid: false,
   },
 ];
 

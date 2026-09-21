@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import ReactDOM from 'react-dom';
 import { Cormorant_Garamond, Montserrat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cart';
@@ -6,6 +7,11 @@ import { ToastProvider } from '@/lib/toast';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollTop from '@/components/ScrollTop';
+
+/* Fond du site — chargé en priorité (PNG source, sans recompression) */
+function preloadBackground() {
+  ReactDOM.preload('/fond-bois.png', { as: 'image', fetchPriority: 'high' });
+}
 
 const serif = Cormorant_Garamond({
   subsets: ['latin'],
@@ -40,6 +46,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  preloadBackground();
   return (
     <html lang="fr" className={`${serif.variable} ${sans.variable}`}>
       <body>

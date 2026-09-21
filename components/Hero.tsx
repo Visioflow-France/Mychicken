@@ -14,9 +14,8 @@ const TICKER_ITEMS = [
 export default function Hero() {
   return (
     <>
-      {/* Hero — photo poulet rôti */}
+      {/* Hero — le fond du site (bois brûlé) transparaît sous le voile */}
       <div className="hero">
-        <div className="hero-bg" aria-hidden="true" />
         <div className="hero-veil" aria-hidden="true" />
         <div className="hero-content">
           <p className="hero-kicker">
