@@ -4,6 +4,8 @@ import { Cormorant_Garamond, Montserrat } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cart';
 import { ToastProvider } from '@/lib/toast';
+import { MenuProvider } from '@/lib/menu-store';
+import PromoBanner from '@/components/PromoBanner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollTop from '@/components/ScrollTop';
@@ -51,12 +53,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={`${serif.variable} ${sans.variable}`}>
       <body>
         <ToastProvider>
-          <CartProvider>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-            <ScrollTop />
-          </CartProvider>
+          <MenuProvider>
+            <CartProvider>
+              <PromoBanner />
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+              <ScrollTop />
+            </CartProvider>
+          </MenuProvider>
         </ToastProvider>
       </body>
     </html>

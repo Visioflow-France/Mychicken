@@ -1,9 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import ProductCard from './ProductCard';
 import Icon from './Icon';
-import { PRODUCTS } from '@/lib/data';
+import { useMenu } from '@/lib/menu-store';
 
 export default function Featured() {
+  const { menu } = useMenu();
+  const popular = menu.products.filter((p) => p.popular && p.available !== false).slice(0, 3);
+
+  if (popular.length === 0) return null;
+
   return (
     <section className="section container" id="best-sellers">
       <div className="s-head">
@@ -19,7 +26,7 @@ export default function Featured() {
         </span>
       </div>
       <div id="featuredGrid" className="grid grid-3">
-        {PRODUCTS.filter((p) => p.popular).slice(0, 3).map((p) => (
+        {popular.map((p) => (
           <ProductCard key={p.id} p={p} />
         ))}
       </div>

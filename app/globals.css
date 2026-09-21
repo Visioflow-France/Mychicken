@@ -115,8 +115,8 @@ button,input,textarea{font-family:inherit}
 .container{width:min(1180px,90%);margin-inline:auto}
 main{display:block;min-height:70vh}
 .section{padding:6.5rem 0;position:relative}
-section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
-.menu-cat{scroll-margin-top:calc(var(--nav-h) + 84px)}
+section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12px)}
+.menu-cat{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 84px)}
 .hidden{display:none!important}
 
 /* Transition de page (via app/template.tsx) */
@@ -137,7 +137,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
 .s-sub{margin-top:.9rem;color:var(--sand);font-size:.98rem;font-weight:400;text-wrap:pretty}
 
 /* ========== 3. NAVIGATION — barre sombre pleine largeur (marque · liens · CTA) ========== */
-.navbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:color-mix(in srgb,var(--wood-975) 62%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);border-bottom:1px solid var(--g-12);transition:background .45s var(--ease),box-shadow .45s var(--ease),border-color .45s}
+.navbar{position:fixed;top:var(--promo-strip-h,0px);left:0;right:0;z-index:1000;background:color-mix(in srgb,var(--wood-975) 62%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);border-bottom:1px solid var(--g-12);transition:background .45s var(--ease),box-shadow .45s var(--ease),border-color .45s,top .3s var(--ease)}
 .navbar::after{content:'';position:absolute;left:15%;right:15%;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--g-45),transparent);opacity:.6;pointer-events:none}
 .navbar.scrolled{background:color-mix(in srgb,#100702 90%,transparent);border-color:var(--g-25);box-shadow:0 14px 44px rgba(0,0,0,.55)}
 .nav-container{width:min(1240px,94%);margin-inline:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2rem;padding:.95rem 0;transition:padding .45s var(--ease)}
@@ -321,7 +321,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
 .page-sub{font-family:var(--serif);font-style:italic;font-size:1.25rem;color:var(--sand);margin-top:1rem}
 
 /* ========== 11. LA CARTE ========== */
-.cat-nav{position:sticky;top:var(--nav-h);z-index:900;display:flex;gap:.4rem;padding:.8rem max(5%,1rem);overflow-x:auto;scrollbar-width:none;background:color-mix(in srgb,var(--wood-975) 85%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--g-14);-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+.cat-nav{position:sticky;top:calc(var(--nav-h) + var(--promo-strip-h,0px));z-index:900;display:flex;gap:.4rem;padding:.8rem max(5%,1rem);overflow-x:auto;scrollbar-width:none;background:color-mix(in srgb,var(--wood-975) 85%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--g-14);-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
 .cat-nav::-webkit-scrollbar{display:none}
 .cat-link{flex-shrink:0;font-size:.66rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);padding:.65rem 1.3rem;border-radius:var(--pill);border:1px solid var(--s-15);transition:color .3s,border-color .3s,background .3s,box-shadow .3s}
 .cat-link:hover{color:var(--gold-light);border-color:var(--g-45)}
@@ -532,3 +532,38 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 12px)}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
   .reveal{opacity:1;transform:none}
 }
+
+/* ================================================================
+   9. PROMOS & PAIEMENT — bandeau, prix barrés, codes promo
+   ================================================================ */
+
+/* Bandeau promo temps réel (édité depuis /admin) */
+.promo-strip{position:fixed;top:0;left:0;right:0;z-index:1100;display:flex;align-items:center;justify-content:center;min-height:42px;padding:.5rem 3.5rem;background:var(--grad-gold);color:var(--txt-on-gold);box-shadow:0 10px 30px rgba(10,4,1,.45)}
+.promo-strip .ps-text{font-size:.78rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;text-align:center;line-height:1.5;animation:promoPulse 3.2s ease-in-out infinite}
+@keyframes promoPulse{0%,100%{opacity:.92}50%{opacity:1}}
+
+/* Prix barré (ancien prix quand une promo est active) */
+.p-old-price{opacity:.55;font-size:.85em;margin-right:.45rem;text-decoration-color:var(--red);text-decoration-thickness:2px}
+
+/* Carte produit épuisée */
+.p-card.sold-out .p-visual img{filter:grayscale(.9) brightness(.55)}
+.p-card.sold-out .p-body{opacity:.75}
+.p-add.disabled{cursor:not-allowed;opacity:.6}
+
+/* Drapeau PROMO doré animé */
+.p-flag.promo{background:var(--grad-gold);color:var(--txt-on-gold);animation:promoTag 2.6s ease-in-out infinite}
+@keyframes promoTag{0%,100%{box-shadow:0 4px 16px rgba(240,130,14,.4)}50%{box-shadow:0 4px 26px rgba(242,168,28,.7)}}
+
+/* Champ code promo dans le récapitulatif */
+.promo-code-row{display:flex;gap:.6rem;margin-top:1rem}
+.promo-code-row input{flex:1;min-width:0;font-size:.95rem;padding:.75rem 1rem;border-radius:10px;border:1px dashed var(--g-45);background:rgba(255,248,225,.05);color:var(--cream);letter-spacing:.14em;text-transform:uppercase}
+.promo-code-row input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px var(--g-14)}
+.promo-code-row .btn{padding:.75rem 1.4rem;font-size:.62rem}
+.promo-applied{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;padding:.7rem 1rem;border-radius:10px;border:1px solid var(--g-45);background:var(--g-08);color:var(--gold-light);font-size:.85rem}
+.promo-applied button{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--g-25);background:transparent;color:var(--cream);cursor:pointer;transition:border-color .25s,background .25s}
+.promo-applied button:hover{border-color:var(--gold);background:var(--g-12)}
+.sum-row.promo-row{color:var(--gold-light)}
+
+/* Choix du mode de paiement */
+.radio-opt .pay-hint{display:block;font-style:normal;font-size:.68rem;letter-spacing:.06em;text-transform:none;color:var(--sand);opacity:.75;margin-top:.1rem}
+.paid-badge{display:inline-flex;align-items:center;gap:.5rem;color:var(--gold-light);font-weight:600}

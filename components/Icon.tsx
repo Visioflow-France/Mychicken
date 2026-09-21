@@ -22,7 +22,9 @@ export type IconName =
   | 'minus'
   | 'utensils'
   | 'flame'
-  | 'arrowUp';
+  | 'arrowUp'
+  | 'arrowDown'
+  | 'tag';
 
 const PATHS: Record<IconName, ReactNode> = {
   pin: (
@@ -87,6 +89,13 @@ const PATHS: Record<IconName, ReactNode> = {
     <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5Z" />
   ),
   arrowUp: <path d="M12 19.5V5M5.5 11 12 4.5 18.5 11" />,
+  arrowDown: <path d="M12 4.5V19M18.5 13 12 19.5 5.5 13" />,
+  tag: (
+    <>
+      <path d="M20.6 13.4 11 3.8A2 2 0 0 0 9.6 3.2H5a2 2 0 0 0-2 2v4.6c0 .5.2 1 .6 1.4l9.6 9.6a2 2 0 0 0 2.8 0l4.6-4.6a2 2 0 0 0 0-2.8Z" />
+      <circle cx="7.8" cy="7.8" r="1.4" />
+    </>
+  ),
 };
 
 type IconProps = SVGProps<SVGSVGElement> & {

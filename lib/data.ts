@@ -1,16 +1,78 @@
 /* ================================================================
    LA CARTE — My Chicken
    Transcrite fidèlement du flyer officiel (sept. 2026).
-   Sections, plats, contenus et prix = exactement ceux du menu.
-   Pour changer un prix ou un plat : modifiez simplement la ligne.
+   Ces données servent de VALEURS PAR DÉFAUT : dès que Firebase
+   est configuré, la carte affichée vient de Firestore (temps réel,
+   modifiable depuis /admin). Sinon le site utilise ces valeurs.
    ================================================================ */
 
-export const CONFIG = {
-  deliveryFee: 2.9, // frais de livraison
-  minDelivery: 25, // livraison à partir de 25 € d'achat (cf. flyer)
+export type Category = { id: string; num: string; label: string };
+
+/* Promo appliquée à un produit :
+   - percent : -X %  ·  amount : -X €  ·  price : nouveau prix fixe */
+export type ProductPromo = { type: 'percent' | 'amount' | 'price'; value: number };
+
+/* Code promo appliqué au panier entier */
+export type PromoCode = {
+  code: string; // toujours stocké en majuscules
+  type: 'percent' | 'amount';
+  value: number;
+  active: boolean;
+  minTotal?: number; // minimum d'achat (€) pour utiliser le code
 };
 
-export type Category = { id: string; num: string; label: string };
+/* Bandeau promo affiché en haut du site */
+export type Banner = { active: boolean; text: string };
+
+export type SiteConfig = {
+  deliveryFee: number; // frais de livraison
+  minDelivery: number; // livraison à partir de X € d'achat
+  open: boolean; // restaurant ouvert à la commande
+};
+
+export type Product = {
+  id: string;
+  name: string;
+  price: number;
+  cat: string;
+  popular?: boolean;
+  img: string;
+  desc: string;
+  available?: boolean; // false = épuisé (affiché grisé, commande bloquée)
+};
+
+export type MenuData = {
+  categories: Category[];
+  products: Product[];
+  promos: Record<string, ProductPromo>; // clé = id produit
+  promoCodes: PromoCode[];
+  banner: Banner;
+  config: SiteConfig;
+};
+
+/* ---------- Commandes ---------- */
+export type OrderMode = 'takeaway' | 'dinein' | 'delivery';
+export type OrderStatus = 'nouvelle' | 'en_preparation' | 'prete' | 'terminee' | 'annulee';
+
+export type OrderItem = { id: string; name: string; price: number; qty: number };
+
+export type Order = {
+  id: string;
+  num: string;
+  createdAt: number;
+  mode: OrderMode;
+  payment: 'card' | 'phone';
+  paid: boolean;
+  status: OrderStatus;
+  items: OrderItem[];
+  subtotal: number;
+  discount: number;
+  fee: number;
+  total: number;
+  promoCode?: string;
+  customer: { name?: string; phone: string; address?: string; note?: string };
+  stripeSessionId?: string;
+};
 
 export const CATEGORIES: Category[] = [
   { id: 'menus', num: '01', label: 'Nos Menus' },
@@ -27,16 +89,6 @@ export const CATEGORIES: Category[] = [
 
 const F = 'https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/';
 const U = 'auto=format&fit=crop&w=800&q=70'; // paramètres Unsplash communs
-
-export type Product = {
-  id: string;
-  name: string;
-  price: number;
-  cat: string;
-  popular?: boolean;
-  img: string;
-  desc: string;
-};
 
 export const PRODUCTS: Product[] = [
   /* ---------------- 01 · NOS MENUS ---------------- */
@@ -99,7 +151,7 @@ export const PRODUCTS: Product[] = [
   { id: 'a-riz-thai', name: 'Riz Thaï', price: 2, cat: 'accompagnements', img: `https://images.unsplash.com/photo-1512058564366-18510be2db19?${U}`, desc: '' },
   { id: 'a-salade-verte', name: 'Salade Verte', price: 2, cat: 'accompagnements', img: `${F}cc3feac5ad2c.jpg`, desc: '' },
   { id: 'a-oignons', name: 'Oignons', price: 2, cat: 'accompagnements', img: `${F}0319b8a7dabe.png`, desc: '' },
-  { id: 'a-pommes-de-terre', name: 'Pommes de Terre', price: 2, cat: 'accompagnements', img: `${F}cf3588cc2c1b.jpg`, desc: '' },
+  { id: 'a-pommes-de-terre', name: 'Pommes de Terre', price: 2, cat: 'accompagnements', img: `${F}cf3588cc2c1c.jpg`, desc: '' },
   { id: 'a-pates', name: 'Pâtes', price: 2, cat: 'accompagnements', img: `${F}0f59d4aa56cb.jpg`, desc: '' },
 
   /* ---------------- 09 · NOS SAUCES ---------------- */
@@ -118,7 +170,36 @@ export const PRODUCTS: Product[] = [
 ];
 /* ================= FIN DE LA CARTE ================= */
 
+/* Menu par défaut — utilisé tel quel tant que Firebase n'est pas configuré,
+   et comme version initiale affichée pendant le chargement Firestore. */
+export const DEFAULT_MENU: MenuData = {
+  categories: CATEGORIES,
+  products: PRODUCTS,
+  promos: {},
+  promoCodes: [],
+  banner: { active: false, text: '' },
+  config: { deliveryFee: 2.9, minDelivery: 25, open: true },
+};
+
+/* Compatibilité : l'ancien import CONFIG reste valable */
+export const CONFIG = {
+  get deliveryFee() { return DEFAULT_MENU.config.deliveryFee; },
+  get minDelivery() { return DEFAULT_MENU.config.minDelivery; },
+};
+
 export const byId = (id: string) => PRODUCTS.find((p) => p.id === id);
+export const byIdIn = (menu: MenuData, id: string) => menu.products.find((p) => p.id === id);
+
+/* Applique une promo à un prix de base → prix final arrondi au centime */
+export function promoPrice(base: number, promo?: ProductPromo): number {
+  if (!promo || !promo.value) return round2(base);
+  if (promo.type === 'percent') return round2(base * (1 - clamp(promo.value, 0, 100) / 100));
+  if (promo.type === 'amount') return round2(Math.max(0, base - promo.value));
+  return round2(Math.max(0, promo.value)); // prix fixe
+}
+
+export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+export const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
 /* 25 € plutôt que 25,00 € — comme sur le flyer */
 export const fmt = (n: number) =>
@@ -126,3 +207,10 @@ export const fmt = (n: number) =>
 
 export const FALLBACK_IMG =
   'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=70';
+
+/* Libellé d'une promo, pour l'admin et les cartes */
+export function promoLabel(promo: ProductPromo): string {
+  if (promo.type === 'percent') return `-${promo.value}\u00a0%`;
+  if (promo.type === 'amount') return `-${fmt(promo.value)}`;
+  return fmt(promo.value);
+}

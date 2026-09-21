@@ -9,13 +9,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { byId } from './data';
+import { useMenu } from './menu-store';
 
 type Cart = Record<string, number>;
 
 type CartContextValue = {
   cart: Cart;
   count: number;
+  /** Sous-total en prix réels (promos produit appliquées) */
   total: number;
   add: (id: string) => void;
   setQty: (id: string, delta: number) => void;
@@ -30,6 +31,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart>({});
   const [loaded, setLoaded] = useState(false);
+  const { priceOf } = useMenu(); // prix temps réel (promos incluses)
 
   // Chargement depuis le localStorage après montage (évite tout décalage d'hydratation)
   useEffect(() => {
@@ -71,12 +73,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const count = Object.values(cart).reduce((a, b) => a + b, 0);
-    const total = Object.entries(cart).reduce(
-      (s, [id, q]) => s + (byId(id)?.price || 0) * q,
-      0
-    );
-    return { cart, count, total, add, setQty, remove, clear };
-  }, [cart, add, setQty, remove, clear]);
+    const total = Object.entries(cart).reduce((s, [id, q]) => s + priceOf(id).price * q, 0);
+    return { cart, count, total: Math.round(total * 100) / 100, add, setQty, remove, clear };
+  }, [cart, priceOf, add, setQty, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
