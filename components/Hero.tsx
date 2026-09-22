@@ -14,7 +14,7 @@ const TICKER_ITEMS = [
 export default function Hero() {
   return (
     <>
-      {/* Hero — le fond du site (bois brûlé) transparaît sous le voile */}
+      {/* Hero — fond sombre uni : l'image de fond du site est masquée dans cette 1re section */}
       <div className="hero">
         <div className="hero-veil" aria-hidden="true" />
         <div className="hero-content">

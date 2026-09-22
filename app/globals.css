@@ -82,20 +82,16 @@ body{
   -webkit-font-smoothing:antialiased;
   -webkit-tap-highlight-color:transparent;
 }
-/* Fond du site — photo « bois brûlé » plein écran, fixe (pseudo-élément :
-   contrairement à background-attachment:fixed, reste correct sur iOS/Android) */
+/* Fond du site — photo « bois brûlé » affichée telle quelle (aucun voile),
+   plein écran, fixe (pseudo-élément : contrairement à
+   background-attachment:fixed, reste correct sur iOS/Android) */
 body::before{
   content:'';
   position:fixed;
   inset:0;
   z-index:-1;
   background-color:var(--wood-975);
-  background-image:
-    radial-gradient(1000px 620px at 88% -8%,var(--e-08),transparent 60%),
-    radial-gradient(900px 620px at -5% 38%,var(--o-06),transparent 60%),
-    radial-gradient(1200px 800px at 50% 115%,rgba(95,60,30,.32),transparent 62%),
-    linear-gradient(180deg,rgba(23,11,5,.62),rgba(36,18,9,.38) 38%,rgba(23,11,5,.68)),
-    url('/fond-bois.png');
+  background-image:url('/fond-bois.png');
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -182,8 +178,8 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .nav-links a::after{top:auto;bottom:-6px}
 }
 
-/* ========== 4. HERO — fond site bois brûlé + voile ========== */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 1.2rem 6.5rem;overflow:hidden}
+/* ========== 4. HERO — fond sombre uni (l'image de fond du site y est masquée) + voile ========== */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 1.2rem 6.5rem;overflow:hidden;background:var(--wood-975)}
 .hero-veil{position:absolute;inset:0;background:
   radial-gradient(ellipse 70% 55% at 50% 42%,var(--e-08),transparent 65%),
   radial-gradient(ellipse at 50% 45%,transparent 30%,color-mix(in srgb,var(--wood-975) 78%,transparent) 88%),
