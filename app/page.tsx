@@ -1,7 +1,5 @@
 import Hero from '@/components/Hero';
 import Featured from '@/components/Featured';
-import InfoBand from '@/components/InfoBand';
-import Values from '@/components/Values';
 
 export default function Home() {
   return (
@@ -9,8 +7,6 @@ export default function Home() {
       {/* ================= ACCUEIL ================= */}
       <Hero />
       <Featured />
-      <InfoBand />
-      <Values />
     </>
   );
 }

@@ -1,65 +1,41 @@
 import Link from 'next/link';
-import Icon from './Icon';
 
+/* Footer — grande carte ambrée aux coins arrondis, panneau « verre »
+   à deux colonnes de liens et filigrane géant (relief par ombres). */
 export default function Footer() {
   return (
-    /* Footer — photo en filigrane */
     <footer className="footer">
-      <div className="footer-bg" aria-hidden="true" />
+      <span className="footer-mark" aria-hidden="true">
+        MY CHICKEN
+      </span>
       <div className="container">
-        <div className="footer-grid">
-          <div>
-            <p className="f-brand">
-              <span className="my">My</span> <span className="ck">Chicken</span>
-            </p>
-            <p className="f-lead">
-              Le vrai goût du poulet mijoté, préparé chaque jour avec du temps, du feu et du cœur.
-            </p>
-          </div>
-          <div>
-            <h4>Navigation</h4>
+        <div className="footer-card">
+          <div className="fc-col">
+            <h4>Menu</h4>
             <ul>
               <li><Link href="/">Accueil</Link></li>
               <li><Link href="/la-carte">La Carte</Link></li>
               <li><Link href="/notre-histoire">Notre Histoire</Link></li>
               <li><Link href="/contact">Contact</Link></li>
-              <li><Link href="/commander">Mon Panier</Link></li>
+              <li><Link href="/commander">Commander</Link></li>
             </ul>
           </div>
-          <div>
-            <h4>Horaires</h4>
+          <div className="fc-col fc-col-legal">
+            <h4>Légales</h4>
             <ul>
-              <li>Ouvert 7j/7</li>
-              <li>11h – 14h</li>
-              <li>18h – 22h30</li>
-            </ul>
-          </div>
-          <div>
-            <h4>Contact</h4>
-            <ul className="footer-contact">
-              <li>
-                <span className="f-ico"><Icon name="pin" size={16} /></span>
-                <span>Avenue Jacques Vogt, 95340 Persan</span>
-              </li>
-              <li>
-                <span className="f-ico"><Icon name="phone" size={16} /></span>
-                <a href="tel:+33751565951">07.51.56.59.51</a>
-              </li>
-              <li>
-                <span className="f-ico"><Icon name="scooter" size={16} /></span>
-                <span>Livraison dès 25&nbsp;€ — Persan &amp; alentours</span>
-              </li>
+              <li><Link href="/mentions-legales">Mentions légales</Link></li>
+              <li><Link href="/cgv">Conditions générales de vente</Link></li>
+              <li><Link href="/politique-de-confidentialite">Politique de confidentialité</Link></li>
             </ul>
           </div>
         </div>
       </div>
-      <div className="mega-mark" aria-hidden="true">
-        MY CHICKEN
-      </div>
       <div className="footer-bottom">
-        © <span id="year" suppressHydrationWarning>{new Date().getFullYear()}</span>{' '}
-        <b>My CHICKEN</b> — Persan · Fait avec{' '}
-        <span className="f-ico f-heart"><Icon name="heart" size={13} /></span> et beaucoup de sauce
+        <p>
+          © <span suppressHydrationWarning>{new Date().getFullYear()}</span>{' '}
+          <b>MY CHICKEN</b> — SASU au capital de 1&nbsp;000&nbsp;€ · RCS Meaux 928&nbsp;281&nbsp;278 · TVA FR36928281278
+        </p>
+        <p className="fb-sub">Avenue Jacques Vogt, 95340 Persan · 07.51.56.59.51 · Ouvert 7j/7</p>
       </div>
     </footer>
   );
