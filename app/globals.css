@@ -494,27 +494,61 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .order-success p{color:var(--sand);font-size:.95rem;margin-bottom:.6rem}
 .os-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2.2rem}
 
-/* ========== 15. FOOTER — carte ambrée arrondie + panneau verre (relief) ========== */
-/* Grande carte qui émerge du bas de page : coins supérieurs très arrondis,
-   dégradé ambré vif éclairé du dessus, filigrane géant et panneau
-   « verre » à deux colonnes de liens — relief par ombres profondes. */
+/* ========== 15. FOOTER — carte ambrée + bulle sombre « photo culinaire » ========== */
+/* Grande carte ambrée arrondie (conservée), contenant la « bulle » sombre du
+   visuel : fond photo frites / poulet sur les bords, noir profond au centre,
+   coq doré + logo script, 4 colonnes, tirets dorés et note manuscrite. */
 .footer{position:relative;overflow:hidden;margin-top:2.4rem;border-radius:44px 44px 0 0;background:linear-gradient(180deg,#FFB300 0%,#FF9A00 52%,#FF8A00 100%)}
-/* Surbrillance haute : la carte semble éclairée du dessus (relief) */
 .footer::before{content:'';position:absolute;inset:0;background:radial-gradient(85% 62% at 50% 0%,rgba(255,255,255,.20),transparent 62%);pointer-events:none}
-/* Filigrane géant, en partie masqué par le panneau (profondeur) */
-.footer-mark{position:absolute;left:50%;bottom:-.16em;transform:translateX(-50%);z-index:0;font-family:var(--serif);font-weight:700;font-size:clamp(4.6rem,17vw,13rem);line-height:1;letter-spacing:.045em;white-space:nowrap;color:rgba(255,255,255,.09);user-select:none;pointer-events:none}
-/* Panneau intérieur « verre » : voile blanc, liseré clair, grosse ombre */
-.footer-card{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:2.2rem;margin:clamp(2.6rem,6vw,4.2rem) 0 clamp(2.4rem,5vw,3.6rem);padding:clamp(2.2rem,5vw,3.6rem) clamp(1.6rem,5vw,4.2rem);border-radius:clamp(24px,4vw,36px);background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.26);box-shadow:0 26px 60px rgba(92,40,0,.32),inset 0 1px 0 rgba(255,255,255,.30)}
-@media(min-width:700px){.footer-card{grid-template-columns:1.15fr 1fr;gap:clamp(2.2rem,6vw,5rem)}}
-.fc-col h4{font-size:.74rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#3A1A00;margin-bottom:1.15rem}
-.fc-col ul li a{display:inline-block;padding:.28rem 0;font-size:1.02rem;color:rgba(46,20,2,.78);transition:color .3s,transform .3s var(--ease)}
-.fc-col ul li a:hover{color:#2A0E00;transform:translateX(6px)}
-.fc-col ul li a:focus-visible{outline-color:#2A0E00}
-/* Filet vertical entre les deux colonnes, comme sur la référence */
-@media(min-width:700px){.fc-col-legal{border-left:1px solid rgba(255,255,255,.32);padding-left:clamp(2.2rem,6vw,5rem)}}
+
+/* La bulle : panneau sombre en relief, photo du visuel en fond */
+.footer-card{position:relative;z-index:1;margin:clamp(2.4rem,5.5vw,4rem) 0 clamp(2.2rem,5vw,3.4rem);padding:clamp(2.4rem,5vw,3.8rem) clamp(1.5rem,5vw,4.4rem) clamp(2.6rem,5vw,4rem);border-radius:clamp(24px,4vw,36px);overflow:hidden;
+  background-color:#100C07;
+  background-image:linear-gradient(180deg,rgba(16,12,7,.34),rgba(16,12,7,.06) 30%,rgba(16,12,7,.06) 72%,rgba(16,12,7,.44)),url('/footer-fond.jpg');
+  background-size:cover;background-position:center;
+  border:1px solid rgba(0,0,0,.30);
+  box-shadow:0 30px 70px rgba(80,34,0,.42),inset 0 1px 0 rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,206,110,.10)}
+/* Liseré doré discret en haut de la bulle (relief) */
+.footer-card::before{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,210,120,.34),transparent);pointer-events:none}
+
+/* En-tête : coq doré au trait + logo script + note manuscrite */
+.fc-head{text-align:center;margin-bottom:clamp(2rem,4.5vw,3.2rem)}
+.fc-rooster{display:inline-block;color:var(--gold)}
+.fc-logo{font-family:var(--font-dancing),cursive;font-weight:700;font-size:clamp(2.4rem,6vw,3.4rem);line-height:1.1;color:var(--gold-light);margin-top:.35rem}
+.fc-note{position:relative;display:inline-block;margin-top:.9rem;font-family:var(--font-caveat),cursive;font-weight:600;font-size:clamp(1.25rem,3vw,1.55rem);color:#F4E9D4;line-height:1.15}
+.fc-note-line{display:block;width:100%;height:9px;margin-top:.15rem;color:var(--gold)}
+
+/* Les 4 colonnes */
+.fc-grid{position:relative;display:grid;grid-template-columns:1fr;gap:2.2rem}
+@media(min-width:680px){.fc-grid{grid-template-columns:repeat(2,1fr);gap:2.4rem 2rem}}
+@media(min-width:1040px){.fc-grid{grid-template-columns:1.05fr 1fr 1.35fr .85fr;gap:2.6rem}}
+.fc-col h4{font-size:.72rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#F4E9D4;margin-bottom:1.15rem}
+/* Tiret doré sous chaque titre, comme sur le visuel */
+.fc-col h4::after{content:'';display:block;width:34px;height:2.5px;border-radius:2px;background:var(--gold);margin-top:.6rem}
+.fc-col ul li a{display:inline-block;padding:.3rem 0;font-size:.98rem;color:rgba(233,219,193,.82);transition:color .3s,transform .3s var(--ease)}
+.fc-col ul li a:hover{color:var(--gold-light);transform:translateX(6px)}
+.fc-col ul li a:focus-visible{outline-color:var(--gold)}
+
+/* Colonne infos pratiques : icônes dorées */
+.fc-infos ul li{display:flex;align-items:flex-start;gap:.7rem;padding:.32rem 0;font-size:.93rem;color:rgba(233,219,193,.82);line-height:1.55}
+.fc-infos .fc-ico{color:var(--gold);display:inline-flex;flex-shrink:0;margin-top:.14rem}
+.fc-infos ul li a{display:inline;padding:0;color:rgba(233,219,193,.82);border-bottom:1px solid rgba(255,210,120,.25)}
+.fc-infos ul li a:hover{color:var(--gold-light);border-color:var(--gold-light)}
+
+/* Colonne réseaux : carrés gris foncé, icônes claires (sans lien) */
+.fc-socials{display:flex;gap:.7rem;margin-top:.15rem}
+.fc-social{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:#EFE6D6;background:rgba(255,248,225,.07);border:1px solid rgba(255,248,225,.14);cursor:default;transition:background .3s,border-color .3s,color .3s,transform .3s var(--ease)}
+.fc-social:hover{background:rgba(255,248,225,.13);border-color:rgba(255,210,120,.4);color:var(--gold-light);transform:translateY(-3px)}
+.fc-social-hint{margin-top:.95rem;font-family:var(--font-caveat),cursive;font-size:1.05rem;color:rgba(233,219,193,.66)}
+
+/* Barre légale ambrée sous la bulle */
 .footer-bottom{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.30);padding:1.5rem 1.2rem 1.7rem;text-align:center;color:rgba(42,14,0,.82)}
 .footer-bottom p{font-size:.78rem;line-height:1.7}
 .footer-bottom b{color:#2A0E00;font-weight:700}
+.footer-bottom .fb-links{display:flex;flex-wrap:wrap;justify-content:center;gap:.55rem;margin-bottom:.55rem;font-size:.8rem;font-weight:600}
+.footer-bottom .fb-links a{color:#3A1A00;border-bottom:1px solid rgba(58,26,0,.4);transition:color .3s,border-color .3s}
+.footer-bottom .fb-links a:hover{color:#2A0E00;border-color:#2A0E00}
+.footer-bottom .fb-links a:focus-visible{outline-color:#2A0E00}
 .footer-bottom .fb-sub{margin-top:.35rem;opacity:.85}
 
 /* ========== 15bis. PAGES LÉGALES — colonne de lecture ========== */

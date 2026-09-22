@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import ReactDOM from 'react-dom';
-import { Cormorant_Garamond, Montserrat } from 'next/font/google';
+import { Cormorant_Garamond, Montserrat, Caveat, Dancing_Script } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/lib/cart';
 import { ToastProvider } from '@/lib/toast';
@@ -30,6 +30,21 @@ const sans = Montserrat({
   display: 'swap',
 });
 
+/* Écritures du footer — logo script & note manuscrite */
+const script = Dancing_Script({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-dancing',
+  display: 'swap',
+});
+
+const handwriting = Caveat({
+  subsets: ['latin'],
+  weight: ['500', '600'],
+  variable: '--font-caveat',
+  display: 'swap',
+});
+
 export const viewport: Viewport = {
   themeColor: '#170B05',
 };
@@ -50,7 +65,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   preloadBackground();
   return (
-    <html lang="fr" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="fr" className={`${serif.variable} ${sans.variable} ${script.variable} ${handwriting.variable}`}>
       <body>
         <ToastProvider>
           <MenuProvider>
