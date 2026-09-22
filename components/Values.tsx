@@ -35,30 +35,32 @@ const VALUES = [
 export default function Values() {
   return (
     /* Engagements — médaillons photo */
-    <div className="section container">
-      <div className="s-head">
-        <span className="eyebrow">
-          <span className="n">03</span>Notre philosophie
-        </span>
-        <h2 className="s-title">
-          Nos <em>engagements</em>
-        </h2>
-        <p className="s-sub">La qualité avant tout.</p>
-        <span className="orn" aria-hidden="true">
-          <i />
-        </span>
-      </div>
-      <div className="values">
-        {VALUES.map((v) => (
-          <Reveal className="value" key={v.num}>
-            <span className="value-ring">
-              <SmartImg src={v.img} alt={v.alt} loading="lazy" />
-            </span>
-            <span className="value-num">{v.num}</span>
-            <h3>{v.title}</h3>
-            <p>{v.desc}</p>
-          </Reveal>
-        ))}
+    <div className="section">
+      <div className="container">
+        <div className="s-head">
+          <span className="eyebrow">
+            <span className="n">03</span>Notre philosophie
+          </span>
+          <h2 className="s-title">
+            Nos <em>engagements</em>
+          </h2>
+          <p className="s-sub">La qualité avant tout.</p>
+          <span className="orn" aria-hidden="true">
+            <i />
+          </span>
+        </div>
+        <div className="values">
+          {VALUES.map((v) => (
+            <Reveal className="value" key={v.num}>
+              <span className="value-ring">
+                <SmartImg src={v.img} alt={v.alt} loading="lazy" />
+              </span>
+              <span className="value-num">{v.num}</span>
+              <h3>{v.title}</h3>
+              <p>{v.desc}</p>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </div>
   );

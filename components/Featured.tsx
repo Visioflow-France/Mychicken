@@ -12,29 +12,31 @@ export default function Featured() {
   if (popular.length === 0) return null;
 
   return (
-    <section className="section container" id="best-sellers">
-      <div className="s-head">
-        <span className="eyebrow">
-          <span className="n">01</span>Les incontournables
-        </span>
-        <h2 className="s-title">
-          Nos <em>best-sellers</em>
-        </h2>
-        <p className="s-sub">Ce que tout Persan vient chercher.</p>
-        <span className="orn" aria-hidden="true">
-          <i />
-        </span>
+    <section className="section" id="best-sellers">
+      <div className="container">
+        <div className="s-head">
+          <span className="eyebrow">
+            <span className="n">01</span>Les incontournables
+          </span>
+          <h2 className="s-title">
+            Nos <em>best-sellers</em>
+          </h2>
+          <p className="s-sub">Ce que tout Persan vient chercher.</p>
+          <span className="orn" aria-hidden="true">
+            <i />
+          </span>
+        </div>
+        <div id="featuredGrid" className="grid grid-3">
+          {popular.map((p) => (
+            <ProductCard key={p.id} p={p} />
+          ))}
+        </div>
+        <p style={{ textAlign: 'center' }}>
+          <Link href="/la-carte" className="link-arrow">
+            Découvrir toute la carte <Icon name="arrowRight" size={16} strokeWidth={2} />
+          </Link>
+        </p>
       </div>
-      <div id="featuredGrid" className="grid grid-3">
-        {popular.map((p) => (
-          <ProductCard key={p.id} p={p} />
-        ))}
-      </div>
-      <p style={{ textAlign: 'center' }}>
-        <Link href="/la-carte" className="link-arrow">
-          Découvrir toute la carte <Icon name="arrowRight" size={16} strokeWidth={2} />
-        </Link>
-      </p>
     </section>
   );
 }

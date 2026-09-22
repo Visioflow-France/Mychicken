@@ -166,22 +166,24 @@ export default function MenuSection() {
         ))}
       </nav>
 
-      <div className="container" id="menuCats">
-        {menu.categories.map((c) => (
-          <div className="menu-cat" id={`cat-${c.id}`} key={c.id}>
-            <div className="mc-head">
-              <span className="mc-num">— {c.num}</span>
-              <h3>{c.label}</h3>
+      <div id="menuCats" className="bg-bois">
+        <div className="container">
+          {menu.categories.map((c) => (
+            <div className="menu-cat" id={`cat-${c.id}`} key={c.id}>
+              <div className="mc-head">
+                <span className="mc-num">— {c.num}</span>
+                <h3>{c.label}</h3>
+              </div>
+              <div className="grid grid-3">
+                {menu.products
+                  .filter((p) => p.cat === c.id)
+                  .map((p) => (
+                    <ProductCard key={p.id} p={p} />
+                  ))}
+              </div>
             </div>
-            <div className="grid grid-3">
-              {menu.products
-                .filter((p) => p.cat === c.id)
-                .map((p) => (
-                  <ProductCard key={p.id} p={p} />
-                ))}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </>
   );

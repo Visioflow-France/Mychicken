@@ -24,7 +24,8 @@ export default function Story() {
         </span>
       </div>
 
-      <div className="section container">
+      <div className="section">
+        <div className="container">
         <Reveal as="p" className="story-intro">
           «&nbsp;Tout a commencé dans une cuisine de famille, autour d&apos;une recette de poulet
           mijoté transmise de génération en génération.&nbsp;»
@@ -115,6 +116,7 @@ export default function Story() {
               Goûter la différence
             </Link>
           </Reveal>
+        </div>
         </div>
       </div>
     </>

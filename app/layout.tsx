@@ -10,7 +10,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollTop from '@/components/ScrollTop';
 
-/* Fond du site — chargé en priorité (PNG source, sans recompression) */
+/* Photo « bois brûlé » des sections — chargée en priorité (PNG source, sans recompression) */
 function preloadBackground() {
   ReactDOM.preload('/fond-bois.png', { as: 'image', fetchPriority: 'high' });
 }

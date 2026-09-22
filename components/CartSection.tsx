@@ -218,7 +218,8 @@ export default function CartSection() {
         </span>
       </div>
 
-      <div className="section container">
+      <div className="section">
+        <div className="container">
         {showEmpty && (
           <div className="empty-state" id="emptyCart">
             <span className="ring">
@@ -532,6 +533,7 @@ export default function CartSection() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </>
   );

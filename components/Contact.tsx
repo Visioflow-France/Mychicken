@@ -63,7 +63,8 @@ export default function Contact() {
         </span>
       </div>
 
-      <div className="section container">
+      <div className="section">
+        <div className="container">
         <div className="contact-grid">
           <Reveal className="panel">
             <h3>Nous trouver</h3>
@@ -119,6 +120,7 @@ export default function Contact() {
             src="https://www.google.com/maps?q=Avenue%20Jacques%20Vogt%2C%2095340%20Persan&output=embed"
           />
         </Reveal>
+        </div>
       </div>
     </>
   );
