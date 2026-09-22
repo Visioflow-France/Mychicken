@@ -67,7 +67,7 @@
   --ease:cubic-bezier(.22,1,.36,1);
 
   --r:14px; --pill:999px;
-  --nav-h:74px;
+  --nav-h:84px; /* pilule (~61px) + garde au-dessus (12px) + marge de respiration */
   --sh-1:0 10px 30px rgba(10,4,1,.45);
   --sh-2:0 24px 60px rgba(8,3,1,.6);
   --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
@@ -134,50 +134,66 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .s-title em{font-style:italic;background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
 .s-sub{margin-top:.9rem;color:var(--sand);font-size:.98rem;font-weight:400;text-wrap:pretty}
 
-/* ========== 3. NAVIGATION — barre sombre pleine largeur (marque · liens · CTA) ========== */
-.navbar{position:fixed;top:var(--promo-strip-h,0px);left:0;right:0;z-index:1000;background:color-mix(in srgb,var(--wood-975) 62%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);border-bottom:1px solid var(--g-12);transition:background .45s var(--ease),box-shadow .45s var(--ease),border-color .45s,top .3s var(--ease)}
-.navbar::after{content:'';position:absolute;left:15%;right:15%;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,var(--g-45),transparent);opacity:.6;pointer-events:none}
-.navbar.scrolled{background:color-mix(in srgb,#100702 90%,transparent);border-color:var(--g-25);box-shadow:0 14px 44px rgba(0,0,0,.55)}
-.nav-container{width:min(1240px,94%);margin-inline:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2rem;padding:.95rem 0;transition:padding .45s var(--ease)}
-.navbar.scrolled .nav-container{padding:.62rem 0}
-.brand{justify-self:start;display:inline-flex;align-items:center;gap:.7rem;min-width:0}
-.brand-mark{width:40px;height:40px;flex-shrink:0;color:var(--gold);filter:drop-shadow(0 2px 10px var(--g-25));transition:transform .5s var(--ease),filter .4s}
-.brand:hover .brand-mark{transform:rotate(-6deg) scale(1.05);filter:drop-shadow(0 2px 14px var(--g-45))}
-.brand-text{display:flex;flex-direction:column;line-height:1;gap:.24rem}
-.brand .my{font-style:italic;font-weight:500;font-size:.92rem;color:var(--cream);letter-spacing:.06em}
-.brand .ck{font-weight:700;letter-spacing:.3em;text-transform:uppercase;font-size:1.04rem;background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
-.nav-links{display:flex;align-items:center;gap:2.4rem}
-.nav-links a{position:relative;font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sand);padding:.4rem 0;transition:color .3s}
+/* ========== 3. NAVIGATION — pilule flottante arrondie (marque · liens · CTA) ========== */
+/* Enveloppe fixe : laisse passer les clics autour de la pilule (pointer-events
+   pilotés par .nav-pill). Aucun backdrop-filter ici — il ferait de l'en-tête
+   le bloc conteneur du menu mobile en position:fixed. */
+.navbar{position:fixed;top:calc(var(--promo-strip-h,0px) + 12px);left:0;right:0;z-index:1000;pointer-events:none;transition:top .3s var(--ease)}
+/* La pilule : conteneur arrondi centré, fond bois translucide + flou.
+   position+z-index : la pilule reste au-dessus du menu mobile ouvert,
+   pour que son burger redevienne le bouton fermer (le z-index du burger
+   seul resterait piégé dans le contexte d'empilement du backdrop-filter). */
+.nav-pill{pointer-events:auto;position:relative;z-index:1200;width:min(1140px,calc(100% - 2.4rem));margin-inline:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.2rem;padding:.68rem .68rem .68rem 1.6rem;border-radius:var(--pill);background:color-mix(in srgb,var(--wood-975) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);border:1px solid var(--g-14);box-shadow:0 12px 34px rgba(5,2,0,.45),inset 0 1px 0 var(--g-08);transition:background .45s var(--ease),box-shadow .45s var(--ease),border-color .45s,padding .45s var(--ease)}
+.navbar.scrolled .nav-pill{background:color-mix(in srgb,#100702 88%,transparent);border-color:var(--g-25);box-shadow:0 16px 44px rgba(0,0,0,.55),inset 0 1px 0 var(--g-08);padding-block:.5rem}
+/* Marque — wordmark texte « MY CHICKEN » + point doré */
+.brand{justify-self:start;display:inline-flex;align-items:center;min-width:0}
+.brand-text{display:inline-flex;align-items:baseline;line-height:1;font-family:var(--sans);font-weight:800;font-size:1.02rem;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.brand .my{color:var(--cream);margin-right:.4em}
+.brand .ck{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-dot{width:.32em;height:.32em;border-radius:50%;background:var(--gold);margin-left:.34em;box-shadow:0 0 10px var(--g-55);transition:transform .5s var(--ease),box-shadow .4s}
+.brand:hover .brand-dot{transform:scale(1.3);box-shadow:0 0 16px var(--g-65)}
+/* Liens — majuscules, letter-spacing large, comme la référence */
+.nav-links{justify-self:center;display:flex;align-items:center;gap:2.2rem}
+.nav-links a{position:relative;font-size:.7rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--sand);padding:.4rem 0;transition:color .3s}
 .nav-links a::after{content:'';position:absolute;left:0;right:0;top:-2px;height:1px;background:linear-gradient(90deg,var(--gold),var(--orange));transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
 .nav-links a:hover,.nav-links a.active{color:var(--gold-light)}
 .nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1)}
-.nav-end{justify-self:end;display:inline-flex;align-items:center;gap:1rem}
-.nav-cta{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.6rem;padding:.78rem 1.55rem;border-radius:var(--pill);font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--txt-on-gold);background:var(--grad-gold);box-shadow:0 8px 24px var(--o-25),inset 0 1px 0 rgba(255,244,214,.5);transition:transform .4s var(--ease),box-shadow .4s var(--ease),filter .3s}
+/* CTA Commander + panier */
+.nav-end{justify-self:end;display:inline-flex;align-items:center;gap:.9rem}
+.nav-cta{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:.6rem;padding:.72rem 1.45rem;border-radius:var(--pill);font-size:.7rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;line-height:1;color:var(--txt-on-gold);background:var(--grad-gold);box-shadow:0 8px 24px var(--o-25),inset 0 1px 0 rgba(255,244,214,.5);transition:transform .4s var(--ease),box-shadow .4s var(--ease),filter .3s}
 .nav-cta::after{content:'';position:absolute;top:0;bottom:0;left:-70%;width:45%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,rgba(255,252,240,.5),transparent)}
 .nav-cta:hover{transform:translateY(-2px);box-shadow:0 14px 34px var(--o-38),inset 0 1px 0 rgba(255,244,214,.5)}
 .nav-cta:hover::after{animation:sheen .8s var(--ease)}
 .nav-cta.active{filter:brightness(1.08)}
-.cart-badge{min-width:20px;height:20px;padding:0 5px;border-radius:var(--pill);display:inline-grid;place-items:center;font-size:.66rem;font-weight:700;color:var(--gold-light);background:color-mix(in srgb,#140904 88%,transparent);border:1px solid var(--g-45)}
+.cart-badge{min-width:20px;height:20px;padding:0 5px;border-radius:var(--pill);display:inline-grid;place-items:center;font-size:.66rem;font-weight:700;line-height:1;color:var(--gold-light);background:color-mix(in srgb,#140904 88%,transparent);border:1px solid var(--g-45)}
 .cart-badge.badge-bounce{animation:badgeSpring .55s cubic-bezier(.34,1.56,.64,1)}
 @keyframes badgeSpring{0%{transform:scale(1)}35%{transform:scale(1.5)}68%{transform:scale(.9)}100%{transform:scale(1)}}
+/* Menu mobile plein écran — enfant direct de l'en-tête (hors pilule/flou)
+   pour que position:fixed couvre bien tout l'écran */
+.nav-drawer{display:none}
 .burger{display:none;background:none;border:none;color:var(--cream);cursor:pointer;padding:.4rem .5rem;z-index:1102}
 .burger svg{display:block}
 @media(max-width:900px){
-  .burger{display:grid;place-items:center}
-  .nav-container{grid-template-columns:1fr auto auto;gap:.8rem}
-  .brand-mark{width:34px;height:34px}
-  .nav-cta{position:relative;padding:.75rem;border-radius:50%}
+  :root{--nav-h:76px}
+  .navbar{top:calc(var(--promo-strip-h,0px) + 10px)}
+  .nav-pill{width:calc(100% - 1.6rem);grid-template-columns:1fr auto auto;gap:.55rem;padding:.5rem .5rem .5rem 1.05rem}
+  .brand-text{font-size:.92rem}
+  .nav-links{display:none}
+  .nav-cta{padding:.68rem;border-radius:50%}
   .nav-cta-label{display:none}
   .nav-cta .cart-badge{position:absolute;top:-4px;right:-6px}
-  .nav-links{position:fixed;inset:0;z-index:1100;background:color-mix(in srgb,#140904 96%,transparent);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);flex-direction:column;justify-content:center;gap:2.2rem;opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
-  .nav-links.open{opacity:1;pointer-events:auto}
-  .nav-links a{font-family:var(--serif);font-size:1.7rem;letter-spacing:.06em;text-transform:none;font-weight:500;opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease),transform .5s var(--ease),color .3s}
-  .nav-links.open a{opacity:1;transform:none}
-  .nav-links.open a:nth-child(1){transition-delay:.08s}
-  .nav-links.open a:nth-child(2){transition-delay:.16s}
-  .nav-links.open a:nth-child(3){transition-delay:.24s}
-  .nav-links.open a:nth-child(4){transition-delay:.32s}
-  .nav-links a::after{top:auto;bottom:-6px}
+  .burger{display:grid;place-items:center}
+  .nav-drawer{display:flex;position:fixed;inset:0;z-index:1100;flex-direction:column;justify-content:center;gap:2.2rem;background:color-mix(in srgb,#140904 96%,transparent);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s var(--ease),visibility .4s}
+  .nav-drawer.open{opacity:1;visibility:visible;pointer-events:auto}
+  .nav-drawer a{position:relative;font-family:var(--serif);font-size:1.7rem;letter-spacing:.06em;text-transform:none;font-weight:500;color:var(--sand);opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease),transform .5s var(--ease),color .3s}
+  .nav-drawer a:hover,.nav-drawer a.active{color:var(--gold-light)}
+  .nav-drawer.open a{opacity:1;transform:none}
+  .nav-drawer.open a:nth-child(1){transition-delay:.08s}
+  .nav-drawer.open a:nth-child(2){transition-delay:.16s}
+  .nav-drawer.open a:nth-child(3){transition-delay:.24s}
+}
+@media(max-width:400px){
+  .brand-text{font-size:.82rem}
 }
 
 /* ========== 4. HERO — photo bois sous voile sombre ========== */
