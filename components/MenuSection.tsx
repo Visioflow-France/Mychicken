@@ -40,6 +40,8 @@ export default function MenuSection() {
   const { menu, effective } = useMenu();
   const [activeCat, setActiveCat] = useState<string>(menu.categories[0]?.id || 'menus');
   const [askProduct, setAskProduct] = useState<Product | null>(null);
+  /* Bouton « Ajouter » du menu signature sur lequel la bulle s'ancrera */
+  const [askAnchor, setAskAnchor] = useState<HTMLButtonElement | null>(null);
 
   /* Scrollspy de la barre de catégories — réinstallé à chaque changement de carte */
   useEffect(() => {
@@ -116,7 +118,10 @@ export default function MenuSection() {
                     <button
                       className={`btn btn-block ${m.solid ? 'btn-solid' : 'btn-ghost'}`}
                       style={{ marginTop: '1.4rem' }}
-                      onClick={() => setAskProduct(m.product)}
+                      onClick={(e) => {
+                        setAskProduct(m.product);
+                        setAskAnchor(e.currentTarget);
+                      }}
                     >
                       Ajouter
                     </button>
@@ -160,7 +165,16 @@ export default function MenuSection() {
         </div>
       </div>
 
-      {askProduct && <AddOptions product={askProduct} onClose={() => setAskProduct(null)} />}
+      {askProduct && (
+        <AddOptions
+          product={askProduct}
+          anchor={askAnchor}
+          onClose={() => {
+            setAskProduct(null);
+            setAskAnchor(null);
+          }}
+        />
+      )}
     </>
   );
 }
