@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import ProductCard from './ProductCard';
+import AddOptions from './AddOptions';
 import Reveal from './Reveal';
 import SmartImg from './SmartImg';
-import { useCart } from '@/lib/cart';
-import { useToast } from '@/lib/toast';
 import { useMenu } from '@/lib/menu-store';
-import { byIdIn, fmt } from '@/lib/data';
+import { byIdIn, fmt, type Product } from '@/lib/data';
 
 const F = 'https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/';
 
@@ -38,10 +37,9 @@ const SIGNATURE_DEFS: { id: string; forText: string; lines: string[]; solid: boo
 ];
 
 export default function MenuSection() {
-  const { add } = useCart();
-  const toast = useToast();
   const { menu, effective } = useMenu();
   const [activeCat, setActiveCat] = useState<string>(menu.categories[0]?.id || 'menus');
+  const [askProduct, setAskProduct] = useState<Product | null>(null);
 
   /* Scrollspy de la barre de catégories — réinstallé à chaque changement de carte */
   useEffect(() => {
@@ -57,12 +55,6 @@ export default function MenuSection() {
     return () => catSpy.disconnect();
   }, [menu.categories, menu.products]);
 
-  const addMenu = (id: string) => {
-    add(id);
-    const p = byIdIn(menu, id);
-    if (p) toast(`${p.name} ajouté au panier`);
-  };
-
   const signatures = SIGNATURE_DEFS.map((def) => {
     const p = byIdIn(menu, def.id);
     if (!p) return null;
@@ -77,36 +69,18 @@ export default function MenuSection() {
       alt: p.name,
       lines: def.lines,
       solid: def.solid,
+      product: p,
     };
   }).filter(Boolean) as {
     id: string; name: string; forText: string; price: number; oldPrice: number | null;
-    img: string; alt: string; lines: string[]; solid: boolean;
+    img: string; alt: string; lines: string[]; solid: boolean; product: Product;
   }[];
 
   return (
     <>
-      <div className="page-head">
-        <div
-          className="ph-bg"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=65')",
-          }}
-          aria-hidden="true"
-        />
-        <span className="eyebrow">La carte</span>
-        <h1 className="page-title">
-          Une cuisine <em>généreuse</em>
-        </h1>
-        <p className="page-sub">Mijotée du matin au soir, servie avec le sourire.</p>
-        <span className="orn" aria-hidden="true">
-          <i />
-        </span>
-      </div>
-
-      {/* Menus signature avec photo */}
+      {/* Menus signature avec photo — première section : laisse la place à la navbar */}
       {signatures.length > 0 && (
-        <div className="signature">
+        <div className="signature after-nav">
           <div className="container">
             <div className="s-head">
               <span className="eyebrow">Nos formules</span>
@@ -142,7 +116,7 @@ export default function MenuSection() {
                     <button
                       className={`btn btn-block ${m.solid ? 'btn-solid' : 'btn-ghost'}`}
                       style={{ marginTop: '1.4rem' }}
-                      onClick={() => addMenu(m.id)}
+                      onClick={() => setAskProduct(m.product)}
                     >
                       Ajouter
                     </button>
@@ -185,6 +159,8 @@ export default function MenuSection() {
           ))}
         </div>
       </div>
+
+      {askProduct && <AddOptions product={askProduct} onClose={() => setAskProduct(null)} />}
     </>
   );
 }

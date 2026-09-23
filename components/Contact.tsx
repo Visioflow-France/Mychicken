@@ -44,26 +44,7 @@ export default function Contact() {
 
   return (
     <>
-      <div className="page-head">
-        <div
-          className="ph-bg"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=65')",
-          }}
-          aria-hidden="true"
-        />
-        <span className="eyebrow">Contact</span>
-        <h1 className="page-title">
-          Parlons-en <em>autour d&apos;un pilon</em>
-        </h1>
-        <p className="page-sub">Une question, une grande tablée&nbsp;? Écrivez-nous ou passez nous voir.</p>
-        <span className="orn" aria-hidden="true">
-          <i />
-        </span>
-      </div>
-
-      <div className="section">
+      <div className="section after-nav">
         <div className="container">
         <div className="contact-grid">
           <Reveal className="panel">

@@ -5,26 +5,7 @@ import SmartImg from './SmartImg';
 export default function Story() {
   return (
     <>
-      <div className="page-head">
-        <div
-          className="ph-bg"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1600&q=65')",
-          }}
-          aria-hidden="true"
-        />
-        <span className="eyebrow">Notre histoire</span>
-        <h1 className="page-title">
-          Une maison, <em>une famille</em>
-        </h1>
-        <p className="page-sub">Trois générations autour du même feu.</p>
-        <span className="orn" aria-hidden="true">
-          <i />
-        </span>
-      </div>
-
-      <div className="section">
+      <div className="section after-nav">
         <div className="container">
         <Reveal as="p" className="story-intro">
           «&nbsp;Tout a commencé dans une cuisine de famille, autour d&apos;une recette de poulet

@@ -199,26 +199,7 @@ export default function CartSection() {
 
   return (
     <>
-      <div className="page-head">
-        <div
-          className="ph-bg"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=1600&q=65')",
-          }}
-          aria-hidden="true"
-        />
-        <span className="eyebrow">Votre commande</span>
-        <h1 className="page-title">
-          Votre <em>panier</em>
-        </h1>
-        <p className="page-sub">Encore quelques clics et tout arrive chaud.</p>
-        <span className="orn" aria-hidden="true">
-          <i />
-        </span>
-      </div>
-
-      <div className="section">
+      <div className="section after-nav">
         <div className="container">
         {showEmpty && (
           <div className="empty-state" id="emptyCart">
