@@ -9,7 +9,7 @@
   padding:2rem 0 7rem;
   /* Fond « bois brûlé » — couvre l'entièreté du dashboard et défile avec lui */
   background-color:var(--wood-975);
-  background-image:url('/fond-bois.png');
+  background-image:url('/fond-bois.jpg');
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;

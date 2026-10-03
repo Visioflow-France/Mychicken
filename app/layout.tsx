@@ -10,7 +10,7 @@ import ServiceWorker from '@/components/ServiceWorker';
 
 /* Photo « bois brûlé » des sections — chargée en priorité (PNG source, sans recompression) */
 function preloadBackground() {
-  ReactDOM.preload('/fond-bois.png', { as: 'image', fetchPriority: 'high' });
+  ReactDOM.preload('/fond-bois.jpg', { as: 'image', fetchPriority: 'high' });
 }
 
 const serif = Cormorant_Garamond({
