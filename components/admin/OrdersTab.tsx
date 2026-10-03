@@ -155,10 +155,6 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
           <b>{orders.filter((o) => o.paid).length}</b>
           <span>payées en ligne</span>
         </div>
-        <div className="ostat">
-          <b>{fmt(orders.filter((o) => o.status !== 'annulee').reduce((s, o) => s + (o.total || 0), 0))}</b>
-          <span>chiffre d&apos;affaires (100 dernières)</span>
-        </div>
       </div>
 
       {/* La recherche n'a de sens que dans l'historique complet */}
