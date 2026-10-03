@@ -6,11 +6,6 @@ import { CartProvider } from '@/lib/cart';
 import { ToastProvider } from '@/lib/toast';
 import { MenuProvider } from '@/lib/menu-store';
 import { LocationProvider } from '@/lib/location-store';
-import PromoBanner from '@/components/PromoBanner';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import ScrollTop from '@/components/ScrollTop';
-import LocationGate from '@/components/LocationGate';
 import ServiceWorker from '@/components/ServiceWorker';
 
 /* Photo « bois brûlé » des sections — chargée en priorité (PNG source, sans recompression) */
@@ -77,12 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MenuProvider>
             <LocationProvider>
               <CartProvider>
-                <PromoBanner />
-                <Navbar />
-                <main>{children}</main>
-                <Footer />
-                <ScrollTop />
-                <LocationGate />
+                {children}
                 <ServiceWorker />
               </CartProvider>
             </LocationProvider>

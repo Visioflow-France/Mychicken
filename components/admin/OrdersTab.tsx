@@ -103,7 +103,9 @@ function printTicket(o: Order, locName: string, locAddress: string) {
   }, 350);
 }
 
-export default function OrdersTab({ locationId }: { locationId?: string }) {
+/* variant='active' → seulement les commandes en cours (onglet Commandes) ;
+   variant='all' → tout l'historique (onglet Toutes les commandes). */
+export default function OrdersTab({ locationId, variant = 'active' }: { locationId?: string; variant?: 'active' | 'all' }) {
   const { orders: all, source } = useOrders();
   const { locations } = useLocationCtx();
   /* Commandes du restaurant sélectionné (les anciennes sans locationId restent visibles) */
@@ -115,6 +117,9 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
   const set = (o: Order, patch: { status?: OrderStatus; paid?: boolean }) =>
     patchOrder(o.id, patch).catch((e) => console.error(e));
 
+  const scoped = variant === 'active'
+    ? orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee')
+    : orders;
   const active = orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee');
 
   /* Recherche dans les anciennes commandes : n°, nom, téléphone, adresse */
@@ -122,7 +127,7 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
   const needle = search.trim().toLowerCase();
   const digits = needle.replace(/\D/g, '');
   const visible = needle
-    ? orders.filter((o) => {
+    ? scoped.filter((o) => {
         const hay = [o.num, o.customer?.name, o.customer?.phone, o.customer?.address, o.promoCode]
           .filter(Boolean)
           .join(' ')
@@ -130,7 +135,7 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
         const phone = (o.customer?.phone || '').replace(/\s/g, '');
         return hay.includes(needle) || (digits.length >= 4 && phone.includes(digits));
       })
-    : orders;
+    : scoped;
 
   return (
     <div className="admin-stack">
@@ -140,22 +145,6 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
           commandes de tous les clients arrivent ici en temps réel.
         </p>
       )}
-
-      <div className="orders-search">
-        <Icon name="phone" size={14} />
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher une ancienne commande (n°, nom, téléphone, adresse…)"
-          aria-label="Rechercher une commande"
-        />
-        {search && (
-          <button type="button" className="os-clear" onClick={() => setSearch('')} aria-label="Effacer la recherche">
-            ✕
-          </button>
-        )}
-      </div>
 
       <div className="orders-stats">
         <div className="ostat">
@@ -171,6 +160,25 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
           <span>chiffre d&apos;affaires (100 dernières)</span>
         </div>
       </div>
+
+      {/* La recherche n'a de sens que dans l'historique complet */}
+      {variant === 'all' && (
+        <div className="orders-search">
+          <Icon name="phone" size={14} />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher une commande (n°, nom, téléphone, adresse…)"
+            aria-label="Rechercher une commande"
+          />
+          {search && (
+            <button type="button" className="os-clear" onClick={() => setSearch('')} aria-label="Effacer la recherche">
+              ✕
+            </button>
+          )}
+        </div>
+      )}
 
       {orders.length === 0 && (
         <div className="admin-panel">

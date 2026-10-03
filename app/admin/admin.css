@@ -5,7 +5,8 @@
 
 .admin-root{
   min-height:100vh;
-  padding:calc(var(--nav-h,74px) + 2rem) 0 7rem;
+  /* Pas de navbar client sur le dashboard : simple marge en haut */
+  padding:2rem 0 7rem;
   /* Fond « bois brûlé » — couvre l'entièreté du dashboard et défile avec lui */
   background-color:var(--wood-975);
   background-image:url('/fond-bois.png');

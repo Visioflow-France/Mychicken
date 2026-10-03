@@ -26,10 +26,11 @@ import SettingsTab from './SettingsTab';
 import LocationsTab from './LocationsTab';
 import { useLocationCtx } from '@/lib/location-store';
 
-type Tab = 'orders' | 'products' | 'categories' | 'promos' | 'restaurants' | 'settings';
+type Tab = 'orders' | 'all-orders' | 'products' | 'categories' | 'promos' | 'restaurants' | 'settings';
 
 const TABS: { id: Tab; label: string; icon: Parameters<typeof Icon>[0]['name'] }[] = [
   { id: 'orders', label: 'Commandes', icon: 'bag' },
+  { id: 'all-orders', label: 'Toutes les commandes', icon: 'menu' },
   { id: 'products', label: 'Carte', icon: 'utensils' },
   { id: 'categories', label: 'Catégories', icon: 'menu' },
   { id: 'promos', label: 'Promos', icon: 'tag' },
@@ -237,7 +238,8 @@ export default function AdminApp() {
         {tab === 'products' && <ProductsTab draft={draft} mutate={mutate} />}
         {tab === 'categories' && <CategoriesTab draft={draft} mutate={mutate} />}
         {tab === 'promos' && <PromosTab draft={draft} mutate={mutate} />}
-        {tab === 'orders' && <OrdersTab locationId={current.id} />}
+        {tab === 'orders' && <OrdersTab locationId={current.id} variant='active' />}
+        {tab === 'all-orders' && <OrdersTab locationId={current.id} variant='all' />}
         {tab === 'restaurants' && <LocationsTab />}
         {tab === 'settings' && <SettingsTab draft={draft} mutate={mutate} onReset={hardReset} />}
       </main>
