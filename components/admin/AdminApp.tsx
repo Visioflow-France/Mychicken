@@ -38,7 +38,8 @@ const TABS: { id: Tab; label: string; icon: Parameters<typeof Icon>[0]['name'] }
   { id: 'settings', label: 'Réglages', icon: 'scooter' },
 ];
 
-export default function AdminApp() {
+/* initialLocation : restaurant présélectionné (PWA par restaurant, ex. /admin/persan). */
+export default function AdminApp({ initialLocation }: { initialLocation?: string } = {}) {
   const toast = useToast();
   const { menu, source } = useMenu();
   const { locations, current, choose, locationId } = useLocationCtx();
@@ -60,6 +61,12 @@ export default function AdminApp() {
       })
       .catch(() => setAuthed(false));
   }, []);
+
+  /* Restaurant imposé par la PWA (ex. /admin/persan) : on force le choix
+     à chaque ouverture pour que l'app ouvre toujours sur « son » resto. */
+  useEffect(() => {
+    if (initialLocation) choose(initialLocation);
+  }, [initialLocation, choose]);
 
   /* Le brouillon suit la carte live tant qu'il n'y a pas de modifications en cours */
   useEffect(() => {
