@@ -259,6 +259,43 @@ export function orderPrefix(locationId?: string): string {
   return 'MC-';
 }
 
+/* ---------- Numérotation par service (déjeuner / dîner, heure de Paris) ----------
+   Les numéros repartent à 1 à chaque service : déjeuner à partir de 10 h,
+   dîner à partir de 17 h (les commandes de nuit, avant 5 h, comptent
+   dans le dîner de la veille). */
+
+function parisOffsetMs(utcMs: number): number {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Paris', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const p: Record<string, string> = {};
+  for (const part of dtf.formatToParts(new Date(utcMs))) p[part.type] = part.value;
+  const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, (+p.hour) % 24, +p.minute, +p.second);
+  return asUtc - utcMs;
+}
+
+/** Début du service en cours (timestamp UTC en ms) — voir le commentaire ci-dessus. */
+export function serviceStart(now = Date.now()): number {
+  const offset = parisOffsetMs(now);
+  const local = new Date(now + offset);
+  const y = local.getUTCFullYear();
+  const m = local.getUTCMonth();
+  const d = local.getUTCDate();
+  const h = local.getUTCHours();
+  let startLocal: number;
+  if (h < 5) {
+    // nuit : toujours le service du soir de la veille
+    startLocal = Date.UTC(y, m, d, 17) - 86_400_000;
+  } else if (h < 17) {
+    startLocal = Date.UTC(y, m, d, 10);
+  } else {
+    startLocal = Date.UTC(y, m, d, 17);
+  }
+  // startLocal est en « heure de Paris » → retrancher l'offset (recalculé à cette heure)
+  return startLocal - parisOffsetMs(startLocal - offset);
+}
+
 /* Applique une promo à un prix de base → prix final arrondi au centime */
 export function promoPrice(base: number, promo?: ProductPromo): number {
   if (!promo || !promo.value) return round2(base);

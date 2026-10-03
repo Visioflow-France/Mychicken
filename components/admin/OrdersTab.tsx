@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Icon, { type IconName } from '@/components/Icon';
 import { useOrders } from '@/lib/orders-store';
 import { useLocationCtx } from '@/lib/location-store';
@@ -116,6 +117,21 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
 
   const active = orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee');
 
+  /* Recherche dans les anciennes commandes : n°, nom, téléphone, adresse */
+  const [search, setSearch] = useState('');
+  const needle = search.trim().toLowerCase();
+  const digits = needle.replace(/\D/g, '');
+  const visible = needle
+    ? orders.filter((o) => {
+        const hay = [o.num, o.customer?.name, o.customer?.phone, o.customer?.address, o.promoCode]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        const phone = (o.customer?.phone || '').replace(/\s/g, '');
+        return hay.includes(needle) || (digits.length >= 4 && phone.includes(digits));
+      })
+    : orders;
+
   return (
     <div className="admin-stack">
       {source === 'demo' && (
@@ -124,6 +140,22 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
           commandes de tous les clients arrivent ici en temps réel.
         </p>
       )}
+
+      <div className="orders-search">
+        <Icon name="phone" size={14} />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher une ancienne commande (n°, nom, téléphone, adresse…)"
+          aria-label="Rechercher une commande"
+        />
+        {search && (
+          <button type="button" className="os-clear" onClick={() => setSearch('')} aria-label="Effacer la recherche">
+            ✕
+          </button>
+        )}
+      </div>
 
       <div className="orders-stats">
         <div className="ostat">
@@ -146,7 +178,13 @@ export default function OrdersTab({ locationId }: { locationId?: string }) {
         </div>
       )}
 
-      {orders.map((o) => (
+      {orders.length > 0 && needle && visible.length === 0 && (
+        <div className="admin-panel">
+          <p className="ap-empty">Aucune commande ne correspond à « {search.trim()} ».</p>
+        </div>
+      )}
+
+      {visible.map((o) => (
         <div className={`order-card st-${o.status}`} key={o.id}>
           <div className="oc-head">
             <b className="oc-num">{o.num}</b>

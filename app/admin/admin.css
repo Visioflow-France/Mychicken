@@ -225,6 +225,14 @@
 .pe-note{font-size:.75rem;color:var(--sand);margin-top:.6rem}
 
 /* ---------- Commandes ---------- */
+/* Recherche d'anciennes commandes */
+.orders-search{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;border-radius:var(--pill);border:1px solid var(--s-22);background:rgba(255,248,225,.05);color:var(--sand)}
+.orders-search:focus-within{border-color:var(--gold)}
+.orders-search input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--cream);font-size:.9rem}
+.orders-search input::placeholder{color:var(--s-40)}
+.os-clear{background:none;border:none;color:var(--sand);cursor:pointer;font-size:.85rem;padding:.15rem .4rem}
+.os-clear:hover{color:var(--gold-light)}
+
 .orders-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
 @media (max-width:680px){.orders-stats{grid-template-columns:1fr}}
 .ostat{

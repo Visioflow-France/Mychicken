@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminDb, getServerMenu } from '@/lib/server/firebase-admin';
 import { ORDERS_COLLECTION } from '@/lib/firebase';
-import { LOCATIONS, clamp, orderPrefix, promoPrice, round2, type Order, type OrderItem, type OrderMode } from '@/lib/data';
+import { LOCATIONS, clamp, orderPrefix, promoPrice, round2, serviceStart, type Order, type OrderItem, type OrderMode } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -117,7 +117,24 @@ export async function POST(req: Request) {
   }
 
   const total = round2(Math.max(0.5, subtotal - discount + fee)); // Stripe : minimum 0,50 €
-  const num = orderPrefix(location.id) + Date.now().toString(36).toUpperCase().slice(-6);
+
+  /* Numérotation par service (déjeuner / dîner) : le compteur repart à 1
+     à chaque service. docId reste unique (base36) pour Firestore, seul
+     le numéro affiché suit le service. */
+  const prefix = orderPrefix(location.id);
+  const docId = prefix + Date.now().toString(36).toUpperCase().slice(-6);
+  const db = await getAdminDb();
+  let serviceNum = 1;
+  if (db) {
+    const start = serviceStart();
+    const snap = await db.collection(ORDERS_COLLECTION).orderBy('createdAt', 'desc').limit(200).get();
+    serviceNum =
+      snap.docs.filter((d) => {
+        const o = d.data() as Partial<Order>;
+        return (!o.locationId || o.locationId === location.id) && typeof o.createdAt === 'number' && o.createdAt >= start;
+      }).length + 1;
+  }
+  const num = `${prefix}${serviceNum}`;
 
   /* ---- 3. Session Stripe Checkout ---- */
   const origin = originOf(req);
@@ -200,9 +217,8 @@ export async function POST(req: Request) {
       },
       stripeSessionId: session.id,
     };
-    const db = await getAdminDb();
     if (db) {
-      await db.collection(ORDERS_COLLECTION).doc(num).set(order);
+      await db.collection(ORDERS_COLLECTION).doc(docId).set(order);
     }
 
     return NextResponse.json({ url: session.url, num });
