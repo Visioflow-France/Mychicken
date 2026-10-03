@@ -71,7 +71,7 @@ export default function ConfidentialitePage() {
               <strong>Google (Firebase)</strong> — hébergement de la carte et des commandes&nbsp;;
             </li>
             <li>
-              <strong>Vercel Inc.</strong> — hébergement du Site.
+              <strong>Cloudflare, Inc.</strong> — hébergement du Site (Cloudflare Workers & CDN) ;
             </li>
           </ul>
           <p>

@@ -116,3 +116,24 @@ components/       → composants du site + components/admin/ (dashboard)
 - Les polices (Cormorant Garamond + Montserrat) sont chargées via `next/font`.
 - Sécurité : écritures Firestore réservées au serveur, mots de passe administrateur
   jamais exposés au client (cookie httpOnly signé), montants Stripe recalculés serveur.
+
+## Déploiement Cloudflare
+
+Le site est adapté pour **Cloudflare Workers** via OpenNext (`@opennextjs/cloudflare`).
+Le serveur n'utilise PAS `firebase-admin` (interdit sur Workers à cause de protobufjs) :
+Firestore est appelé via l'API REST (`lib/server/firestore-rest.ts`), signé avec la clé
+de service — ça marche à la fois en local et sur Workers.
+
+```bash
+npm run preview   # build Worker + test local (http://localhost:8787)
+npm run deploy    # build + déploiement sur Cloudflare
+```
+
+Première fois : `npx wrangler login` (ouvre le navigateur pour connecter ton compte).
+
+Variables à définir sur Cloudflare (dashboard → Workers → my-chicken → Settings →
+Variables, ou `npx wrangler secret put NOM`) : celles de `.env.local`
+(ADMIN_PASSWORD, NEXT_PUBLIC_FIREBASE_*, FIREBASE_SERVICE_ACCOUNT, STRIPE_*…).
+
+Après le déploiement, mettre `NEXT_PUBLIC_SITE_URL=https://ton-domaine` et, dans le
+dashboard Stripe, pointer le webhook vers `https://ton-domaine/api/webhooks/stripe`.

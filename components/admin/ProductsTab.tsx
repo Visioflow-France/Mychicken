@@ -28,6 +28,62 @@ export default function ProductsTab({ draft, mutate }: { draft: MenuData; mutate
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Product | null>(null); // produit en cours d'édition (copie)
   const [isNew, setIsNew] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadInfo, setUploadInfo] = useState('');
+  const [uploadError, setUploadError] = useState('');
+
+  /* ---- Upload quota-friendly : compression WebP côté client ----
+     Max 800 px de large, qualité 0.80 puis décroissante jusqu'à
+     rester sous 150 Ko. L'ancienne image bucket est nettoyée à la
+     publication (sweep côté serveur). */
+  const handleUpload = async (file: File) => {
+    setUploadInfo('');
+    setUploadError('');
+    setUploading(true);
+    try {
+      const bitmap = await createImageBitmap(file);
+      const scale = Math.min(1, 800 / bitmap.width);
+      const w = Math.round(bitmap.width * scale);
+      const h = Math.round(bitmap.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h);
+      bitmap.close();
+
+      // Qualité décroissante jusqu'à passer sous 150 Ko
+      let blob: Blob | null = null;
+      let quality = 0.8;
+      while (quality >= 0.4) {
+        blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', quality));
+        if (blob && blob.size <= 150 * 1024) break;
+        quality -= 0.1;
+      }
+      if (!blob) throw new Error('Compression impossible');
+      if (blob.size > 150 * 1024) {
+        // Dernier recours : on réduit la largeur
+        canvas.width = Math.round(w * 0.7);
+        canvas.height = Math.round(h * 0.7);
+        canvas.getContext('2d')!.drawImage(canvas, 0, 0);
+        blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', 0.7));
+      }
+      if (!blob || blob.size > 150 * 1024) throw new Error('Image trop lourde même compressée');
+
+      const form = new FormData();
+      form.append('file', new File([blob], 'photo.webp', { type: 'image/webp' }));
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+      const data = (await res.json()) as { url?: string; size?: number; error?: string };
+      if (!res.ok || !data.url) throw new Error(data.error || 'Upload refusé');
+
+      setEditing((e) => (e ? { ...e, img: data.url! } : e));
+      setUploadInfo(`WebP ${(blob.size / 1024).toFixed(0)} Ko ✓`);
+      toast('Photo compressée et envoyée !');
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : 'Échec de l\'envoi');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -230,13 +286,35 @@ export default function ProductsTab({ draft, mutate }: { draft: MenuData; mutate
               </div>
 
               <div className="f-group">
-                <label>Lien de l&apos;image</label>
+                <label>Lien de l&apos;image — ou téléverser une photo</label>
                 <input
                   type="text"
                   value={editing.img}
                   onChange={(e) => setEditing({ ...editing, img: e.target.value })}
                   placeholder="https://…"
                 />
+                <div className="upload-row">
+                  <label className="btn btn-ghost small upload-btn">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleUpload(f);
+                        e.target.value = '';
+                      }}
+                    />
+                    📷 Choisir un fichier
+                  </label>
+                  {uploading && <span className="upload-status">Compression &amp; envoi…</span>}
+                  {uploadInfo && <span className="upload-status ok">{uploadInfo}</span>}
+                  {uploadError && <span className="upload-status ko">{uploadError}</span>}
+                </div>
+                <p className="upload-hint">
+                  Compressée automatiquement en WebP (max 800 px, ≤ 150 Ko). L&apos;ancienne
+                  image du bucket est supprimée à la publication.
+                </p>
                 {editing.img && (
                   <span className="ap-thumb big">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -23,25 +23,30 @@ import CategoriesTab from './CategoriesTab';
 import PromosTab from './PromosTab';
 import OrdersTab from './OrdersTab';
 import SettingsTab from './SettingsTab';
+import LocationsTab from './LocationsTab';
+import { useLocationCtx } from '@/lib/location-store';
 
-type Tab = 'products' | 'categories' | 'promos' | 'orders' | 'settings';
+type Tab = 'orders' | 'products' | 'categories' | 'promos' | 'restaurants' | 'settings';
 
 const TABS: { id: Tab; label: string; icon: Parameters<typeof Icon>[0]['name'] }[] = [
+  { id: 'orders', label: 'Commandes', icon: 'bag' },
   { id: 'products', label: 'Carte', icon: 'utensils' },
   { id: 'categories', label: 'Catégories', icon: 'menu' },
   { id: 'promos', label: 'Promos', icon: 'tag' },
-  { id: 'orders', label: 'Commandes', icon: 'bag' },
+  { id: 'restaurants', label: 'Restaurants', icon: 'pin' },
   { id: 'settings', label: 'Réglages', icon: 'scooter' },
 ];
 
 export default function AdminApp() {
   const toast = useToast();
   const { menu, source } = useMenu();
+  const { locations, current, choose, locationId } = useLocationCtx();
   const [authed, setAuthed] = useState<boolean | null>(null); // null = vérification en cours
   const [defaultPassword, setDefaultPassword] = useState(false);
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [tab, setTab] = useState<Tab>('products');
+  const [tab, setTab] = useState<Tab>('orders');
   const [draft, setDraft] = useState<MenuData>(menu);
   const [publishing, setPublishing] = useState(false);
 
@@ -132,17 +137,28 @@ export default function AdminApp() {
           <h1>Espace administrateur</h1>
           <p className="al-sub">My Chicken — gestion de la carte, des promos et des commandes</p>
           {loginError && <p className="al-error">{loginError}</p>}
-          <div className="f-group">
+          <div className="f-group al-pass">
             <label htmlFor="adminPass">Mot de passe</label>
-            <input
-              id="adminPass"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoFocus
-              required
-            />
+            <div className="al-pass-wrap">
+              <input
+                id="adminPass"
+                type={showPass ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoFocus
+                required
+              />
+              <button
+                type="button"
+                className="al-eye"
+                onClick={() => setShowPass((v) => !v)}
+                aria-label={showPass ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                title={showPass ? 'Masquer' : 'Afficher'}
+              >
+                <Icon name={showPass ? 'eyeOff' : 'eye'} size={18} />
+              </button>
+            </div>
           </div>
           <button type="submit" className="btn btn-solid btn-block">
             Entrer
@@ -171,6 +187,21 @@ export default function AdminApp() {
           </div>
         </div>
         <div className="at-right">
+          {/* Où êtes-vous ? — filtre les commandes affichées */}
+          <label className="at-loc" aria-label="Restaurant actif dans ce dashboard">
+            <Icon name="pin" size={13} />
+            <select
+              value={locationId || ''}
+              onChange={(e) => choose(e.target.value)}
+              aria-label="Restaurant sélectionné"
+            >
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.city}
+                </option>
+              ))}
+            </select>
+          </label>
           <a href="/" target="_blank" rel="noreferrer" className="at-link">
             Voir le site <Icon name="arrowRight" size={14} strokeWidth={2.2} />
           </a>
@@ -206,7 +237,8 @@ export default function AdminApp() {
         {tab === 'products' && <ProductsTab draft={draft} mutate={mutate} />}
         {tab === 'categories' && <CategoriesTab draft={draft} mutate={mutate} />}
         {tab === 'promos' && <PromosTab draft={draft} mutate={mutate} />}
-        {tab === 'orders' && <OrdersTab />}
+        {tab === 'orders' && <OrdersTab locationId={current.id} />}
+        {tab === 'restaurants' && <LocationsTab />}
         {tab === 'settings' && <SettingsTab draft={draft} mutate={mutate} onReset={hardReset} />}
       </main>
 

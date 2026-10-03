@@ -7,13 +7,14 @@ import Icon, { type IconName } from './Icon';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/lib/toast';
 import { useMenu } from '@/lib/menu-store';
+import { useLocationCtx } from '@/lib/location-store';
 import { fmt, type Order } from '@/lib/data';
 import { addDemoOrder } from '@/lib/orders-store';
 
-const MODES: { value: string; label: string; icon: IconName }[] = [
+const MODES = (minDelivery: number): { value: string; label: string; icon: IconName }[] => [
   { value: 'takeaway', label: 'À emporter', icon: 'bag' },
   { value: 'dinein', label: 'Sur place', icon: 'utensils' },
-  { value: 'delivery', label: 'Livraison (dès 25\u00a0€)', icon: 'scooter' },
+  { value: 'delivery', label: `Livraison (dès ${minDelivery}\u00a0€)`, icon: 'scooter' },
 ];
 
 const PAYMENTS: { value: 'card' | 'phone'; label: string; hint: string }[] = [
@@ -26,6 +27,7 @@ type SuccessState = { num: string; paid: boolean; total?: number | null };
 export default function CartSection() {
   const { cart, count, total, setQty, remove, clear } = useCart();
   const { menu, source, priceOf, findCode } = useMenu();
+  const { current, locationId, openGate } = useLocationCtx();
   const toast = useToast();
   const [mode, setMode] = useState('takeaway');
   const [payment, setPayment] = useState<'card' | 'phone'>('card');
@@ -38,6 +40,7 @@ export default function CartSection() {
   const nameRef = useRef<HTMLInputElement>(null);
   const addrRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
+  const detailRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   /* Une nouvelle commande efface l'écran de confirmation précédent */
   useEffect(() => {
@@ -63,13 +66,13 @@ export default function CartSection() {
         clear();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch {
-        toast('Impossible de vérifier le paiement — contactez-nous au 07.51.56.59.51');
+        toast(`Impossible de vérifier le paiement — contactez-nous au ${current.phone}`);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const closed = !menu.config.open;
+  const closed = !current.open;
 
   const sub = total;
   const promo = appliedCode ? findCode(appliedCode) : undefined;
@@ -80,8 +83,8 @@ export default function CartSection() {
       ? Math.round(sub * promo!.value) / 100
       : Math.min(promo!.value, sub);
   const discounted = Math.round((sub - discount) * 100) / 100;
-  const fee = mode === 'delivery' ? menu.config.deliveryFee : 0;
-  const lacks = menu.config.minDelivery - discounted;
+  const fee = mode === 'delivery' ? current.deliveryFee : 0;
+  const lacks = current.minDelivery - discounted;
   const deliveryBlocked = mode === 'delivery' && lacks > 0;
 
   const applyCode = () => {
@@ -97,26 +100,66 @@ export default function CartSection() {
 
   const customerData = useCallback(():
     | { ok: false; error: string }
-    | { ok: true; value: { name?: string; phone: string; address?: string; note?: string } } => {
+    | {
+        ok: true;
+        value: {
+          name?: string;
+          phone: string;
+          address?: string;
+          building?: string;
+          door?: string;
+          accessCode?: string;
+          intercom?: string;
+          floor?: string;
+          note?: string;
+        };
+      } => {
     const phone = phoneRef.current?.value.trim() ?? '';
     if (phone.replace(/\D/g, '').length < 9) {
       phoneRef.current?.focus();
       return { ok: false, error: "Merci d'indiquer un téléphone valide" };
     }
-    if (mode === 'delivery' && (addrRef.current?.value.trim() ?? '').length < 8) {
-      addrRef.current?.focus();
-      return { ok: false, error: "Merci d'indiquer votre adresse de livraison" };
+    const name = nameRef.current?.value.trim() ?? '';
+    if (name.length < 3) {
+      nameRef.current?.focus();
+      return { ok: false, error: 'Merci d\u2019indiquer votre nom et prénom' };
     }
+    if (mode === 'delivery') {
+      const addr = addrRef.current?.value.trim() ?? '';
+      if (addr.length < 8) {
+        addrRef.current?.focus();
+        return { ok: false, error: "Merci d'indiquer votre adresse de livraison" };
+      }
+      // L'adresse doit contenir un code postal couvert par le restaurant sélectionné
+      const cpMatch = addr.match(/\b(\d{5})\b/);
+      if (!cpMatch || !current.deliveryZones.includes(cpMatch[1])) {
+        addrRef.current?.focus();
+        return {
+          ok: false,
+          error: `Livraison non couverte à cette adresse — My Chicken ${current.city} livre les codes postaux : ${current.deliveryZones.join(', ')}`,
+        };
+      }
+    }
+    const detail = (k: string) => detailRefs.current[k]?.value.trim() || undefined;
     return {
       ok: true,
       value: {
-        name: nameRef.current?.value.trim() || undefined,
+        name,
         phone,
         address: mode === 'delivery' ? addrRef.current?.value.trim() : undefined,
+        ...(mode === 'delivery'
+          ? {
+              building: detail('building'),
+              door: detail('door'),
+              accessCode: detail('accessCode'),
+              intercom: detail('intercom'),
+              floor: detail('floor'),
+            }
+          : {}),
         note: noteRef.current?.value.trim() || undefined,
       },
     };
-  }, [mode]);
+  }, [mode, current]);
 
   const cartPayload = () =>
     Object.entries(cart).map(([id, qty]) => ({ id, qty }));
@@ -132,7 +175,7 @@ export default function CartSection() {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartPayload(), mode, promoCode: appliedCode || undefined, customer: cust.value }),
+        body: JSON.stringify({ items: cartPayload(), mode, promoCode: appliedCode || undefined, customer: cust.value, locationId }),
       });
       const data = (await res.json()) as { num?: string; order?: Order; firebase?: boolean; error?: string };
       if (!res.ok) throw new Error(data.error || 'Erreur');
@@ -169,7 +212,7 @@ export default function CartSection() {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartPayload(), mode, promoCode: appliedCode || undefined, customer: cust.value }),
+        body: JSON.stringify({ items: cartPayload(), mode, promoCode: appliedCode || undefined, customer: cust.value, locationId }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (res.status === 503 || data.error === 'stripe_not_configured') {
@@ -344,20 +387,20 @@ export default function CartSection() {
                           : 'Objectif livraison atteint'}
                       </span>
                       <b>
-                        {Math.min(Math.round((discounted / menu.config.minDelivery) * 100), 100)}%
+                        {Math.min(Math.round((discounted / current.minDelivery) * 100), 100)}%
                       </b>
                     </div>
                     <div
                       className="dp-track"
                       role="progressbar"
-                      aria-label={`Progression vers le minimum de ${fmt(menu.config.minDelivery)} pour la livraison`}
+                      aria-label={`Progression vers le minimum de ${fmt(current.minDelivery)} pour la livraison`}
                       aria-valuemin={0}
                       aria-valuemax={100}
-                      aria-valuenow={Math.min(Math.round((discounted / menu.config.minDelivery) * 100), 100)}
+                      aria-valuenow={Math.min(Math.round((discounted / current.minDelivery) * 100), 100)}
                     >
                       <div
                         className={`dp-fill${deliveryBlocked ? '' : ' done'}`}
-                        style={{ width: `${Math.min((discounted / menu.config.minDelivery) * 100, 100)}%` }}
+                        style={{ width: `${Math.min((discounted / current.minDelivery) * 100, 100)}%` }}
                       />
                     </div>
                     {!deliveryBlocked && (
@@ -371,8 +414,8 @@ export default function CartSection() {
                 <p className={`sum-note${mode === 'delivery' && deliveryBlocked ? ' warn' : ''}`} id="sumNote">
                   {mode === 'delivery'
                     ? deliveryBlocked
-                      ? `Livraison possible à partir de ${fmt(menu.config.minDelivery)} d'achat.`
-                      : <span className="note-ico"><Icon name="scooter" size={14} /> Livraison disponible à Persan et alentour.</span>
+                      ? `Livraison possible à partir de ${fmt(current.minDelivery)} d'achat.`
+                      : <span className="note-ico"><Icon name="scooter" size={14} /> Livraison par My Chicken {current.city} — {current.postal} et alentour.</span>
                     : ''}
                 </p>
               </div>
@@ -383,9 +426,18 @@ export default function CartSection() {
                     Le restaurant est actuellement fermé — vous pouvez préparer votre commande, elle sera envoyée à la réouverture.
                   </p>
                 )}
+                <div className="order-location">
+                  <Icon name="pin" size={15} />
+                  <span>
+                    Commande préparée par <b>My Chicken {current.city}</b> — {current.address}
+                  </span>
+                  <button type="button" className="ol-change" onClick={openGate}>
+                    Changer
+                  </button>
+                </div>
                 <fieldset>
                   <legend>Mode</legend>
-                  {MODES.map((m) => (
+                  {MODES(current.minDelivery).map((m) => (
                     <label className="radio-opt" key={m.value}>
                       <input
                         type="radio"
@@ -422,27 +474,86 @@ export default function CartSection() {
 
                 {mode === 'delivery' && (
                   <div className="f-group" id="deliveryFields">
-                    <label htmlFor="dAddr">Adresse de livraison</label>
+                    <label htmlFor="dAddr">Adresse de livraison *</label>
                     <input
                       ref={addrRef}
                       id="dAddr"
                       type="text"
-                      placeholder="12 rue des Écoles, 95340 Persan"
+                      required
+                      placeholder={`12 rue des Écoles, ${current.postal} ${current.city}`}
                     />
                   </div>
                 )}
-                <div className="f-group">
-                  <label htmlFor="dName">Votre nom</label>
-                  <input ref={nameRef} id="dName" type="text" placeholder="Prénom Nom" />
+
+                <div className="form-row">
+                  <div className="f-group">
+                    <label htmlFor="dName">Nom et prénom *</label>
+                    <input ref={nameRef} id="dName" type="text" required placeholder="Prénom Nom" />
+                  </div>
+                  <div className="f-group">
+                    <label htmlFor="dPhone">Téléphone *</label>
+                    <input ref={phoneRef} id="dPhone" type="tel" placeholder="06.. .. .. .." required />
+                  </div>
                 </div>
-                <div className="f-group">
-                  <label htmlFor="dPhone">Téléphone</label>
-                  <input ref={phoneRef} id="dPhone" type="tel" placeholder="06.. .. .. .." required />
-                </div>
+
+                {mode === 'delivery' && (
+                  <fieldset className="dl-details">
+                    <legend>Compléments d&apos;adresse <span className="opt">(facultatif)</span></legend>
+                    <div className="form-row">
+                      <div className="f-group">
+                        <label htmlFor="dBuilding">N° de bâtiment</label>
+                        <input
+                          id="dBuilding"
+                          type="text"
+                          ref={(el) => { detailRefs.current.building = el; }}
+                          placeholder="Bât. B"
+                        />
+                      </div>
+                      <div className="f-group">
+                        <label htmlFor="dDoor">N° de porte / appartement</label>
+                        <input
+                          id="dDoor"
+                          type="text"
+                          ref={(el) => { detailRefs.current.door = el; }}
+                          placeholder="Appt 12"
+                        />
+                      </div>
+                    </div>
+                    <div className="form-row">
+                      <div className="f-group">
+                        <label htmlFor="dAccess">Code d&apos;accès</label>
+                        <input
+                          id="dAccess"
+                          type="text"
+                          ref={(el) => { detailRefs.current.accessCode = el; }}
+                          placeholder="Ex. 4512A"
+                        />
+                      </div>
+                      <div className="f-group">
+                        <label htmlFor="dIntercom">Interphone</label>
+                        <input
+                          id="dIntercom"
+                          type="text"
+                          ref={(el) => { detailRefs.current.intercom = el; }}
+                          placeholder="Nom sur l'interphone"
+                        />
+                      </div>
+                    </div>
+                    <div className="f-group">
+                      <label htmlFor="dFloor">Étage</label>
+                      <input
+                        id="dFloor"
+                        type="text"
+                        ref={(el) => { detailRefs.current.floor = el; }}
+                        placeholder="Ex. 3e étage gauche"
+                      />
+                    </div>
+                  </fieldset>
+                )}
                 <div className="f-group">
                   <label htmlFor="dNote">
-                    Note pour la cuisine{' '}
-                    <span style={{ textTransform: 'none', letterSpacing: 0 }}>(facultatif)</span>
+                    Instructions pour le restaurant{' '}
+                    <span style={{ textTransform: 'none', letterSpacing: 0 }}>(facultatif — ex. sans piment, bien cuit…)</span>
                   </label>
                   <textarea
                     ref={noteRef}

@@ -37,8 +37,13 @@ export default function MentionsLegalesPage() {
 
           <h2>Hébergement du site</h2>
           <p>
-            Le Site est hébergé par <strong>Vercel Inc.</strong>, 440 N Barranca Ave #4133, Covina,
-            CA&nbsp;91723, États-Unis — <a href="https://vercel.com" rel="noopener noreferrer" target="_blank">vercel.com</a>.
+            Le Site est hébergé sur l&apos;infrastructure <strong>Cloudflare Workers</strong> de{' '}
+            <strong>Cloudflare, Inc.</strong>, 101 Townsend Street, San Francisco, CA&nbsp;94107,
+            États-Unis —{' '}
+            <a href="https://www.cloudflare.com" rel="noopener noreferrer" target="_blank">cloudflare.com</a>.
+            Cloudflare Corporation Ltd., 25 Canada Square, Canary Wharf, Londres E14&nbsp;5LQ,
+            Royaume-Uni, assure également la mise en cache et la diffusion du contenu via son
+            réseau mondial (CDN). Les données transitent par ce réseau de façon chiffrée (HTTPS).
           </p>
 
           <h2>Propriété intellectuelle</h2>

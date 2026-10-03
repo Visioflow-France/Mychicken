@@ -5,10 +5,13 @@ import './globals.css';
 import { CartProvider } from '@/lib/cart';
 import { ToastProvider } from '@/lib/toast';
 import { MenuProvider } from '@/lib/menu-store';
+import { LocationProvider } from '@/lib/location-store';
 import PromoBanner from '@/components/PromoBanner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ScrollTop from '@/components/ScrollTop';
+import LocationGate from '@/components/LocationGate';
+import ServiceWorker from '@/components/ServiceWorker';
 
 /* Photo « bois brûlé » des sections — chargée en priorité (PNG source, sans recompression) */
 function preloadBackground() {
@@ -46,15 +49,18 @@ const handwriting = Caveat({
 });
 
 export const viewport: Viewport = {
-  themeColor: '#170B05',
+  themeColor: '#26150B',
 };
 
 export const metadata: Metadata = {
-  title: 'My CHICKEN — Fast-food à Persan | Poulet mijoté, menus & livraison',
+  title: 'My CHICKEN — Saint-Mard & Persan | Poulet mijoté, menus & livraison',
   description:
-    "My CHICKEN à Persan : poulet mijoté, menus généreux, sauces maison et livraison dès 25 €. Avenue Jacques Vogt — 07.51.56.59.51.",
+    'My CHICKEN : poulet mijoté, menus généreux, sauces maison et livraison dès 25 €. Saint-Mard (Av. de la Font du Berger) et Persan (Av. Jacques Vogt).',
+  manifest: '/manifest.webmanifest',
+  applicationName: 'My Chicken',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'My Chicken' },
   openGraph: {
-    title: 'My CHICKEN — Fast-food à Persan',
+    title: 'My CHICKEN — Saint-Mard & Persan',
     description:
       'Poulet mijoté 24h, frites maison, sauces préparées chaque jour. Sur place, à emporter ou livré dès 25 €.',
     type: 'website',
@@ -69,13 +75,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ToastProvider>
           <MenuProvider>
-            <CartProvider>
-              <PromoBanner />
-              <Navbar />
-              <main>{children}</main>
-              <Footer />
-              <ScrollTop />
-            </CartProvider>
+            <LocationProvider>
+              <CartProvider>
+                <PromoBanner />
+                <Navbar />
+                <main>{children}</main>
+                <Footer />
+                <ScrollTop />
+                <LocationGate />
+                <ServiceWorker />
+              </CartProvider>
+            </LocationProvider>
           </MenuProvider>
         </ToastProvider>
       </body>

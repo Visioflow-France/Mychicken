@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/server/auth';
-import { getAdminDb } from '@/lib/server/firebase-admin';
-import { MENU_DOC } from '@/lib/firebase';
-import type { MenuData } from '@/lib/data';
+import { getAdminDb, sweepOrphanImages } from '@/lib/server/firebase-admin';
+import { PUBLISHED_DOC } from '@/lib/firebase';
+import { LOCATIONS, type MenuData } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
-/** Publie le menu complet dans Firestore (4 documents, écriture atomique enough pour un menu de resto). */
+/** Publie le menu complet dans le DOCUMENT UNIQUE menu/published
+    (1 doc = 1 lecture par visiteur sur le site public — quota Spark).
+    Supprime aussi du Storage les images devenues orphelines. */
 export async function PUT(req: Request) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
@@ -25,12 +27,25 @@ export async function PUT(req: Request) {
   }
 
   try {
-    await Promise.all([
-      db.doc(MENU_DOC.products).set({ items: body.products }),
-      db.doc(MENU_DOC.categories).set({ items: body.categories }),
-      db.doc(MENU_DOC.settings).set({ config: body.config, banner: body.banner }),
-      db.doc(MENU_DOC.promos).set({ promos: body.promos || {}, codes: body.promoCodes || [] }),
-    ]);
+    // Les fiches restaurants sont préservées (éditées via /api/admin/locations)
+    const existing = await db.doc(PUBLISHED_DOC).get();
+    const prevData = existing.data() as Partial<MenuData> | undefined;
+    const prevImages = (prevData?.products || []).map((p) => p.img).filter(Boolean);
+
+    await db.doc(PUBLISHED_DOC).set({
+      products: body.products,
+      categories: body.categories,
+      config: body.config,
+      banner: body.banner,
+      promos: body.promos || {},
+      promoCodes: body.promoCodes || [],
+      locations: prevData?.locations || LOCATIONS,
+    });
+
+    // Nettoyage Storage : images du bucket plus référencées par la carte
+    const newImages = body.products.map((p) => p.img).filter(Boolean);
+    void sweepOrphanImages(newImages); // asynchrone — ne bloque pas la publication
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('[admin/menu] échec de publication :', e);

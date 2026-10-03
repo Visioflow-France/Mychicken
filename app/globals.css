@@ -6,9 +6,9 @@
    Tous les accents dérivent de tokens via color-mix().
    ================================================================ */
 :root{
-  /* Bois profond — fonds (inchangés) */
-  --wood-975:#170B05; --wood-950:#241209; --wood-900:#3b2417; --wood-850:#3E2723; --wood-700:#5D4037;
-  --wood-650:#5f3c1e; --wood-600:#6B4423; --wood-550:#7a4f2b; --wood-500:#8a5a33;
+  /* Bois profond — fonds (éclaircis de deux crans pour plus de lisibilité) */
+  --wood-975:#3d2617; --wood-950:#4d2f1a; --wood-900:#5e3c24; --wood-850:#654033; --wood-700:#7d584c;
+  --wood-650:#754c28; --wood-600:#815530; --wood-550:#8f5f36; --wood-500:#9d6a40;
 
   /* Accents — mêmes teintes, très vives et pleines (aucun reflet) */
   --ember:#FF6A00;      /* braise vive */
@@ -112,7 +112,8 @@ main{display:block;min-height:70vh}
 .page-head,
 .signature{
   background-color:var(--wood-975);
-  background-image:url('/fond-bois.png');
+  /* Voile chaud translucide par-dessus la photo : éclaircit sans dénaturer */
+  background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),url('/fond-bois.png');
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -261,7 +262,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 @media(min-width:1000px){.grid-3{grid-template-columns:repeat(3,1fr)}.grid-4{grid-template-columns:repeat(4,1fr)}}
 
 .p-card{position:relative;display:flex;flex-direction:column;border-radius:var(--r);overflow:hidden;border:1px solid var(--s-12);
-  background-color:rgba(48,27,15,.45);
+  background-color:rgba(88,54,30,.5);
   -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 /* Transition dédiée (le verre se laitifie en fondant) — doit peser plus
    que le transition générique de .reveal déclaré plus bas */
@@ -346,7 +347,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 /* Barre de catégories : statique, elle ne suit plus le scroll */
 .cat-nav{position:relative;display:flex;gap:.4rem;padding:.8rem max(5%,1rem);overflow-x:auto;scrollbar-width:none;background:color-mix(in srgb,var(--wood-975) 85%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--g-14);-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
 .cat-nav::-webkit-scrollbar{display:none}
-.cat-link{flex-shrink:0;font-size:.66rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);padding:.65rem 1.3rem;border-radius:var(--pill);border:1px solid var(--s-15);transition:color .3s,border-color .3s,background .3s,box-shadow .3s}
+.cat-link{flex-shrink:0;font-family:inherit;font-size:.66rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);padding:.65rem 1.3rem;border-radius:var(--pill);border:1px solid var(--s-15);background:transparent;cursor:pointer;transition:color .3s,border-color .3s,background .3s,box-shadow .3s}
 .cat-link:hover{color:var(--gold-light);border-color:var(--g-45)}
 .cat-link.active{color:var(--txt-on-gold);background:var(--grad-gold);border-color:transparent;box-shadow:0 6px 16px rgba(0,0,0,.3)}
 /* Première section des pages sans bandeau d'en-tête :
@@ -697,3 +698,102 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 /* Choix du mode de paiement */
 .radio-opt .pay-hint{display:block;font-style:normal;font-size:.68rem;letter-spacing:.06em;text-transform:none;color:var(--sand);opacity:.75;margin-top:.1rem}
 .paid-badge{display:inline-flex;align-items:center;gap:.5rem;color:var(--gold-light);font-weight:600}
+
+/* ================================================================
+   CHOIX DU RESTAURANT — popup d'entrée + badge navbar + checkout
+   ================================================================ */
+
+/* --- Popup plein écran --- */
+.lg-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:1.2rem;background:rgba(23,11,5,.78);backdrop-filter:blur(8px);animation:fadeIn .3s ease both}
+.lg-card{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--wood-950);border:1px solid var(--g-25);border-radius:22px;padding:2.2rem 2rem 1.4rem;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.lg-badge{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--grad-gold);color:var(--txt-on-gold);margin-bottom:1rem}
+.lg-card h2{font-family:var(--font-garamond);font-size:1.9rem;color:var(--cream);margin-bottom:.4rem}
+.lg-sub{color:var(--sand);font-size:.92rem;margin-bottom:1.4rem}
+.lg-tabs{display:flex;gap:.5rem;background:var(--wood-900);border-radius:999px;padding:.35rem;margin-bottom:1.2rem}
+.lg-tab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.6rem .8rem;border:0;border-radius:999px;background:transparent;color:var(--sand);font:600 .78rem var(--font-montserrat);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+.lg-tab.active{background:var(--grad-gold);color:var(--txt-on-gold)}
+.lg-choices{display:grid;gap:.8rem}
+.lg-choice{display:flex;flex-direction:column;gap:.25rem;text-align:left;padding:1.1rem 1.2rem;border:1px solid var(--g-25);border-radius:16px;background:var(--wood-900);color:var(--cream);cursor:pointer;transition:border-color .2s,transform .15s}
+.lg-choice:hover{border-color:var(--gold);transform:translateY(-2px)}
+.lg-city{font-family:var(--font-garamond);font-size:1.3rem;color:var(--gold)}
+.lg-addr{font-size:.86rem;color:var(--cream)}
+.lg-hours{font-size:.76rem;color:var(--sand)}
+.lg-go{display:inline-flex;align-items:center;gap:.4rem;margin-top:.5rem;color:var(--gold);font:600 .8rem var(--font-montserrat)}
+.lg-delivery{text-align:left}
+.lg-label{display:block;font:600 .72rem var(--font-montserrat);letter-spacing:.18em;text-transform:uppercase;color:var(--sand);margin-bottom:.5rem}
+.lg-cp-row{display:flex;gap:.6rem}
+.lg-cp-row input{flex:1;background:var(--wood-900);border:1px solid var(--g-25);border-radius:12px;padding:.8rem 1rem;color:var(--cream);font:600 1.15rem var(--font-montserrat);letter-spacing:.35em;text-align:center}
+.lg-cp-row input:focus{outline:2px solid var(--gold)}
+.lg-result{margin-top:1rem;display:flex;gap:.7rem;padding:1rem;border-radius:14px;font-size:.86rem;line-height:1.5}
+.lg-result.ok{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.4);color:var(--cream)}
+.lg-result.ko{background:rgba(230,60,15,.12);border:1px solid rgba(230,60,15,.4);color:var(--cream)}
+.lg-result b{color:var(--gold-light)}
+.lg-continue{margin-top:.6rem}
+.lg-skip{margin-top:1.2rem;background:none;border:0;color:var(--sand);font-size:.78rem;text-decoration:underline;cursor:pointer;opacity:.75}
+.lg-skip:hover{opacity:1}
+
+/* --- Badge restaurant dans la navbar --- */
+.nav-loc{display:inline-flex;align-items:center;gap:.4rem;padding:.42rem .8rem;border:1px solid var(--g-25);border-radius:999px;background:var(--g-08);color:var(--cream);font:600 .74rem var(--font-montserrat);letter-spacing:.05em;cursor:pointer;transition:border-color .2s}
+.nav-loc:hover{border-color:var(--gold)}
+.nav-loc .icon{color:var(--gold)}
+
+/* --- Bandeau restaurant dans le formulaire de commande --- */
+.order-location{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding:.75rem .9rem;margin-bottom:1rem;border:1px solid var(--g-25);border-radius:12px;background:var(--g-06);color:var(--cream);font-size:.82rem}
+.order-location .icon{color:var(--gold);flex:none}
+.order-location b{color:var(--gold-light)}
+.ol-change{margin-left:auto;background:none;border:0;color:var(--gold);font:600 .76rem var(--font-montserrat);text-decoration:underline;cursor:pointer}
+
+/* --- Sélecteur restaurant dans l'admin --- */
+.at-loc{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .6rem;border:1px solid var(--g-25);border-radius:999px;color:var(--gold)}
+.at-loc .icon{color:var(--gold)}
+.at-loc select{background:transparent;border:0;color:var(--cream);font:600 .78rem var(--font-montserrat);cursor:pointer}
+.at-loc select option{color:#241209;background:var(--cream)}
+
+/* --- Footer : bouton adresse cliquable --- */
+.fc-loc{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--g-35);text-underline-offset:3px}
+.fc-loc:hover{color:var(--gold-light)}
+
+/* --- Contact : cartes des deux restaurants --- */
+.contact-locations{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:1.4rem}
+.cl-card{display:flex;gap:.9rem;align-items:flex-start;padding:1.1rem 1.2rem;border:1px solid var(--g-25);border-radius:16px;background:var(--wood-950);color:var(--cream);text-decoration:none;transition:border-color .2s,transform .15s}
+.cl-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.cl-card.active{border-color:var(--gold);box-shadow:0 0 0 1px var(--g-45)}
+.cl-card .icon{color:var(--gold);margin-top:.2rem}
+.cl-card b{color:var(--gold-light);font-family:var(--font-garamond);font-size:1.05rem}
+.cl-card p{font-size:.8rem;color:var(--sand);margin-top:.15rem}
+
+/* --- Champ mot de passe avec œil (connexion admin) --- */
+.al-pass-wrap{position:relative}
+.al-pass-wrap input{width:100%;padding-right:3rem}
+.al-eye{position:absolute;right:.55rem;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:2.1rem;height:2.1rem;border:0;border-radius:9px;background:transparent;color:var(--sand);cursor:pointer;transition:color .2s,background .2s}
+.al-eye:hover{color:var(--gold);background:var(--g-08)}
+
+/* ================================================================
+   CARTE — 2 produits par ligne, à toutes les tailles d'écran
+   (avant : 1 colonne sur mobile, ce qui étirait les cartes)
+   ================================================================ */
+.menu-cat .grid{grid-template-columns:repeat(2,1fr);gap:1.1rem}
+/* 4 produits par ligne sur ordinateur uniquement */
+@media(min-width:1000px){.menu-cat .grid{grid-template-columns:repeat(4,1fr);gap:1.2rem}}
+
+/* Cartes compactes sur petit écran pour que tout tienne bien */
+@media(max-width:639px){
+  .menu-cat .grid{gap:.8rem}
+  .menu-cat .p-card .p-visual{aspect-ratio:4/3}
+  .menu-cat .p-card .p-name{font-size:1rem}
+  .menu-cat .p-card .p-desc{font-size:.74rem}
+  .menu-cat .p-card .p-foot{padding:.6rem .8rem}
+}
+
+/* --- Formulaire : bloc compléments d'adresse (livraison) --- */
+.dl-details{border:1px dashed var(--g-35);border-radius:14px;padding:1rem 1.1rem 1.2rem;margin:0 0 1.1rem}
+.dl-details legend{font:600 .68rem var(--font-montserrat);letter-spacing:.2em;text-transform:uppercase;color:var(--sand);padding:0 .5rem}
+.dl-details .opt{letter-spacing:.04em;text-transform:none;color:var(--sand-deep);font-weight:400}
+
+/* --- Admin : upload d'image produit --- */
+.upload-row{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin-top:.5rem}
+.upload-btn{cursor:pointer}
+.upload-status{font-size:.76rem;color:var(--sand)}
+.upload-status.ok{color:#7bd88f}
+.upload-status.ko{color:#ff8f7a}
+.upload-hint{font-size:.7rem;color:var(--sand-deep);margin-top:.3rem}

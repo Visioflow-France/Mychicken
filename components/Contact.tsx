@@ -4,37 +4,40 @@ import { useRef } from 'react';
 import Reveal from './Reveal';
 import Icon, { type IconName } from './Icon';
 import { useToast } from '@/lib/toast';
-
-const INFOS: { title: string; icon: IconName; alt: string; content: React.ReactNode }[] = [
-  {
-    title: 'Adresse',
-    icon: 'pin',
-    alt: 'Adresse du restaurant',
-    content: <>Avenue Jacques Vogt<br />95340 Persan</>,
-  },
-  {
-    title: 'Téléphone',
-    icon: 'phone',
-    alt: 'Téléphone',
-    content: <a href="tel:+33751565951">07.51.56.59.51</a>,
-  },
-  {
-    title: 'Horaires',
-    icon: 'clock',
-    alt: 'Horaires d\'ouverture',
-    content: <>7j/7 · 11h–14h / 18h–22h30</>,
-  },
-  {
-    title: 'Livraison',
-    icon: 'scooter',
-    alt: 'Livraison à domicile',
-    content: <>Persan &amp; communes alentour, dès 25&nbsp;€ d&apos;achat.</>,
-  },
-];
+import { useLocationCtx } from '@/lib/location-store';
 
 export default function Contact() {
   const toast = useToast();
+  const { current, locations } = useLocationCtx();
   const formRef = useRef<HTMLFormElement>(null);
+
+  const telHref = `tel:+33${current.phone.replace(/\D/g, '').slice(1)}`;
+  const INFOS: { title: string; icon: IconName; alt: string; content: React.ReactNode }[] = [
+    {
+      title: 'Adresse',
+      icon: 'pin',
+      alt: 'Adresse du restaurant',
+      content: <>{current.address}<br />{current.postal} {current.city}</>,
+    },
+    {
+      title: 'Téléphone',
+      icon: 'phone',
+      alt: 'Téléphone',
+      content: <a href={telHref}>{current.phone}</a>,
+    },
+    {
+      title: 'Horaires',
+      icon: 'clock',
+      alt: 'Horaires d\'ouverture',
+      content: <>{current.hours}</>,
+    },
+    {
+      title: 'Livraison',
+      icon: 'scooter',
+      alt: 'Livraison à domicile',
+      content: <>{current.city} &amp; communes alentour ({current.deliveryZones.slice(0, 4).join(', ')}…), dès {current.minDelivery}&nbsp;€ d&apos;achat.</>,
+    },
+  ];
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,11 +99,31 @@ export default function Contact() {
 
         <Reveal className="map-frame">
           <iframe
-            title="My CHICKEN sur la carte — Avenue Jacques Vogt, Persan"
+            title={`My CHICKEN sur la carte — ${current.address}, ${current.city}`}
             loading="lazy"
-            src="https://www.google.com/maps?q=Avenue%20Jacques%20Vogt%2C%2095340%20Persan&output=embed"
+            src={`https://www.google.com/maps?q=${encodeURIComponent(`${current.address}, ${current.postal} ${current.city}`)}&output=embed`}
           />
         </Reveal>
+
+        {/* Les deux adresses, avec itinéraire */}
+        <div className="contact-locations">
+          {locations.map((l) => (
+            <a
+              key={l.id}
+              className={`cl-card${l.id === current.id ? ' active' : ''}`}
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${l.address}, ${l.postal} ${l.city}`)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Icon name="pin" size={16} />
+              <span>
+                <b>My Chicken {l.city}</b>
+                <p>{l.address}, {l.postal} {l.city}</p>
+                <p>{l.phone} · {l.hours}</p>
+              </span>
+            </a>
+          ))}
+        </div>
         </div>
       </div>
     </>

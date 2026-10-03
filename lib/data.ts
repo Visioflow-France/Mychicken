@@ -30,6 +30,50 @@ export type SiteConfig = {
   open: boolean; // restaurant ouvert à la commande
 };
 
+/* Restaurant physique — la carte est commune, ces infos sont par établissement */
+export type RestaurantLocation = {
+  id: string;
+  name: string;
+  address: string;
+  postal: string;
+  city: string;
+  phone: string;
+  hours: string;
+  deliveryFee: number;
+  minDelivery: number;
+  open: boolean;
+  deliveryZones: string[]; // codes postaux livrés
+};
+
+export const LOCATIONS: RestaurantLocation[] = [
+  {
+    id: 'saint-mard',
+    name: 'My Chicken Saint-Mard',
+    address: 'Av. de la Font du Berger',
+    postal: '77230',
+    city: 'Saint-Mard',
+    phone: '07 51 50 39 00',
+    hours: '7j/7 · 11h–14h / 18h–22h30',
+    deliveryFee: 2.9,
+    minDelivery: 25,
+    open: true,
+    deliveryZones: ['77230', '77410', '77270', '77144'],
+  },
+  {
+    id: 'persan',
+    name: 'My Chicken Persan',
+    address: 'Av. Jacques Vogt',
+    postal: '95340',
+    city: 'Persan',
+    phone: '07 51 56 59 51',
+    hours: '7j/7 · 11h–14h / 18h–22h30',
+    deliveryFee: 2.9,
+    minDelivery: 25,
+    open: true,
+    deliveryZones: ['95340', '95420', '95150', '95270', '95390'],
+  },
+];
+
 export type Product = {
   id: string;
   name: string;
@@ -48,6 +92,7 @@ export type MenuData = {
   promoCodes: PromoCode[];
   banner: Banner;
   config: SiteConfig;
+  locations?: RestaurantLocation[]; // fiches des deux restaurants (doc unique)
 };
 
 /* ---------- Commandes ---------- */
@@ -60,6 +105,7 @@ export type Order = {
   id: string;
   num: string;
   createdAt: number;
+  locationId?: string; // restaurant qui traite la commande
   mode: OrderMode;
   payment: 'card' | 'phone';
   paid: boolean;
@@ -70,7 +116,18 @@ export type Order = {
   fee: number;
   total: number;
   promoCode?: string;
-  customer: { name?: string; phone: string; address?: string; note?: string };
+  customer: {
+    name?: string;
+    phone: string;
+    address?: string;
+    /* Détails de livraison (optionnels) */
+    building?: string;
+    door?: string;
+    accessCode?: string;
+    intercom?: string;
+    floor?: string;
+    note?: string;
+  };
   stripeSessionId?: string;
 };
 
@@ -103,7 +160,11 @@ export const PRODUCTS: Product[] = [
   { id: 'menu-mixte', name: 'Menu Mixte', price: 10.5, cat: 'menus', img: `${F}7d24cd680344.jpg`, desc: '1 cuisse + 2 pilons + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-filet', name: 'Menu Filet', price: 7.9, cat: 'menus', img: `${F}9b58d0eb71ca.jpg`, desc: '1 filet de poulet + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-tiers', name: 'Menu Tiers de Poulet', price: 10.9, cat: 'menus', img: `${F}e4148192fba9.jpg`, desc: '1 tiers de poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-familial', name: 'Menu Familial', price: 25, cat: 'menus', img: `${F}a1fc59d6204b.jpg`, desc: '2 demi-poulets + 2 accompagnements + 1 boisson 1,5 L' },
+  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', popular: true, img: `${F}4c5945eff50c.jpg`, desc: 'Tasty Crousty taille M' },
+  { id: 'tasty-crousty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Tasty Crousty taille L' },
+  { id: 'tasty-crousty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Tasty Crousty taille XL' },
+  { id: 'menu-familial', name: 'Menu Familial', price: 30, cat: 'menus', img: `${F}a1fc59d6204b.jpg`, desc: '4 demi-poulets + 4 accompagnements + 1 boisson 1,5 L' },
+  { id: 'menu-brick', name: 'Menu Brick', price: 8.5, cat: 'menus', img: `${F}853664036f2c.jpeg`, desc: '2 bricks poulet + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-special', name: 'Menu Spécial', price: 25, cat: 'menus', popular: true, img: `${F}02f572b69cfe.jpg`, desc: '1 poulet entier braisé + 2 accompagnements + 1 boisson 1,5 L' },
   { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'menus', img: `${F}08e205722e55.jpg`, desc: 'Servi avec fromage, crudités et une sauce maison. Au choix : chicken braisé, merguez ou kefta. Grillé au feu de bois.' },
 
@@ -179,6 +240,7 @@ export const DEFAULT_MENU: MenuData = {
   promoCodes: [],
   banner: { active: false, text: '' },
   config: { deliveryFee: 2.9, minDelivery: 25, open: true },
+  locations: LOCATIONS,
 };
 
 /* Compatibilité : l'ancien import CONFIG reste valable */
@@ -189,6 +251,13 @@ export const CONFIG = {
 
 export const byId = (id: string) => PRODUCTS.find((p) => p.id === id);
 export const byIdIn = (menu: MenuData, id: string) => menu.products.find((p) => p.id === id);
+
+/** Préfixe du numéro de commande selon le restaurant (SM-… / PS-…). */
+export function orderPrefix(locationId?: string): string {
+  if (locationId === 'saint-mard') return 'SM-';
+  if (locationId === 'persan') return 'PS-';
+  return 'MC-';
+}
 
 /* Applique une promo à un prix de base → prix final arrondi au centime */
 export function promoPrice(base: number, promo?: ProductPromo): number {

@@ -1,15 +1,19 @@
 'use client';
 
 /* ================================================================
-   MenuProvider — la carte EN TEMPS RÉEL pour tout le site.
-
-   • Firebase configuré → abonnements onSnapshot Firestore : chaque
-     modification publiée depuis /admin apparaît instantanément chez
-     tous les visiteurs (prix, promos, produits épuisés, bandeau…).
-   • Sinon → MODE DÉMO : les modifications faites dans /admin sont
-     enregistrées dans le localStorage (clé mc_menu_overrides) et
-     synchronisées entre les onglets ouverts du même navigateur.
-     Pratique pour tester le dashboard en attendant Firebase.
+   MenuProvider — la carte pour tout le site, OPTIMISÉ QUOTA SPARK.
+   • Firebase configuré → UNE SEULE lecture Firestore par visite :
+     le menu complet (produits, catégories, promos, réglages,
+     restaurants) vit dans le document unique « menu/published ».
+     Résultat mis en cache par onglet (sessionStorage) → navigation
+     dans le site = 0 lecture supplémentaire.
+     PAS de onSnapshot ici : le temps réel est réservé aux commandes
+     du dashboard (onSnapshot sur « orders » uniquement).
+     Un rafraîchissement unique a lieu quand l'admin publie
+     (événement MENU_UPDATED_EVENT après appel API réussi).
+   • Firebase absent → MODE DÉMO : overrides dans le localStorage
+     (clé mc_menu_overrides), synchronisés entre onglets.
+   • En cas d'erreur réseau → valeurs embarquées de lib/data.ts.
    ================================================================ */
 
 import {
@@ -18,11 +22,10 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import {
   DEFAULT_MENU,
   promoPrice,
@@ -31,7 +34,7 @@ import {
   type ProductPromo,
   type PromoCode,
 } from './data';
-import { firebaseEnabled, getClientDb, MENU_DOC } from './firebase';
+import { firebaseEnabled, getClientDb, PUBLISHED_DOC } from './firebase';
 
 export type LivePrice = { price: number; oldPrice: number | null; promo?: ProductPromo };
 
@@ -50,6 +53,10 @@ const MenuContext = createContext<MenuContextValue | null>(null);
 
 export const LOCAL_MENU_KEY = 'mc_menu_overrides';
 export const MENU_UPDATED_EVENT = 'mc-menu-updated';
+
+/* Cache session du menu publié : la visite complète ne coûte qu'1 lecture */
+const MENU_CACHE_KEY = 'mc_menu_cache';
+const MENU_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 export function readLocalMenu(): MenuData | null {
   try {
@@ -73,12 +80,41 @@ export function clearLocalMenu() {
   window.dispatchEvent(new CustomEvent(MENU_UPDATED_EVENT));
 }
 
+/* Rafraîchit le menu publié (1 lecture) et vide le cache — appelé
+   après une publication admin réussie. */
+export function refreshPublishedMenu() {
+  try {
+    sessionStorage.removeItem(MENU_CACHE_KEY);
+  } catch {
+    /* session indisponible */
+  }
+  window.dispatchEvent(new CustomEvent(MENU_UPDATED_EVENT));
+}
+
+function readCache(): MenuData | null {
+  try {
+    const raw = sessionStorage.getItem(MENU_CACHE_KEY);
+    if (!raw) return null;
+    const { at, menu } = JSON.parse(raw) as { at: number; menu: MenuData };
+    if (!at || Date.now() - at > MENU_CACHE_TTL || !Array.isArray(menu?.products)) return null;
+    return { ...DEFAULT_MENU, ...menu };
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(menu: MenuData) {
+  try {
+    sessionStorage.setItem(MENU_CACHE_KEY, JSON.stringify({ at: Date.now(), menu }));
+  } catch {
+    /* quota session — on vit sans cache */
+  }
+}
+
 /* ---------- Provider ---------- */
 
 export function MenuProvider({ children }: { children: ReactNode }) {
   const [menu, setMenu] = useState<MenuData>(DEFAULT_MENU);
-  // Hydratation : à true dès que la source (Firestore ou localStorage) a répondu
-  const [loaded, setLoaded] = useState(!firebaseEnabled);
   const source: 'firebase' | 'demo' = firebaseEnabled ? 'firebase' : 'demo';
 
   useEffect(() => {
@@ -86,7 +122,6 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       // MODE DÉMO — écoute le localStorage (autres onglets + même onglet)
       const sync = () => setMenu(readLocalMenu() || DEFAULT_MENU);
       sync();
-      setLoaded(true);
       window.addEventListener('storage', sync);
       window.addEventListener(MENU_UPDATED_EVENT, sync);
       return () => {
@@ -95,43 +130,52 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    // MODE FIREBASE — 4 abonnements temps réel
+    // MODE FIREBASE — UNE lecture unique du document menu/published
     const db = getClientDb();
     if (!db) return;
-    const unsubs = [
-      onSnapshot(
-        doc(db, MENU_DOC.products),
-        (s) => setMenu((m) => ({ ...m, products: (s.data()?.items as Product[]) || m.products })),
-        (e) => console.error('[menu] products:', e)
-      ),
-      onSnapshot(
-        doc(db, MENU_DOC.categories),
-        (s) => setMenu((m) => ({ ...m, categories: s.data()?.items || m.categories })),
-        (e) => console.error('[menu] categories:', e)
-      ),
-      onSnapshot(
-        doc(db, MENU_DOC.settings),
-        (s) =>
-          setMenu((m) => ({
-            ...m,
-            config: { ...m.config, ...(s.data()?.config as MenuData['config']) },
-            banner: { ...m.banner, ...(s.data()?.banner as MenuData['banner']) },
-          })),
-        (e) => console.error('[menu] settings:', e)
-      ),
-      onSnapshot(
-        doc(db, MENU_DOC.promos),
-        (s) =>
-          setMenu((m) => ({
-            ...m,
-            promos: s.data()?.promos || {},
-            promoCodes: s.data()?.codes || [],
-          })),
-        (e) => console.error('[menu] promos:', e)
-      ),
-    ];
-    setLoaded(true);
-    return () => unsubs.forEach((u) => u());
+
+    let cancelled = false;
+    const load = async () => {
+      const cached = readCache();
+      if (cached) {
+        if (!cancelled) setMenu(cached);
+        return;
+      }
+      try {
+        const snap = await getDoc(doc(db, PUBLISHED_DOC));
+        if (cancelled) return;
+        const d = snap.data() as Partial<MenuData> | undefined;
+        if (d && Array.isArray(d.products) && d.products.length) {
+          const merged: MenuData = {
+            ...DEFAULT_MENU,
+            products: d.products,
+            categories: d.categories || DEFAULT_MENU.categories,
+            promos: d.promos || {},
+            promoCodes: d.promoCodes || [],
+            config: { ...DEFAULT_MENU.config, ...d.config },
+            banner: { ...DEFAULT_MENU.banner, ...d.banner },
+            locations: d.locations || DEFAULT_MENU.locations,
+          };
+          setMenu(merged);
+          writeCache(merged);
+        } else {
+          // Doc jamais publié : valeurs embarquées du flyer
+          setMenu(DEFAULT_MENU);
+        }
+      } catch (e) {
+        // Erreur réseau temporaire → fallback embarqué, aucune boucle
+        console.error('[menu] lecture impossible, menu embarqué utilisé :', e);
+      }
+    };
+    load();
+
+    // Rafraîchissement ponctuel (publication admin) — 1 re-lecture max
+    const onRefresh = () => load();
+    window.addEventListener(MENU_UPDATED_EVENT, onRefresh);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(MENU_UPDATED_EVENT, onRefresh);
+    };
   }, []);
 
   const effective = useCallback(
@@ -163,11 +207,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     [menu, source, effective, priceOf, findCode]
   );
 
-  return (
-    <MenuContext.Provider value={value}>
-      {loaded ? children : children /* on rend toujours : DEFAULT_MENU est affiché pendant le chargement */}
-    </MenuContext.Provider>
-  );
+  return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;
 }
 
 export function useMenu(): MenuContextValue {

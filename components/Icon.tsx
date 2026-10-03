@@ -24,7 +24,9 @@ export type IconName =
   | 'flame'
   | 'arrowUp'
   | 'arrowDown'
-  | 'tag';
+  | 'tag'
+  | 'eye'
+  | 'eyeOff';
 
 const PATHS: Record<IconName, ReactNode> = {
   pin: (
@@ -94,6 +96,19 @@ const PATHS: Record<IconName, ReactNode> = {
     <>
       <path d="M20.6 13.4 11 3.8A2 2 0 0 0 9.6 3.2H5a2 2 0 0 0-2 2v4.6c0 .5.2 1 .6 1.4l9.6 9.6a2 2 0 0 0 2.8 0l4.6-4.6a2 2 0 0 0 0-2.8Z" />
       <circle cx="7.8" cy="7.8" r="1.4" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  eyeOff: (
+    <>
+      <path d="M4 4l16 16" />
+      <path d="M9.9 5.9A9.4 9.4 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17.5 17.5 0 0 1-3.2 3.9M6.6 7.9A17 17 0 0 0 2.5 12S6 18.5 12 18.5a9.3 9.3 0 0 0 4-.9" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
     </>
   ),
 };

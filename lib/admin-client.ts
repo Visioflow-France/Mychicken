@@ -9,8 +9,9 @@
    ================================================================ */
 
 import { firebaseEnabled } from './firebase';
-import type { MenuData, OrderStatus } from './data';
-import { writeLocalMenu } from './menu-store';
+import type { MenuData, OrderStatus, RestaurantLocation } from './data';
+import { writeLocalMenu, refreshPublishedMenu } from './menu-store';
+import { writeLocalLocations } from './location-store';
 import { updateDemoOrder } from './orders-store';
 
 async function api(path: string, init: RequestInit): Promise<Record<string, unknown>> {
@@ -20,7 +21,7 @@ async function api(path: string, init: RequestInit): Promise<Record<string, unkn
   return json;
 }
 
-/** Publie le menu complet (carte, catégories, promos, codes, réglages). */
+/** Publie le menu complet (doc unique menu/published). */
 export async function publishMenu(menu: MenuData): Promise<void> {
   if (firebaseEnabled) {
     await api('/api/admin/menu', {
@@ -28,6 +29,8 @@ export async function publishMenu(menu: MenuData): Promise<void> {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(menu),
     });
+    // Une SEULE re-lecture du doc publié pour rafraîchir les écrans
+    refreshPublishedMenu();
   } else {
     writeLocalMenu(menu);
   }
@@ -40,6 +43,20 @@ export async function resetMenu(): Promise<void> {
   } else {
     localStorage.removeItem('mc_menu_overrides');
     window.dispatchEvent(new CustomEvent('mc-menu-updated'));
+  }
+}
+
+/** Publie les fiches des deux restaurants (dans le doc unique). */
+export async function publishLocations(locations: RestaurantLocation[]): Promise<void> {
+  if (firebaseEnabled) {
+    await api('/api/admin/locations', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ locations }),
+    });
+    refreshPublishedMenu();
+  } else {
+    writeLocalLocations(locations);
   }
 }
 

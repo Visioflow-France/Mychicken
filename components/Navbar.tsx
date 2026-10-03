@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/lib/cart';
+import { useLocationCtx } from '@/lib/location-store';
 import Icon from './Icon';
 
 const LINKS = [
@@ -14,6 +15,7 @@ const LINKS = [
 
 export default function Navbar() {
   const { count } = useCart();
+  const { current, locationId, openGate } = useLocationCtx();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -69,6 +71,17 @@ export default function Navbar() {
 
         {/* CTA Commander + panier */}
         <div className="nav-end">
+          <button
+            className="nav-loc"
+            onClick={() => {
+              closeMenu();
+              openGate();
+            }}
+            title={`Restaurant sélectionné : ${current?.name || 'à choisir'}`}
+          >
+            <Icon name="pin" size={14} />
+            <span>{locationId ? current.city : 'Choisir'}</span>
+          </button>
           <Link
             href="/commander"
             className={`nav-cta${pathname === '/commander' ? ' active' : ''}`}

@@ -17,3 +17,7 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# build open-next / cloudflare
+/.open-next
+/.wrangler

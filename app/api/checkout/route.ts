@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminDb, getServerMenu } from '@/lib/server/firebase-admin';
 import { ORDERS_COLLECTION } from '@/lib/firebase';
-import { clamp, promoPrice, round2, type Order, type OrderItem, type OrderMode } from '@/lib/data';
+import { LOCATIONS, clamp, orderPrefix, promoPrice, round2, type Order, type OrderItem, type OrderMode } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,18 @@ type CheckoutBody = {
   items: { id: string; qty: number }[];
   mode: OrderMode;
   promoCode?: string;
-  customer: { name?: string; phone: string; address?: string; note?: string };
+  locationId?: string;
+  customer: {
+    name?: string;
+    phone: string;
+    address?: string;
+    building?: string;
+    door?: string;
+    accessCode?: string;
+    intercom?: string;
+    floor?: string;
+    note?: string;
+  };
 };
 
 function originOf(req: Request): string {
@@ -52,6 +63,10 @@ export async function POST(req: Request) {
   if (phone.replace(/\D/g, '').length < 9) {
     return NextResponse.json({ error: 'Téléphone invalide' }, { status: 400 });
   }
+  const custName = (body.customer?.name || '').trim();
+  if (custName.length < 3) {
+    return NextResponse.json({ error: 'Nom et prénom requis' }, { status: 400 });
+  }
   const mode: OrderMode = ['takeaway', 'dinein', 'delivery'].includes(body.mode) ? body.mode : 'takeaway';
   if (mode === 'delivery' && (body.customer?.address || '').trim().length < 8) {
     return NextResponse.json({ error: 'Adresse de livraison manquante' }, { status: 400 });
@@ -64,7 +79,8 @@ export async function POST(req: Request) {
 
   /* ---- 1. Panier recalculé côté serveur ---- */
   const menu = await getServerMenu();
-  if (!menu.config.open) {
+  const location = LOCATIONS.find((l) => l.id === body.locationId) || LOCATIONS[0];
+  if (!location.open) {
     return NextResponse.json({ error: 'Le restaurant est fermé pour le moment' }, { status: 403 });
   }
 
@@ -80,9 +96,9 @@ export async function POST(req: Request) {
   }
 
   const subtotal = round2(items.reduce((s, it) => s + it.price * it.qty, 0));
-  const fee = mode === 'delivery' ? menu.config.deliveryFee : 0;
-  if (mode === 'delivery' && subtotal < menu.config.minDelivery) {
-    return NextResponse.json({ error: `Livraison possible dès ${menu.config.minDelivery} € d'achat` }, { status: 400 });
+  const fee = mode === 'delivery' ? location.deliveryFee : 0;
+  if (mode === 'delivery' && subtotal < location.minDelivery) {
+    return NextResponse.json({ error: `Livraison possible dès ${location.minDelivery} € d'achat` }, { status: 400 });
   }
 
   /* ---- 2. Code promo (validé côté serveur) ---- */
@@ -101,7 +117,7 @@ export async function POST(req: Request) {
   }
 
   const total = round2(Math.max(0.5, subtotal - discount + fee)); // Stripe : minimum 0,50 €
-  const num = 'MC-' + Date.now().toString(36).toUpperCase().slice(-6);
+  const num = orderPrefix(location.id) + Date.now().toString(36).toUpperCase().slice(-6);
 
   /* ---- 3. Session Stripe Checkout ---- */
   const origin = originOf(req);
@@ -147,7 +163,7 @@ export async function POST(req: Request) {
         ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
         success_url: `${origin}/commander?paid=1&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/commander?canceled=1`,
-        metadata: { num, phone, mode },
+        metadata: { num, phone, mode, locationId: location.id },
       },
       stripeAccount() ? { stripeAccount: stripeAccount() } : undefined
     );
@@ -156,6 +172,7 @@ export async function POST(req: Request) {
     const order: Omit<Order, 'id'> = {
       num,
       createdAt: Date.now(),
+      locationId: location.id,
       mode,
       payment: 'card',
       paid: false, // confirmé par le webhook Stripe
@@ -167,9 +184,18 @@ export async function POST(req: Request) {
       total,
       ...(appliedCode ? { promoCode: appliedCode } : {}),
       customer: {
-        name: body.customer?.name?.trim() || undefined,
+        name: custName,
         phone,
         address: mode === 'delivery' ? body.customer?.address?.trim() : undefined,
+        ...(mode === 'delivery'
+          ? {
+              building: body.customer?.building?.trim() || undefined,
+              door: body.customer?.door?.trim() || undefined,
+              accessCode: body.customer?.accessCode?.trim() || undefined,
+              intercom: body.customer?.intercom?.trim() || undefined,
+              floor: body.customer?.floor?.trim() || undefined,
+            }
+          : {}),
         note: body.customer?.note?.trim() || undefined,
       },
       stripeSessionId: session.id,

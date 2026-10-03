@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ProductCard from './ProductCard';
 import AddOptions from './AddOptions';
 import Reveal from './Reveal';
@@ -38,24 +38,14 @@ const SIGNATURE_DEFS: { id: string; forText: string; lines: string[]; solid: boo
 
 export default function MenuSection() {
   const { menu, effective } = useMenu();
-  const [activeCat, setActiveCat] = useState<string>(menu.categories[0]?.id || 'menus');
+  /* 'all' = toute la carte ; sinon id de catégorie — seule la catégorie
+     choisie est affichée, directement sous la barre de catégories. */
+  const [activeCat, setActiveCat] = useState<string>('all');
   const [askProduct, setAskProduct] = useState<Product | null>(null);
   /* Bouton « Ajouter » du menu signature sur lequel la bulle s'ancrera */
   const [askAnchor, setAskAnchor] = useState<HTMLButtonElement | null>(null);
 
-  /* Scrollspy de la barre de catégories — réinstallé à chaque changement de carte */
-  useEffect(() => {
-    const catSpy = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((en) => {
-          if (en.isIntersecting) setActiveCat(en.target.id.replace('cat-', ''));
-        });
-      },
-      { rootMargin: '-30% 0px -60% 0px' }
-    );
-    document.querySelectorAll('.menu-cat').forEach((el) => catSpy.observe(el));
-    return () => catSpy.disconnect();
-  }, [menu.categories, menu.products]);
+  const visibleCats = activeCat === 'all' ? menu.categories : menu.categories.filter((c) => c.id === activeCat);
 
   const signatures = SIGNATURE_DEFS.map((def) => {
     const p = byIdIn(menu, def.id);
@@ -134,20 +124,26 @@ export default function MenuSection() {
       )}
 
       <nav className="cat-nav" aria-label="Catégories de la carte">
+        <button
+          className={`cat-link${activeCat === 'all' ? ' active' : ''}`}
+          onClick={() => setActiveCat('all')}
+        >
+          Tout
+        </button>
         {menu.categories.map((c) => (
-          <a
+          <button
             key={c.id}
-            href={`#cat-${c.id}`}
             className={`cat-link${activeCat === c.id ? ' active' : ''}`}
+            onClick={() => setActiveCat(c.id)}
           >
             {c.label}
-          </a>
+          </button>
         ))}
       </nav>
 
       <div id="menuCats" className="bg-bois">
         <div className="container">
-          {menu.categories.map((c) => (
+          {visibleCats.map((c) => (
             <div className="menu-cat" id={`cat-${c.id}`} key={c.id}>
               <div className="mc-head">
                 <span className="mc-num">— {c.num}</span>

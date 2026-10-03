@@ -1,0 +1,23 @@
+{
+  // Configuration Cloudflare Workers — déploiement du site My Chicken
+  // via @opennextjs/cloudflare (adaptateur officiel Next.js → Workers).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "my-chicken",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets"
+  },
+  // Variables d'environnement publiques (visibles côté client).
+  // Les secrets (ADMIN_PASSWORD, STRIPE_SECRET_KEY, FIREBASE_SERVICE_ACCOUNT…)
+  // se définissent avec :  npx wrangler secret put NOM
+  // ou dans le dashboard Cloudflare → Workers → Settings → Variables.
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://my-chicken.claytonmicillo2009.workers.dev",
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyCQ6HW4hg30rqaG9g92bFwGWVTucjL2nO0",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "mychicken-b3edf",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "mychicken-b3edf.firebaseapp.com",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "mychicken-b3edf.firebasestorage.app"
+  }
+}

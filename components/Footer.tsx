@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import Icon from './Icon';
+import { useLocationCtx } from '@/lib/location-store';
 
 /* Petit coq doré au trait — signature du footer */
 function RoosterMark({ size = 46 }: { size?: number }) {
@@ -65,6 +68,8 @@ const facebookIcon = (
    fond photo (frites / poulet), coq doré + logo script, 4 colonnes de liens,
    tirets dorés, note manuscrite et icônes sociales. */
 export default function Footer() {
+  const { current, openGate } = useLocationCtx();
+  const telHref = `tel:+33${current.phone.replace(/\D/g, '').slice(1)}`;
   return (
     <footer className="footer">
       <div className="container">
@@ -100,9 +105,9 @@ export default function Footer() {
               <ul>
                 <li><Link href="/commander">Sur place</Link></li>
                 <li><Link href="/commander">À emporter</Link></li>
-                <li><Link href="/commander">Livraison (dès 25&nbsp;€)</Link></li>
+                <li><Link href="/commander">Livraison (dès {current.minDelivery}&nbsp;€)</Link></li>
                 <li><Link href="/commander">Mon panier</Link></li>
-                <li><a href="tel:+33751565951">Par téléphone</a></li>
+                <li><a href={telHref}>Par téléphone</a></li>
               </ul>
             </div>
             <div className="fc-col fc-infos">
@@ -110,19 +115,21 @@ export default function Footer() {
               <ul>
                 <li>
                   <span className="fc-ico"><Icon name="pin" size={15} /></span>
-                  <span>Avenue Jacques Vogt, 95340 Persan</span>
+                  <button className="fc-loc" onClick={openGate} title="Changer de restaurant">
+                    {current.address}, {current.postal} {current.city}
+                  </button>
                 </li>
                 <li>
                   <span className="fc-ico"><Icon name="clock" size={15} /></span>
-                  <span>7j/7 · 11h–14h / 18h–22h30</span>
+                  <span>{current.hours}</span>
                 </li>
                 <li>
                   <span className="fc-ico"><Icon name="phone" size={15} /></span>
-                  <a href="tel:+33751565951">07.51.56.59.51</a>
+                  <a href={telHref}>{current.phone}</a>
                 </li>
                 <li>
                   <span className="fc-ico"><Icon name="scooter" size={15} /></span>
-                  <span>Livraison Persan &amp; alentours</span>
+                  <span>Livraison {current.city} &amp; alentours</span>
                 </li>
               </ul>
             </div>
@@ -152,7 +159,9 @@ export default function Footer() {
           © <span suppressHydrationWarning>{new Date().getFullYear()}</span>{' '}
           <b>MY CHICKEN</b> — SASU au capital de 1&nbsp;000&nbsp;€ · RCS Meaux 928&nbsp;281&nbsp;278 · TVA FR36928281278
         </p>
-        <p className="fb-sub">Avenue Jacques Vogt, 95340 Persan · 07.51.56.59.51 · Ouvert 7j/7</p>
+        <p className="fb-sub">
+          Saint-Mard — Av. de la Font du Berger · Persan — Av. Jacques Vogt · Ouvert 7j/7
+        </p>
       </div>
     </footer>
   );

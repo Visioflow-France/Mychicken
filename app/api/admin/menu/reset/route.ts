@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/server/auth';
-import { getAdminDb } from '@/lib/server/firebase-admin';
-import { MENU_DOC } from '@/lib/firebase';
+import { getAdminDb, sweepOrphanImages } from '@/lib/server/firebase-admin';
+import { PUBLISHED_DOC } from '@/lib/firebase';
 import { DEFAULT_MENU } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
-/** Remet la carte Firestore aux valeurs d'origine du flyer. */
+/** Remet la carte du doc unique menu/published aux valeurs d'origine du flyer. */
 export async function POST(req: Request) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
@@ -16,12 +16,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Firebase non configuré sur le serveur' }, { status: 503 });
   }
   try {
-    await Promise.all([
-      db.doc(MENU_DOC.products).set({ items: DEFAULT_MENU.products }),
-      db.doc(MENU_DOC.categories).set({ items: DEFAULT_MENU.categories }),
-      db.doc(MENU_DOC.settings).set({ config: DEFAULT_MENU.config, banner: DEFAULT_MENU.banner }),
-      db.doc(MENU_DOC.promos).set({ promos: {}, codes: [] }),
-    ]);
+    const existing = await db.doc(PUBLISHED_DOC).get();
+    const prevData = existing.data() as Partial<typeof DEFAULT_MENU> | undefined;
+
+    await db.doc(PUBLISHED_DOC).set({ ...DEFAULT_MENU });
+
+    // Les images du bucket ne sont plus référencées par les valeurs du flyer
+    void sweepOrphanImages(DEFAULT_MENU.products.map((p) => p.img).filter(Boolean));
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('[admin/menu/reset] :', e);
