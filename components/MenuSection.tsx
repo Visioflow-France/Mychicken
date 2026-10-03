@@ -38,14 +38,14 @@ const SIGNATURE_DEFS: { id: string; forText: string; lines: string[]; solid: boo
 
 export default function MenuSection() {
   const { menu, effective } = useMenu();
-  /* 'all' = toute la carte ; sinon id de catégorie — seule la catégorie
-     choisie est affichée, directement sous la barre de catégories. */
-  const [activeCat, setActiveCat] = useState<string>('all');
+  /* Seule la catégorie choisie est affichée, directement sous la barre
+     de catégories (par défaut : la première). */
+  const [activeCat, setActiveCat] = useState<string>(menu.categories[0]?.id || 'menus');
   const [askProduct, setAskProduct] = useState<Product | null>(null);
   /* Bouton « Ajouter » du menu signature sur lequel la bulle s'ancrera */
   const [askAnchor, setAskAnchor] = useState<HTMLButtonElement | null>(null);
 
-  const visibleCats = activeCat === 'all' ? menu.categories : menu.categories.filter((c) => c.id === activeCat);
+  const visibleCats = menu.categories.filter((c) => c.id === activeCat);
 
   const signatures = SIGNATURE_DEFS.map((def) => {
     const p = byIdIn(menu, def.id);
@@ -124,12 +124,6 @@ export default function MenuSection() {
       )}
 
       <nav className="cat-nav" aria-label="Catégories de la carte">
-        <button
-          className={`cat-link${activeCat === 'all' ? ' active' : ''}`}
-          onClick={() => setActiveCat('all')}
-        >
-          Tout
-        </button>
         {menu.categories.map((c) => (
           <button
             key={c.id}
