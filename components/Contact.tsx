@@ -1,15 +1,11 @@
 'use client';
 
-import { useRef } from 'react';
 import Reveal from './Reveal';
 import Icon, { type IconName } from './Icon';
-import { useToast } from '@/lib/toast';
 import { useLocationCtx } from '@/lib/location-store';
 
 export default function Contact() {
-  const toast = useToast();
   const { current, locations } = useLocationCtx();
-  const formRef = useRef<HTMLFormElement>(null);
 
   const telHref = `tel:+33${current.phone.replace(/\D/g, '').slice(1)}`;
   const INFOS: { title: string; icon: IconName; alt: string; content: React.ReactNode }[] = [
@@ -39,12 +35,6 @@ export default function Contact() {
     },
   ];
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast('Message envoyé ! Nous vous répondons très vite.');
-    formRef.current?.reset();
-  };
-
   return (
     <>
       <div className="section after-nav">
@@ -63,37 +53,6 @@ export default function Contact() {
                 </div>
               </div>
             ))}
-          </Reveal>
-
-          <Reveal className="panel">
-            <h3>Écrivez-nous</h3>
-            <form ref={formRef} onSubmit={onSubmit}>
-              <div className="form-row">
-                <div className="f-group">
-                  <label htmlFor="cf-name">Votre nom</label>
-                  <input id="cf-name" type="text" placeholder="Jean Dupont" required />
-                </div>
-                <div className="f-group">
-                  <label htmlFor="cf-tel">Téléphone</label>
-                  <input id="cf-tel" type="tel" placeholder="06.. .. .. .." />
-                </div>
-              </div>
-              <div className="f-group">
-                <label htmlFor="cf-email">E-mail</label>
-                <input id="cf-email" type="email" placeholder="vous@exemple.fr" required />
-              </div>
-              <div className="f-group">
-                <label htmlFor="cf-msg">Votre message</label>
-                <textarea
-                  id="cf-msg"
-                  placeholder="Votre demande, votre nombre de couverts…"
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-solid btn-block">
-                Envoyer le message
-              </button>
-            </form>
           </Reveal>
         </div>
 
