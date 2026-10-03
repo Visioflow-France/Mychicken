@@ -259,6 +259,12 @@
 .oc-note{font-style:italic;color:#8a6a3e}
 .oc-actions{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
 .order-card .oc-actions select{border-color:rgba(61,40,18,.35);background:#FFFDF4;color:#3d2812}
+/* Boutons & pastilles adaptés au fond clair des cartes */
+.order-card .btn-ghost{border-color:rgba(61,40,18,.4);color:#3d2812}
+.order-card .btn-ghost:hover{border-color:var(--ember-deep);background:rgba(224,90,0,.1);color:var(--ember-deep)}
+.order-card .chip.green{color:#2c6e37;background:rgba(46,125,50,.16)}
+.order-card .chip.neutral{color:#6b5231;background:rgba(138,90,51,.14)}
+.order-card .chip.red{color:#a33d12;background:rgba(158,44,11,.14)}
 .oc-actions select{min-width:170px}
 .btn.small{padding:.6rem 1.2rem;font-size:.6rem}
 
