@@ -105,7 +105,8 @@ main{display:block;min-height:70vh}
    background-attachment:fixed est LA clé anti-flou : la photo (1672×941)
    reste calée sur la fenêtre, donc jamais étirée par une section haute
    (la carte) — netteté identique partout, comme la page contact.
-   iOS ignore « fixed » et retombe sur le comportement défilant d'avant. */
+   iOS ignore « fixed » ; les téléphones basculent alors sur la version
+   tuilée du média-query ci-dessous. */
 .bg-bois,
 .section,
 .hero,
@@ -113,11 +114,26 @@ main{display:block;min-height:70vh}
 .signature{
   background-color:var(--wood-975);
   /* Voile chaud translucide par-dessus la photo : éclaircit sans dénaturer */
-  background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),url('/fond-bois.png');
+  background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),url('/fond-bois.jpg');
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
   background-attachment:fixed;
+}
+/* Téléphones : iOS ignore « fixed » (la photo serait étirée en cover sur
+   des sections très hautes → fond flou) et Android upscalait de toute
+   façon les 941 px sur ~2500 px réels. La texture se tuile alors à sa
+   taille naturelle : jamais agrandie, donc toujours nette. */
+@media (max-width:760px){
+  .bg-bois,
+  .section,
+  .hero,
+  .page-head,
+  .signature{
+    background-attachment:scroll;
+    background-repeat:no-repeat,repeat;
+    background-size:auto,auto;
+  }
 }
 section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12px)}
 .menu-cat{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 24px)}

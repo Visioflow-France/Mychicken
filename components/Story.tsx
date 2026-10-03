@@ -16,7 +16,7 @@ export default function Story() {
           <Reveal as="figure" className="chapter-fig">
             <div className="frame">
               <SmartImg
-                src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=70"
+                src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=75"
                 alt="Épices et marinade de la maison"
                 loading="lazy"
               />
@@ -43,7 +43,7 @@ export default function Story() {
           <Reveal as="figure" className="chapter-fig">
             <div className="frame">
               <SmartImg
-                src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=70"
+                src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=75"
                 alt="Cuisine maison, préparation du jour"
                 loading="lazy"
               />

@@ -146,7 +146,7 @@ export const CATEGORIES: Category[] = [
 ];
 
 const F = 'https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/';
-const U = 'auto=format&fit=crop&w=800&q=70'; // paramètres Unsplash communs
+const U = 'auto=format&fit=crop&w=1200&q=75'; // paramètres Unsplash communs (nets sur écrans 2x/3x)
 
 export const PRODUCTS: Product[] = [
   /* ---------------- 01 · NOS MENUS ---------------- */
@@ -319,7 +319,7 @@ export const fmt = (n: number) =>
   (Number.isInteger(n) ? String(n) : n.toFixed(2).replace('.', ',')) + '\u00a0€';
 
 export const FALLBACK_IMG =
-  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=70';
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=75';
 
 /* Libellé d'une promo, pour l'admin et les cartes */
 export function promoLabel(promo: ProductPromo): string {

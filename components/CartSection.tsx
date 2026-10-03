@@ -205,7 +205,7 @@ export default function CartSection() {
           <div className="empty-state" id="emptyCart">
             <span className="ring">
               <SmartImg
-                src="https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=400&q=70"
+                src="https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=75"
                 alt="Poulet croustillant qui n'attend que vous"
                 loading="lazy"
               />
