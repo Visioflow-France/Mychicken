@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   if (custName.length < 3) {
     return NextResponse.json({ error: 'Nom et prénom requis' }, { status: 400 });
   }
-  const mode: OrderMode = ['takeaway', 'dinein', 'delivery'].includes(body.mode) ? body.mode : 'takeaway';
+  const mode: OrderMode = ['takeaway', 'delivery'].includes(body.mode) ? body.mode : 'takeaway';
   if (mode === 'delivery' && (body.customer?.address || '').trim().length < 8) {
     return NextResponse.json({ error: 'Adresse de livraison manquante' }, { status: 400 });
   }

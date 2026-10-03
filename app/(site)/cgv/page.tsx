@@ -50,45 +50,25 @@ export default function CgvPage() {
           </p>
 
           <h2>Article 4 — Commande</h2>
-          <p>Le client peut commander de trois façons&nbsp;:</p>
-          <ul>
-            <li>
-              <strong>En ligne sur le Site</strong>&nbsp;: le client sélectionne ses produits,
-              choisit son mode de consommation (sur place, à emporter ou livraison), renseigne
-              les informations nécessaires puis valide sa commande. Un numéro de commande lui est
-              attribué.
-            </li>
-            <li>
-              <strong>Par téléphone</strong> au 07&nbsp;51&nbsp;56&nbsp;59&nbsp;51, aux horaires
-              d&apos;ouverture (7j/7, 11h–14h et 18h–22h30).
-            </li>
-            <li>
-              <strong>Sur place</strong>, au comptoir du restaurant.
-            </li>
-          </ul>
           <p>
-            La commande est ferme et définitive une fois le paiement validé (ou, pour une commande
-            téléphonique, une fois confirmée par le restaurant). Le Vendeur se réserve le droit de
-            refuser toute commande présentant un caractère anormal ou frauduleux.
+            Le client commande <strong>en ligne sur le Site</strong>&nbsp;: il sélectionne ses
+            produits, choisit son mode de consommation (à emporter ou livraison), renseigne les
+            informations nécessaires puis valide sa commande. Un numéro de commande lui est
+            attribué.
+          </p>
+          <p>
+            La commande est ferme et définitive une fois le paiement validé. Le Vendeur se réserve
+            le droit de refuser toute commande présentant un caractère anormal ou frauduleux.
           </p>
 
           <h2>Article 5 — Paiement</h2>
           <p>
-            Le paiement s&apos;effectue, selon le cas&nbsp;:
+            Le paiement s&apos;effectue <strong>en ligne, par carte bancaire</strong>, via la
+            plateforme sécurisée Stripe (le Vendeur n&apos;a jamais accès aux données bancaires
+            du client).
           </p>
-          <ul>
-            <li>
-              <strong>par carte bancaire</strong>, via la plateforme sécurisée Stripe (le Vendeur
-              n&apos;a jamais accès aux données bancaires du client)&nbsp;;
-            </li>
-            <li>
-              <strong>par téléphone</strong>&nbsp;: le restaurant rappelle le client pour
-              confirmer la commande et arrêter les modalités de règlement.
-            </li>
-          </ul>
           <p>
-            La commande n&apos;est préparée qu&apos;après encaissement ou confirmation
-            téléphonique.
+            La commande n&apos;est préparée qu&apos;après encaissement.
           </p>
 
           <h2>Article 6 — Livraison</h2>
@@ -99,8 +79,8 @@ export default function CgvPage() {
             conformément au tarif affiché au moment de la commande. Le délai indicatif de
             livraison est communiqué au client lors de la confirmation&nbsp;; il peut varier selon
             l&apos;affluence. Le client s&apos;assure d&apos;être joignable et présent à
-            l&apos;adresse indiquée. Pour les commandes à emporter ou sur place, le client est
-            informé du créneau de retrait ou de service.
+            l&apos;adresse indiquée. Pour les commandes à emporter, le client est
+            informé du créneau de retrait.
           </p>
 
           <h2>Article 7 — Droit de rétractation</h2>

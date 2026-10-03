@@ -1,134 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getAdminDb, getServerMenu } from '@/lib/server/firebase-admin';
-import { ORDERS_COLLECTION } from '@/lib/firebase';
-import { LOCATIONS, clamp, orderPrefix, promoPrice, round2, serviceStart, type Order, type OrderItem, type OrderMode } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
 /* ================================================================
-   Commande « par téléphone » (paiement à la livraison / sur place).
-   Enregistre la commande pour le dashboard /admin. Sans Firebase
-   configuré, la commande est simplement confirmée (mode démo :
-   le navigateur du client la garde en local pour test).
+   Commandes « par téléphone » désactivées : le paiement se fait
+   exclusivement en ligne via /api/checkout (Stripe). Cette route
+   est conservée pour répondre explicitement au cas où un ancien
+   client tenterait encore de commander par ce biais.
    ================================================================ */
 
-export async function POST(req: Request) {
-  const body = (await req.json().catch(() => null)) as {
-    items: { id: string; qty: number }[];
-    mode: OrderMode;
-    promoCode?: string;
-    locationId?: string;
-    customer: {
-      name?: string;
-      phone: string;
-      address?: string;
-      building?: string;
-      door?: string;
-      accessCode?: string;
-      intercom?: string;
-      floor?: string;
-      note?: string;
-    };
-  } | null;
-
-  if (!body || !Array.isArray(body.items) || body.items.length === 0) {
-    return NextResponse.json({ error: 'Panier vide' }, { status: 400 });
-  }
-  const phone = (body.customer?.phone || '').trim();
-  if (phone.replace(/\D/g, '').length < 9) {
-    return NextResponse.json({ error: 'Téléphone invalide' }, { status: 400 });
-  }
-  const name = (body.customer?.name || '').trim();
-  if (name.length < 3) {
-    return NextResponse.json({ error: 'Nom et prénom requis' }, { status: 400 });
-  }
-  const mode: OrderMode = ['takeaway', 'dinein', 'delivery'].includes(body.mode) ? body.mode : 'takeaway';
-  const location = LOCATIONS.find((l) => l.id === body.locationId) || LOCATIONS[0];
-
-  const menu = await getServerMenu();
-  if (!location.open) {
-    return NextResponse.json({ error: 'Le restaurant est fermé pour le moment' }, { status: 403 });
-  }
-
-  const items: OrderItem[] = [];
-  for (const line of body.items) {
-    const p = menu.products.find((x) => x.id === line.id);
-    if (!p || p.available === false) continue;
-    const qty = clamp(Math.floor(line.qty || 0), 0, 50);
-    if (qty > 0) items.push({ id: p.id, name: p.name, price: promoPrice(p.price, menu.promos[p.id]), qty });
-  }
-  if (!items.length) return NextResponse.json({ error: 'Aucun article disponible' }, { status: 400 });
-
-  const subtotal = round2(items.reduce((s, it) => s + it.price * it.qty, 0));
-  const fee = mode === 'delivery' ? location.deliveryFee : 0;
-  if (mode === 'delivery' && subtotal < location.minDelivery) {
-    return NextResponse.json({ error: `Livraison possible dès ${location.minDelivery} €` }, { status: 400 });
-  }
-
-  let discount = 0;
-  let appliedCode: string | undefined;
-  const wanted = (body.promoCode || '').trim().toUpperCase();
-  if (wanted) {
-    const code = menu.promoCodes.find((c) => c.active && c.code === wanted);
-    if (code && subtotal >= (code.minTotal || 0)) {
-      discount = code.type === 'percent' ? round2(subtotal * code.value / 100) : round2(Math.min(code.value, subtotal));
-      appliedCode = code.code;
-    }
-  }
-
-  /* Numérotation par service : le compteur repart à 1 à chaque service
-     (déjeuner / dîner). docId reste unique (base36) pour Firestore,
-     seul le numéro affiché suit le service. */
-  const prefix = orderPrefix(location.id);
-  const docId = prefix + Date.now().toString(36).toUpperCase().slice(-6);
-  const db = await getAdminDb();
-  let serviceNum = 1;
-  if (db) {
-    const start = serviceStart();
-    const snap = await db.collection(ORDERS_COLLECTION).orderBy('createdAt', 'desc').limit(200).get();
-    serviceNum =
-      snap.docs.filter((d) => {
-        const o = d.data() as Partial<Order>;
-        return (!o.locationId || o.locationId === location.id) && typeof o.createdAt === 'number' && o.createdAt >= start;
-      }).length + 1;
-  }
-  const num = `${prefix}${serviceNum}`;
-
-  const order: Omit<Order, 'id'> = {
-    num,
-    createdAt: Date.now(),
-    locationId: location.id,
-    mode,
-    payment: 'phone',
-    paid: false,
-    status: 'nouvelle',
-    items,
-    subtotal,
-    discount,
-    fee,
-    total: round2(subtotal - discount + fee),
-    ...(appliedCode ? { promoCode: appliedCode } : {}),
-    customer: {
-      name,
-      phone,
-      address: mode === 'delivery' ? body.customer?.address?.trim() : undefined,
-      ...(mode === 'delivery'
-        ? {
-            building: body.customer?.building?.trim() || undefined,
-            door: body.customer?.door?.trim() || undefined,
-            accessCode: body.customer?.accessCode?.trim() || undefined,
-            intercom: body.customer?.intercom?.trim() || undefined,
-            floor: body.customer?.floor?.trim() || undefined,
-          }
-        : {}),
-      note: body.customer?.note?.trim() || undefined,
-    },
-  };
-
-  if (db) {
-    await db.collection(ORDERS_COLLECTION).doc(docId).set(order);
-  }
-
-  // Le total détaillé est renvoyé pour que le client voie les mêmes chiffres que la cuisine
-  return NextResponse.json({ ok: true, num, order: { ...order, id: docId }, firebase: Boolean(db) });
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Les commandes par téléphone sont désactivées — le paiement se fait en ligne uniquement.' },
+    { status: 403 },
+  );
 }

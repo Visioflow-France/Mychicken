@@ -7,7 +7,7 @@ import type { RestaurantLocation } from '@/lib/data';
 
 /* ================================================================
    Popup d'entrée — « Dans quel restaurant commandez-vous ? »
-   • À emporter / sur place : choix direct Saint-Mard ou Persan.
+   • À emporter : choix direct Saint-Mard ou Persan.
    • Livraison : code postal → restaurant qui livre cette zone
      (le plus proche), sinon refus explicite.
    ================================================================ */
@@ -59,7 +59,7 @@ export default function LocationGate() {
             className={`lg-tab${tab === 'pickup' ? ' active' : ''}`}
             onClick={() => setTab('pickup')}
           >
-            <Icon name="bag" size={15} /> À emporter / sur place
+            <Icon name="bag" size={15} /> À emporter
           </button>
           <button
             role="tab"

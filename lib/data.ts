@@ -66,7 +66,7 @@ export const LOCATIONS: RestaurantLocation[] = [
     postal: '95340',
     city: 'Persan',
     phone: '07 51 56 59 51',
-    hours: '7j/7 · 11h–14h / 18h–22h30',
+    hours: '7j/7 · 11h–15h / 18h–23h',
     deliveryFee: 2.9,
     minDelivery: 25,
     open: true,
@@ -141,7 +141,8 @@ export const CATEGORIES: Category[] = [
   { id: 'pieces', num: '07', label: 'Pièces Séparées' },
   { id: 'accompagnements', num: '08', label: 'Nos Accompagnements' },
   { id: 'sauces', num: '09', label: 'Nos Sauces' },
-  { id: 'boissons', num: '10', label: 'Boissons' },
+  { id: 'desserts', num: '10', label: 'Nos Desserts' },
+  { id: 'boissons', num: '11', label: 'Boissons' },
 ];
 
 const F = 'https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/';
@@ -156,15 +157,16 @@ export const PRODUCTS: Product[] = [
   { id: 'menu-wings', name: 'Menu Wings', price: 8.5, cat: 'menus', img: `${F}030c7cfcd6bc.jpg`, desc: '6 wings + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-ailes', name: 'Menu Ailes', price: 7.5, cat: 'menus', img: `${F}21181d899cf9.jpg`, desc: '4 ailes de poulets + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-tenders', name: 'Menu Tenders', price: 7.5, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: '3 tenders + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-donuts', name: 'Menu Donuts', price: 8.5, cat: 'menus', img: `${F}c917ff812687.jpg`, desc: '2 donuts poulet + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'menu-donuts', name: 'Menu Donut', price: 8.5, cat: 'menus', img: `${F}c917ff812687.jpg`, desc: '1 donut poulet + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-mixte', name: 'Menu Mixte', price: 10.5, cat: 'menus', img: `${F}7d24cd680344.jpg`, desc: '1 cuisse + 2 pilons + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-filet', name: 'Menu Filet', price: 7.9, cat: 'menus', img: `${F}9b58d0eb71ca.jpg`, desc: '1 filet de poulet + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-tiers', name: 'Menu Tiers de Poulet', price: 10.9, cat: 'menus', img: `${F}e4148192fba9.jpg`, desc: '1 tiers de poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', popular: true, img: `${F}4c5945eff50c.jpg`, desc: 'Tasty Crousty taille M' },
-  { id: 'tasty-crousty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Tasty Crousty taille L' },
-  { id: 'tasty-crousty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Tasty Crousty taille XL' },
+  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', popular: true, img: `${F}4c5945eff50c.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'tasty-crousty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'tasty-crousty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-familial', name: 'Menu Familial', price: 30, cat: 'menus', img: `${F}a1fc59d6204b.jpg`, desc: '4 demi-poulets + 4 accompagnements + 1 boisson 1,5 L' },
   { id: 'menu-brick', name: 'Menu Brick', price: 8.5, cat: 'menus', img: `${F}853664036f2c.jpeg`, desc: '2 bricks poulet + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'menu-saucisses', name: 'Menu Saucisses', price: 7.5, cat: 'menus', img: `${F}0d66b6622167.jpg`, desc: '2 saucisses + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-special', name: 'Menu Spécial', price: 25, cat: 'menus', popular: true, img: `${F}02f572b69cfe.jpg`, desc: '1 poulet entier braisé + 2 accompagnements + 1 boisson 1,5 L' },
   { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'menus', img: `${F}08e205722e55.jpg`, desc: 'Servi avec fromage, crudités et une sauce maison. Au choix : chicken braisé, merguez ou kefta. Grillé au feu de bois.' },
 
@@ -195,39 +197,44 @@ export const PRODUCTS: Product[] = [
   { id: 'p-4-nems', name: '4 Nems', price: 5, cat: 'pieces', img: `${F}7cf36fb52134.jpg`, desc: '' },
   { id: 'p-1-cuisse', name: '1 Cuisse', price: 3.5, cat: 'pieces', img: `${F}5b77e643d097.jpg`, desc: '' },
   { id: 'p-1-pilon', name: '1 Pilon de Poulet', price: 1, cat: 'pieces', img: `${F}f72a1ab6d609.jpg`, desc: '' },
-  { id: 'p-3-tenders', name: '3 Tenders', price: 3.5, cat: 'pieces', img: `${F}4c5945eff50c.jpg`, desc: '' },
-  { id: 'p-1-brick', name: '1 Brick', price: 2.5, cat: 'pieces', img: `${F}853664036f2c.jpeg`, desc: '' },
+  { id: 'p-3-tenders', name: '3 Tenders', price: 2.5, cat: 'pieces', img: `${F}4c5945eff50c.jpg`, desc: '' },
+  { id: 'p-1-brick', name: '1 Brick', price: 2, cat: 'pieces', img: `${F}853664036f2c.jpeg`, desc: '' },
   { id: 'p-6-wings', name: '6 Wings', price: 4.9, cat: 'pieces', img: `${F}030c7cfcd6bc.jpg`, desc: '' },
-  { id: 'p-1-saucisse', name: '1 Saucisse', price: 2, cat: 'pieces', img: `${F}0d66b6622167.jpg`, desc: '' },
+  { id: 'p-1-saucisse', name: '1 Saucisse', price: 1.5, cat: 'pieces', img: `${F}0d66b6622167.jpg`, desc: '' },
   { id: 'p-demi-poulet', name: 'Demi Poulet', price: 4.9, cat: 'pieces', img: `${F}45dd2550dad9.jpg`, desc: '' },
-  { id: 'p-poulet-entier', name: 'Poulet Entier', price: 9.9, cat: 'pieces', img: `${F}02f572b69cfe.jpg`, desc: '' },
+  { id: 'p-poulet-entier', name: 'Poulet Entier', price: 8.9, cat: 'pieces', img: `${F}02f572b69cfe.jpg`, desc: '' },
   { id: 'p-hotdog', name: 'Hot Dog', price: 3.5, cat: 'pieces', img: `${F}5f0ee3b5d64a.jpg`, desc: '' },
-  { id: 'p-donut-poulet', name: '1 Donut de Poulet', price: 3.5, cat: 'pieces', img: `${F}c917ff812687.jpg`, desc: '' },
+  { id: 'p-donut-poulet', name: '1 Donut de Poulet', price: 2, cat: 'pieces', img: `${F}c917ff812687.jpg`, desc: '' },
 
   /* ---------------- 08 · NOS ACCOMPAGNEMENTS ---------------- */
   { id: 'a-frites', name: 'Frites', price: 2.5, cat: 'accompagnements', img: `https://images.unsplash.com/photo-1573080496219-bb080dd4f877?${U}`, desc: '' },
   { id: 'a-potatoes', name: 'Potatoes', price: 2.5, cat: 'accompagnements', img: `${F}2180184ecd88.jpg`, desc: '' },
-  { id: 'a-mozzarella', name: 'Mozzarella Sticks', price: 3.5, cat: 'accompagnements', img: `${F}d77dc331b647.png`, desc: '' },
-  { id: 'a-plantain', name: 'Banane Plantain', price: 2, cat: 'accompagnements', img: `${F}6a6c25ff8af2.jpg`, desc: '' },
-  { id: 'a-riz-thai', name: 'Riz Thaï', price: 2, cat: 'accompagnements', img: `https://images.unsplash.com/photo-1512058564366-18510be2db19?${U}`, desc: '' },
-  { id: 'a-salade-verte', name: 'Salade Verte', price: 2, cat: 'accompagnements', img: `${F}cc3feac5ad2c.jpg`, desc: '' },
-  { id: 'a-oignons', name: 'Oignons', price: 2, cat: 'accompagnements', img: `${F}0319b8a7dabe.png`, desc: '' },
-  { id: 'a-pommes-de-terre', name: 'Pommes de Terre', price: 2, cat: 'accompagnements', img: `${F}cf3588cc2c1c.jpg`, desc: '' },
-  { id: 'a-pates', name: 'Pâtes', price: 2, cat: 'accompagnements', img: `${F}0f59d4aa56cb.jpg`, desc: '' },
+  { id: 'a-plantain', name: 'Banane Plantain', price: 2.5, cat: 'accompagnements', img: `${F}6a6c25ff8af2.jpg`, desc: '' },
+  { id: 'a-riz-thai', name: 'Riz Thaï', price: 2.5, cat: 'accompagnements', img: `https://images.unsplash.com/photo-1512058564366-18510be2db19?${U}`, desc: '' },
+  { id: 'a-salade-verte', name: 'Salade Verte', price: 2.5, cat: 'accompagnements', img: `${F}cc3feac5ad2c.jpg`, desc: '' },
+  { id: 'a-oignons', name: 'Oignons', price: 2.5, cat: 'accompagnements', img: `${F}0319b8a7dabe.png`, desc: '' },
+  { id: 'a-pommes-de-terre', name: 'Pommes de Terre', price: 2.5, cat: 'accompagnements', img: `${F}cf3588cc2c1c.jpg`, desc: '' },
+  { id: 'a-pates', name: 'Pâtes', price: 2.5, cat: 'accompagnements', img: `${F}0f59d4aa56cb.jpg`, desc: '' },
 
   /* ---------------- 09 · NOS SAUCES ---------------- */
   { id: 's-algerienne', name: 'Sauce Algérienne', price: 0.5, cat: 'sauces', img: `https://images.unsplash.com/photo-1472476443507-c7a5948772fc?${U}`, desc: '' },
   { id: 's-samourai', name: 'Sauce Samouraï', price: 0.5, cat: 'sauces', img: `https://images.unsplash.com/photo-1596040033229-a9821ebd058d?${U}`, desc: '' },
   { id: 's-blanche', name: 'Sauce Blanche', price: 0.5, cat: 'sauces', img: `https://images.unsplash.com/photo-1547592166-23ac45744acd?${U}`, desc: '' },
   { id: 's-biggy', name: 'Sauce Biggy Burger', price: 0.5, cat: 'sauces', img: `${F}f1d806cb94df.jpg`, desc: '' },
-  { id: 's-chili', name: 'Chili', price: 0.5, cat: 'sauces', img: `${F}a9500ac79e37.jpg`, desc: '' },
+  { id: 's-chili', name: 'Harissa', price: 0.5, cat: 'sauces', img: `${F}a9500ac79e37.jpg`, desc: '' },
   { id: 's-ketchup', name: 'Ketchup', price: 0.5, cat: 'sauces', img: `${F}779a3bad3cc8.jpg`, desc: '' },
   { id: 's-mayonnaise', name: 'Mayonnaise', price: 0.5, cat: 'sauces', img: `${F}1ea6d6a4cd39.jpg`, desc: '' },
 
-  /* ---------------- 10 · BOISSONS ---------------- */
-  { id: 'b-33cl', name: 'Boissons 33 cl', price: 1, cat: 'boissons', img: `https://images.unsplash.com/photo-1554866585-cd94860890b7?${U}`, desc: '' },
-  { id: 'b-1l5', name: 'Boissons 1,5 L', price: 2, cat: 'boissons', img: `${F}40d8249bad00.jpg`, desc: '' },
-  { id: 'b-eau', name: 'Eau 33 cl', price: 1, cat: 'boissons', img: `https://images.unsplash.com/photo-1548839140-29a749e1cf4d?${U}`, desc: '' },
+  /* ---------------- 10 · NOS DESSERTS ---------------- */
+  { id: 'd-tiramisu', name: 'Tiramisu', price: 3.5, cat: 'desserts', img: `${F}9cbedf4aef47.jpg`, desc: '' },
+  { id: 'd-tarte-daim', name: 'Tarte au Daim', price: 3.5, cat: 'desserts', img: `${F}1452144526e0.jpg`, desc: '' },
+
+  /* ---------------- 11 · BOISSONS ---------------- */
+  { id: 'b-canette', name: 'Canette 33 cl', price: 1.5, cat: 'boissons', img: `https://images.unsplash.com/photo-1554866585-cd94860890b7?${U}`, desc: '' },
+  { id: 'b-jus-bissap', name: 'Jus de Bissap', price: 2.5, cat: 'boissons', img: `${F}7adea78fdcc4.jpg`, desc: '' },
+  { id: 'b-jus-gingembre', name: 'Jus de Gingembre', price: 2.5, cat: 'boissons', img: `${F}7dfa832641af.jpg`, desc: '' },
+  { id: 'b-redbull', name: 'Red Bull', price: 2.5, cat: 'boissons', img: `${F}6705a972b75f.jpg`, desc: '' },
+  { id: 'b-coca-1l5', name: 'Bouteille Coca-Cola 1,5 L', price: 3.5, cat: 'boissons', img: `${F}40d8249bad00.jpg`, desc: '' },
 ];
 /* ================= FIN DE LA CARTE ================= */
 

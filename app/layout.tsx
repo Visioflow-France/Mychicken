@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'My CHICKEN — Saint-Mard & Persan',
     description:
-      'Poulet mijoté 24h, frites maison, sauces préparées chaque jour. Sur place, à emporter ou livré dès 25 €.',
+      'Poulet mijoté 24h, frites maison, sauces préparées chaque jour. À emporter ou livré dès 25 €.',
     type: 'website',
     locale: 'fr_FR',
   },

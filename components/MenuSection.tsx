@@ -30,7 +30,7 @@ const SIGNATURE_DEFS: { id: string; forText: string; lines: string[]; solid: boo
   {
     id: 'menu-familial',
     forText: 'pour toute la tablée',
-    lines: ['2 demi-poulets', '2 accompagnements au choix', '1 boisson 1,5\u00a0L'],
+    lines: ['4 demi-poulets', '4 accompagnements au choix', '1 boisson 1,5\u00a0L'],
     solid: false,
     fallbackImg: `${F}a1fc59d6204b.jpg`,
   },

@@ -261,20 +261,20 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 @media(min-width:640px){.grid-2,.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:1000px){.grid-3{grid-template-columns:repeat(3,1fr)}.grid-4{grid-template-columns:repeat(4,1fr)}}
 
-.p-card{position:relative;display:flex;flex-direction:column;border-radius:var(--r);overflow:hidden;border:1px solid var(--s-12);
-  background-color:rgba(88,54,30,.5);
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-/* Transition dédiée (le verre se laitifie en fondant) — doit peser plus
-   que le transition générique de .reveal déclaré plus bas */
+.p-card{position:relative;display:flex;flex-direction:column;border-radius:var(--r);overflow:hidden;border:1px solid var(--s-22);
+  background-image:linear-gradient(180deg,var(--wood-850),var(--wood-950) 72%);
+  box-shadow:0 14px 34px rgba(5,2,0,.38),inset 0 1px 0 var(--s-15)}
+/* Transition dédiée — doit peser plus que le transition générique de
+   .reveal déclaré plus bas */
 .reveal.p-card{transition:opacity .9s var(--ease),transform .5s var(--ease),border-color .5s,box-shadow .5s,background-color .5s}
 /* Halo doré qui suit le pointeur (--mx/--my posés en JS) */
 .p-card::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity .5s;background:radial-gradient(460px circle at var(--mx,50%) var(--my,50%),var(--g-12),transparent 45%)}
-/* Au survol la bulle se soulève et son verre se laitifie : la partie
-   transparente devient blanche, le texte passe en brun. .grid .p-card:hover
-   doit peser plus que .reveal.revealed{transform:none} (déclaré plus bas). */
+/* Au survol la carte se soulève et son panneau bois devient crème :
+   le texte passe en brun. .grid .p-card:hover doit peser plus que
+   .reveal.revealed{transform:none} (déclaré plus bas). */
 .grid .p-card:hover{transform:translateY(-8px);border-color:var(--g-45);box-shadow:var(--sh-2)}
 .grid .p-card:hover::before{opacity:1}
-.grid .p-card:hover:not(.sold-out){background-color:#fffdf4}
+.grid .p-card:hover:not(.sold-out){background-image:none;background-color:#fffdf4}
 .grid .p-card:hover:not(.sold-out) .p-name{color:var(--wood-950)}
 .grid .p-card:hover:not(.sold-out) .p-desc{color:#6f523d}
 .grid .p-card:hover:not(.sold-out) .p-foot{border-top-color:rgba(36,18,9,.16)}

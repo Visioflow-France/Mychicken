@@ -82,7 +82,7 @@ export default function Story() {
           <div className="tl-item">
             <span className="tl-when">Aujourd&apos;hui</span>
             <h4>My CHICKEN à Persan</h4>
-            <p>Avenue Jacques Vogt, 7j/7. Sur place, à emporter, ou livré chez vous dès 25&nbsp;€.</p>
+            <p>Avenue Jacques Vogt, 7j/7. À emporter, ou livré chez vous dès 25&nbsp;€.</p>
           </div>
         </Reveal>
 

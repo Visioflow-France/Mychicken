@@ -8,18 +8,11 @@ import { useCart } from '@/lib/cart';
 import { useToast } from '@/lib/toast';
 import { useMenu } from '@/lib/menu-store';
 import { useLocationCtx } from '@/lib/location-store';
-import { fmt, type Order } from '@/lib/data';
-import { addDemoOrder } from '@/lib/orders-store';
+import { fmt } from '@/lib/data';
 
 const MODES = (minDelivery: number): { value: string; label: string; icon: IconName }[] => [
   { value: 'takeaway', label: 'À emporter', icon: 'bag' },
-  { value: 'dinein', label: 'Sur place', icon: 'utensils' },
   { value: 'delivery', label: `Livraison (dès ${minDelivery}\u00a0€)`, icon: 'scooter' },
-];
-
-const PAYMENTS: { value: 'card' | 'phone'; label: string; hint: string }[] = [
-  { value: 'card', label: 'Carte bancaire', hint: 'Paiement sécurisé immédiat' },
-  { value: 'phone', label: 'Par téléphone', hint: 'On vous appelle pour confirmer' },
 ];
 
 type SuccessState = { num: string; paid: boolean; total?: number | null };
@@ -30,7 +23,6 @@ export default function CartSection() {
   const { current, locationId, openGate } = useLocationCtx();
   const toast = useToast();
   const [mode, setMode] = useState('takeaway');
-  const [payment, setPayment] = useState<'card' | 'phone'>('card');
   const [orderNum, setOrderNum] = useState<SuccessState | null>(null);
   const [codeInput, setCodeInput] = useState('');
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
@@ -164,40 +156,7 @@ export default function CartSection() {
   const cartPayload = () =>
     Object.entries(cart).map(([id, qty]) => ({ id, qty }));
 
-  const finishPhoneOrder = async () => {
-    const cust = customerData();
-    if (!cust.ok) {
-      toast(cust.error);
-      return;
-    }
-    setPaying(true);
-    try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartPayload(), mode, promoCode: appliedCode || undefined, customer: cust.value, locationId }),
-      });
-      const data = (await res.json()) as { num?: string; order?: Order; firebase?: boolean; error?: string };
-      if (!res.ok) throw new Error(data.error || 'Erreur');
-      const num = data.num || 'MC';
-      // Mode démo (pas de Firebase serveur) : on garde la commande en local
-      // pour qu'elle apparaisse dans /admin → Commandes.
-      if (!data.firebase && data.order) addDemoOrder(data.order);
-      setOrderNum({ num, paid: false, total: data.order?.total });
-      clear();
-      formRef.current?.reset();
-      setAppliedCode(null);
-      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-      toast(`Commande ${num} enregistrée !`);
-    } catch (e) {
-      toast(e instanceof Error ? e.message : 'Une erreur est survenue');
-    } finally {
-      setPaying(false);
-    }
-  };
-
-  const payOnline = async () => {
+  const finishOrder = async () => {
     const cust = customerData();
     if (!cust.ok) {
       toast(cust.error);
@@ -216,8 +175,7 @@ export default function CartSection() {
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (res.status === 503 || data.error === 'stripe_not_configured') {
-        toast('Paiement en ligne bientôt disponible — choisissez « Par téléphone » pour commander dès maintenant');
-        setPayment('phone');
+        toast('Paiement en ligne momentanément indisponible — réessayez dans un instant');
         return;
       }
       if (!res.ok || !data.url) throw new Error(data.error || 'Paiement indisponible');
@@ -232,8 +190,7 @@ export default function CartSection() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (count === 0 || paying) return;
-    if (payment === 'card') payOnline();
-    else finishPhoneOrder();
+    finishOrder();
   };
 
   const showSuccess = orderNum !== null;
@@ -454,22 +411,13 @@ export default function CartSection() {
 
                 <fieldset>
                   <legend>Paiement</legend>
-                  {PAYMENTS.map((p) => (
-                    <label className="radio-opt" key={p.value}>
-                      <input
-                        type="radio"
-                        name="payment"
-                        value={p.value}
-                        checked={payment === p.value}
-                        onChange={() => setPayment(p.value)}
-                      />
-                      <Icon name={p.value === 'card' ? 'lock' : 'phone'} size={17} />
-                      <span>
-                        {p.label}
-                        <em className="pay-hint">{p.hint}</em>
-                      </span>
-                    </label>
-                  ))}
+                  <div className="radio-opt">
+                    <Icon name="lock" size={17} />
+                    <span>
+                      Carte bancaire — en ligne
+                      <em className="pay-hint">Paiement sécurisé immédiat par Stripe</em>
+                    </span>
+                  </div>
                 </fieldset>
 
                 {mode === 'delivery' && (
@@ -578,17 +526,11 @@ export default function CartSection() {
                       : { opacity: 1, cursor: 'pointer' }
                   }
                 >
-                  {paying
-                    ? 'Un instant…'
-                    : payment === 'card'
-                      ? 'Payer par carte'
-                      : 'Confirmer la commande'}
+                  {paying ? 'Un instant…' : 'Payer en ligne'}
                 </button>
                 <p className="secure-note">
                   <Icon name="lock" size={13} />{' '}
-                  {payment === 'card'
-                    ? 'Paiement sécurisé par Stripe — cb, Visa, Mastercard'
-                    : 'Commande confirmée par téléphone avant préparation'}
+                  Paiement sécurisé par Stripe — cb, Visa, Mastercard
                 </p>
               </form>
             </aside>
@@ -612,9 +554,13 @@ export default function CartSection() {
                 {orderNum.total != null ? ` ${fmt(orderNum.total)}` : ''} confirmé — c'est noté&nbsp;!
               </p>
             ) : (
-              <p>Votre commande est enregistrée. Nous vous appelons très vite pour la confirmer.</p>
+              <p>Votre commande est enregistrée. À très vite chez My Chicken&nbsp;!</p>
             )}
-            <p>Gardez votre téléphone à portée de main — à tout de suite&nbsp;!</p>
+            <p>
+              {mode === 'delivery'
+                ? 'Préparez votre appétit — on arrive chez vous.'
+                : 'Votre commande sera prête à emporter — passez la chercher au comptoir.'}
+            </p>
             <div className="os-actions">
               <Link href="/" className="btn btn-ghost">
                 Retour à l&apos;accueil

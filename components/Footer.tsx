@@ -103,11 +103,9 @@ export default function Footer() {
             <div className="fc-col">
               <h4>Commander</h4>
               <ul>
-                <li><Link href="/commander">Sur place</Link></li>
                 <li><Link href="/commander">À emporter</Link></li>
                 <li><Link href="/commander">Livraison (dès {current.minDelivery}&nbsp;€)</Link></li>
                 <li><Link href="/commander">Mon panier</Link></li>
-                <li><a href={telHref}>Par téléphone</a></li>
               </ul>
             </div>
             <div className="fc-col fc-infos">
