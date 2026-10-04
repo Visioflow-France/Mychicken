@@ -115,10 +115,12 @@ main{display:block;min-height:70vh}
   background-color:var(--wood-975);
   /* Voile chaud translucide par-dessus la photo : éclaircit sans dénaturer.
      JPEG = fallback ; AVIF (119 Ko, 2× plus net que le JPEG 213 Ko) pour
-     les navigateurs récents — image-set dégrade proprement sinon. */
+     les navigateurs récents. Pas de type('image/avif') dans image-set :
+     mal supporté sur mobile, la déclaration invalide faisait retomber
+     sur le JPEG 1672 px réduit ~4x → fond flou. */
   background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),url('/fond-bois.jpg');
-  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),-webkit-image-set(url('/fond-bois.avif') type('image/avif') 1x);
-  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),image-set(url('/fond-bois.avif') type('image/avif') 1x);
+  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),-webkit-image-set(url('/fond-bois.avif') 1x);
+  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),image-set(url('/fond-bois.avif') 1x);
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -126,9 +128,8 @@ main{display:block;min-height:70vh}
 }
 /* Téléphones : iOS ignore « fixed » (la photo serait étirée en cover sur
    des sections très hautes → fond flou). La texture est donc tuilée en
-   colonne pleine largeur. L'échelle 1x/2x/3x est indispensable : tuilée
-   à sa taille CSS naturelle (1672 px), l'image subissait une réduction
-   ~4x sans mipmaps → fond en bouillie sur écran 390 px. */
+   colonne pleine largeur, à l'échelle 1x/2x — sinon l'image 1672 px
+   subissait une réduction ~4x sans mipmaps → fond en bouillie. */
 @media (max-width:760px){
   .bg-bois,
   .section,
@@ -138,8 +139,8 @@ main{display:block;min-height:70vh}
     background-attachment:scroll;
     background-repeat:no-repeat,repeat-y;
     background-size:auto,100% auto;
-    background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),-webkit-image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
-    background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
+    background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),-webkit-image-set(url('/fond-bois-m2.avif') 1x,url('/fond-bois.avif') 2x);
+    background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),image-set(url('/fond-bois-m2.avif') 1x,url('/fond-bois.avif') 2x);
   }
 }
 section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12px)}

@@ -10,8 +10,8 @@
   /* Fond « bois brûlé » — couvre l'entièreté du dashboard et défile avec lui */
   background-color:var(--wood-975);
   background-image:url('/fond-bois.jpg');
-  background-image:-webkit-image-set(url('/fond-bois.avif') type('image/avif') 1x);
-  background-image:image-set(url('/fond-bois.avif') type('image/avif') 1x);
+  background-image:-webkit-image-set(url('/fond-bois.avif') 1x);
+  background-image:image-set(url('/fond-bois.avif') 1x);
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
