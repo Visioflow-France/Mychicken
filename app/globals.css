@@ -86,7 +86,7 @@ body{
 }
 /* Fond « bois brûlé » : plus de fond unique fixe à l'échelle du site —
    chaque section porte la photo (voir le groupe .bg-bois plus bas). */
-body::after{content:'';position:fixed;inset:0;z-index:2500;pointer-events:none;opacity:.035;background:var(--noise)}
+body::after{content:'';position:fixed;inset:0;z-index:2500;pointer-events:none;opacity:.02;background:var(--noise)}
 img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
 ul,ol{list-style:none}
@@ -116,9 +116,9 @@ main{display:block;min-height:70vh}
   /* Voile chaud translucide par-dessus la photo : éclaircit sans dénaturer.
      JPEG = fallback ; AVIF (119 Ko, 2× plus net que le JPEG 213 Ko) pour
      les navigateurs récents — image-set dégrade proprement sinon. */
-  background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),url('/fond-bois.jpg');
-  background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),-webkit-image-set(url('/fond-bois.avif') type('image/avif') 1x);
-  background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),image-set(url('/fond-bois.avif') type('image/avif') 1x);
+  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),url('/fond-bois.jpg');
+  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),-webkit-image-set(url('/fond-bois.avif') type('image/avif') 1x);
+  background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),image-set(url('/fond-bois.avif') type('image/avif') 1x);
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
@@ -138,8 +138,8 @@ main{display:block;min-height:70vh}
     background-attachment:scroll;
     background-repeat:no-repeat,repeat-y;
     background-size:auto,100% auto;
-    background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),-webkit-image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
-    background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
+    background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),-webkit-image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
+    background-image:linear-gradient(rgba(255,218,158,.08),rgba(255,206,135,.05)),image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
   }
 }
 section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12px)}
