@@ -804,13 +804,19 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 /* 4 produits par ligne sur ordinateur uniquement */
 @media(min-width:1000px){.menu-cat .grid{grid-template-columns:repeat(4,1fr);gap:1.2rem}}
 
-/* Cartes compactes sur petit écran pour que tout tienne bien */
+/* Cartes compactes sur petit écran pour que tout tienne bien :
+   à 2 colonnes sur 390 px chaque carte fait ~175 px — paddings,
+   prix et bouton « Ajouter » doivent se resserer pour ne rien rogner. */
 @media(max-width:639px){
   .menu-cat .grid{gap:.8rem}
   .menu-cat .p-card .p-visual{aspect-ratio:4/3}
+  .menu-cat .p-card .p-body{padding:.9rem .9rem 1rem}
   .menu-cat .p-card .p-name{font-size:1rem}
   .menu-cat .p-card .p-desc{font-size:.74rem}
-  .menu-cat .p-card .p-foot{padding:.6rem .8rem}
+  .menu-cat .p-card .p-foot{padding:.7rem 0 0;margin-top:auto;gap:.5rem}
+  .menu-cat .p-card .p-price{font-size:1.05rem}
+  .menu-cat .p-card .p-old-price{font-size:.72rem}
+  .menu-cat .p-card .p-add{flex:none;white-space:nowrap;font-size:.56rem;letter-spacing:.1em;padding:.5rem .7rem;gap:.3rem}
 }
 
 /* --- Formulaire : bloc compléments d'adresse (livraison) --- */
