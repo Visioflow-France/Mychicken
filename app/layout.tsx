@@ -8,9 +8,10 @@ import { MenuProvider } from '@/lib/menu-store';
 import { LocationProvider } from '@/lib/location-store';
 import ServiceWorker from '@/components/ServiceWorker';
 
-/* Photo « bois brûlé » des sections — chargée en priorité (PNG source, sans recompression) */
+/* Photo « bois brûlé » des sections — AVIF (119 Ko) chargée en priorité ;
+   le JPEG reste le fallback CSS pour les navigateurs sans AVIF. */
 function preloadBackground() {
-  ReactDOM.preload('/fond-bois.jpg', { as: 'image', fetchPriority: 'high' });
+  ReactDOM.preload('/fond-bois.avif', { as: 'image', fetchPriority: 'high' });
 }
 
 const serif = Cormorant_Garamond({

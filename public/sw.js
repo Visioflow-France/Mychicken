@@ -1,14 +1,15 @@
 /* Service worker My Chicken — cache des assets statiques uniquement.
    Les pages, API et Firestore restent en network-first pour toujours
    servir la carte et les commandes à jour. */
-const CACHE = 'mychicken-v3';
+const CACHE = 'mychicken-v4';
 const PRECACHE = [
   '/',
   '/la-carte',
   '/commander',
   '/icon-192.png',
   '/icon-512.png',
-  '/fond-bois.png',
+  '/fond-bois.avif',
+  '/fond-bois.jpg',
 ];
 
 self.addEventListener('install', (e) => {
