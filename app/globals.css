@@ -125,9 +125,10 @@ main{display:block;min-height:70vh}
   background-attachment:fixed;
 }
 /* Téléphones : iOS ignore « fixed » (la photo serait étirée en cover sur
-   des sections très hautes → fond flou) et Android upscalait de toute
-   façon les 941 px sur ~2500 px réels. La texture se tuile alors à sa
-   taille naturelle : jamais agrandie, donc toujours nette. */
+   des sections très hautes → fond flou). La texture est donc tuilée en
+   colonne pleine largeur. L'échelle 1x/2x/3x est indispensable : tuilée
+   à sa taille CSS naturelle (1672 px), l'image subissait une réduction
+   ~4x sans mipmaps → fond en bouillie sur écran 390 px. */
 @media (max-width:760px){
   .bg-bois,
   .section,
@@ -135,8 +136,10 @@ main{display:block;min-height:70vh}
   .page-head,
   .signature{
     background-attachment:scroll;
-    background-repeat:no-repeat,repeat;
-    background-size:auto,auto;
+    background-repeat:no-repeat,repeat-y;
+    background-size:auto,100% auto;
+    background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),-webkit-image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
+    background-image:linear-gradient(rgba(255,218,158,.24),rgba(255,206,135,.18)),image-set(url('/fond-bois-m1.avif') type('image/avif') 1x,url('/fond-bois-m2.avif') type('image/avif') 2x,url('/fond-bois.avif') type('image/avif') 3x);
   }
 }
 section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12px)}
