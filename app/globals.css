@@ -668,7 +668,10 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .ao-chip-price{font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;opacity:.8}
 .ao-chip.on .ao-chip-price{opacity:1}
 .ao-free{font-family:var(--font-caveat),cursive;font-size:1.1rem;color:var(--sand-deep)}
-.ao-foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:1rem 1.15rem 1.2rem;margin-top:.4rem;border-top:1px solid var(--s-12)}
+/* Pied collant : quantité + « Ajouter au panier » restent visibles en bas
+   de la bulle pendant le défilement des options (sur mobile le bouton
+   était à ~1100 px sous l'écran → perçu comme coupé). */
+.ao-foot{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:1rem 1.15rem 1.2rem;margin-top:.4rem;border-top:1px solid var(--s-12);background:#1f0f07;z-index:1}
 .ao-qty{display:inline-flex;align-items:center;gap:.7rem}
 .ao-qty button{width:36px;height:36px;border-radius:50%;border:1px solid var(--g-25);background:transparent;color:var(--cream);display:grid;place-items:center;cursor:pointer;transition:background .3s,color .3s,border-color .3s,transform .25s var(--ease)}
 .ao-qty button:hover{background:var(--grad-gold);color:var(--txt-on-gold);border-color:transparent;transform:scale(1.06)}
