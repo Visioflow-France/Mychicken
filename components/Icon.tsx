@@ -1,4 +1,4 @@
-import type { ReactNode, SVGProps } from 'react';
+import type { ImgHTMLAttributes, ReactNode, SVGProps } from 'react';
 
 /* ================================================================
    Jeu d'icônes « premium » — trait arrondi fin, style Flaticon.
@@ -139,25 +139,13 @@ export default function Icon({ name, size = 20, strokeWidth = 1.8, ...rest }: Ic
 }
 
 /* ================================================================
-   Marque de la maison — coq stylisé (silhouette + pattes).
-   Utilisée dans la navbar et le footer.
+   Marque de la maison — logo officiel (découpé du flyer Persan).
+   Utilisé dans l'admin et le footer.
    ================================================================ */
 
-export function RoosterMark({ size = 40, ...rest }: { size?: number } & SVGProps<SVGSVGElement>) {
+export function RoosterMark({ size = 40, ...rest }: { size?: number } & ImgHTMLAttributes<HTMLImageElement>) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true" {...rest}>
-      <path
-        fill="currentColor"
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M9.2 16.2 Q12.4 14.4 14 10.2 Q15 4.6 17 8.8 Q18.4 3.8 20.6 8.6 Q22.6 4.8 24.2 10.4 Q26.2 12.2 26.2 15.2 C27 18 29.6 19.7 32.6 20.1 C36 14.9 40.4 9.9 45.2 7.4 C43.5 11.7 41.2 14.5 38.9 16.4 L42.7 18.3 C40 19.6 38.2 20.5 36.9 21.3 L39.7 23.5 C37.6 24.2 35.6 24.7 33.5 24.9 C32.1 27.4 28.6 29.7 23.7 29.5 Q17.9 29.3 14.7 25.5 Q13.3 22.3 13.7 19.5 Q11.8 20.4 12 22.4 Q12.2 24 14 23.2 Q14.6 20.6 13.4 18.2 L9.2 16.2 Z M15.3 12.1 a1.15 1.15 0 1 0 0 2.3 a1.15 1.15 0 1 0 0-2.3 Z"
-      />
-      <path
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        d="M22.5 29.3v6.2M26.5 28.9v6.6M20.2 35.5h4.6M24.4 35.5h4.6"
-      />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/logo.png" alt="" width={size} height={size} style={{ width: size, height: size, borderRadius: '50%' }} {...rest} />
   );
 }

@@ -4,35 +4,10 @@ import Link from 'next/link';
 import Icon from './Icon';
 import { useLocationCtx } from '@/lib/location-store';
 
-/* Petit coq doré au trait — signature du footer */
+/* Logo officiel (découpé du flyer) — signature du footer */
 function RoosterMark({ size = 46 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {/* crête */}
-      <path d="M23 12c-1.2-2.6.6-4.8 2.8-4 .1-2.8 2.8-4 5-2.3 1.7-2 4.6-1.2 5 1.6" />
-      {/* tête, bec, barbillon */}
-      <path d="M22.5 13.5c-2.8.8-4.8 2.6-6 4.8l6.2 1.1-3.2 3c1.9 2 4.9 2.1 7 .2" />
-      <path d="M27.5 21.5c1.1 2-.1 4.2-2 4.4-1.2.1-2.2-.7-2.4-1.8" />
-      {/* corps */}
-      <path d="M22.8 26.5c-4.4 4-6.3 9.4-4.2 14.6 2.2 5.6 8.2 8.6 14.4 7.6 7-1.1 11.4-6.2 11.4-12.4" />
-      {/* queue */}
-      <path d="M44.2 36.3c4.9-2 8-6.9 8-11.9-2.9 1-5.8 1.1-7.9 2.9 1-4-.1-7.8-3-10.7-1 2.9-3 5-5.9 6" />
-      {/* aile */}
-      <path d="M26.5 33.5c2.5-1.6 5.5-1.8 8.3-.6" />
-      {/* pattes */}
-      <path d="M29 48.5l-.8 7.5M35.5 48.6l.9 7.4M25 58.5h7M31.5 58.5h7" />
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/logo.png" alt="" width={size} height={size} style={{ width: size, height: size, borderRadius: '50%' }} />;
 }
 
 /* Icônes sociales carrées — Instagram, TikTok, Facebook (sans lien pour l'instant) */

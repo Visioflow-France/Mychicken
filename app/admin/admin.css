@@ -43,7 +43,7 @@
   border-bottom:1px solid var(--g-14);
 }
 .admin-top .at-left{display:flex;align-items:center;gap:.9rem}
-.admin-top .at-mark{display:inline-flex;width:42px;height:42px;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--g-45);color:var(--gold);background:var(--g-08)}
+.admin-top .at-mark{display:inline-flex;width:42px;height:42px;align-items:center;justify-content:center;border-radius:50%}
 .admin-top .at-left b{display:block;font-family:var(--serif);font-size:1.15rem;color:var(--cream);line-height:1.25}
 .admin-top .at-mode{font-size:.68rem;letter-spacing:.08em;color:var(--sand)}
 .admin-top .at-mode.firebase{color:var(--gold-light)}
