@@ -30,6 +30,9 @@ export default function Hero() {
         <span>
           <Icon name="clock" size={15} /> 7j/7 · <b>11h30–21h30</b>
         </span>
+        <span>
+          <Icon name="check" size={15} /> <b>Viande halal</b>
+        </span>
       </div>
     </div>
   );

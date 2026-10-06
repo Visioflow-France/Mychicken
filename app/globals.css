@@ -558,6 +558,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 /* Colonne infos pratiques : icônes dorées */
 .fc-infos ul li{display:flex;align-items:flex-start;gap:.7rem;padding:.32rem 0;font-size:.93rem;color:rgba(233,219,193,.82);line-height:1.55}
 .fc-infos .fc-ico{color:var(--gold);display:inline-flex;flex-shrink:0;margin-top:.14rem}
+.fc-halal{font-weight:600;color:var(--gold-light)}
 .fc-infos ul li a{display:inline;padding:0;color:rgba(233,219,193,.82);border-bottom:1px solid rgba(255,210,120,.25)}
 .fc-infos ul li a:hover{color:var(--gold-light);border-color:var(--gold-light)}
 
@@ -778,6 +779,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .contact-locations{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:1.4rem}
 .cl-card{display:flex;gap:.9rem;align-items:flex-start;padding:1.1rem 1.2rem;border:1px solid var(--g-25);border-radius:16px;background:var(--wood-950);color:var(--cream);text-decoration:none;transition:border-color .2s,transform .15s}
 .cl-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.cl-halal{display:inline-flex;align-items:center;gap:.35rem;margin-top:.25rem;font:600 .74rem var(--font-montserrat);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-light)}
 .cl-card.active{border-color:var(--gold);box-shadow:0 0 0 1px var(--g-45)}
 .cl-card .icon{color:var(--gold);margin-top:.2rem}
 .cl-card b{color:var(--gold-light);font-family:var(--font-garamond);font-size:1.05rem}

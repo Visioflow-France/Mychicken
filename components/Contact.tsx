@@ -79,6 +79,7 @@ export default function Contact() {
                 <b>My Chicken {l.city}</b>
                 <p>{l.address}, {l.postal} {l.city}</p>
                 <p>{l.phone} · {l.hours}</p>
+                <p className="cl-halal"><Icon name="check" size={13} strokeWidth={2.4} /> Viande halal</p>
               </span>
             </a>
           ))}

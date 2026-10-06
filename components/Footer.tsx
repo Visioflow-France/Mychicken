@@ -104,6 +104,10 @@ export default function Footer() {
                   <span className="fc-ico"><Icon name="scooter" size={15} /></span>
                   <span>Livraison {current.city} &amp; alentours</span>
                 </li>
+                <li>
+                  <span className="fc-ico"><Icon name="check" size={15} /></span>
+                  <span className="fc-halal">Viande halal — certifiée pour nos deux restaurants</span>
+                </li>
               </ul>
             </div>
             <div className="fc-col">
