@@ -20,9 +20,9 @@ type SuccessState = { num: string; paid: boolean; total?: number | null };
 export default function CartSection() {
   const { cart, count, total, setQty, remove, clear } = useCart();
   const { menu, source, priceOf, findCode } = useMenu();
-  const { current, locationId, openGate } = useLocationCtx();
+  const { current, locationId, openGate, entryMode } = useLocationCtx();
   const toast = useToast();
-  const [mode, setMode] = useState('takeaway');
+  const [mode, setMode] = useState<'takeaway' | 'delivery'>(entryMode || 'takeaway');
   const [orderNum, setOrderNum] = useState<SuccessState | null>(null);
   const [codeInput, setCodeInput] = useState('');
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
@@ -30,7 +30,11 @@ export default function CartSection() {
   const formRef = useRef<HTMLFormElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
-  const addrRef = useRef<HTMLInputElement>(null);
+
+  const addrStreetRef = useRef<HTMLInputElement>(null);
+  const addrCityRef = useRef<HTMLInputElement>(null);
+  const addrCpRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const detailRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -97,6 +101,7 @@ export default function CartSection() {
         value: {
           name?: string;
           phone: string;
+          email?: string;
           address?: string;
           building?: string;
           door?: string;
@@ -114,23 +119,38 @@ export default function CartSection() {
     const name = nameRef.current?.value.trim() ?? '';
     if (name.length < 3) {
       nameRef.current?.focus();
-      return { ok: false, error: 'Merci d\u2019indiquer votre nom et prénom' };
+      return { ok: false, error: 'Merci d’indiquer votre nom et prénom' };
     }
+    const email = emailRef.current?.value.trim() ?? '';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      emailRef.current?.focus();
+      return { ok: false, error: 'Merci d’indiquer un e-mail valide (confirmation de commande)' };
+    }
+    let address: string | undefined;
     if (mode === 'delivery') {
-      const addr = addrRef.current?.value.trim() ?? '';
-      if (addr.length < 8) {
-        addrRef.current?.focus();
+      const street = addrStreetRef.current?.value.trim() ?? '';
+      const city = addrCityRef.current?.value.trim() ?? '';
+      const cp = addrCpRef.current?.value.replace(/\D/g, '') ?? '';
+      if (street.length < 4) {
+        addrStreetRef.current?.focus();
         return { ok: false, error: "Merci d'indiquer votre adresse de livraison" };
       }
-      // L'adresse doit contenir un code postal couvert par le restaurant sélectionné
-      const cpMatch = addr.match(/\b(\d{5})\b/);
-      if (!cpMatch || !current.deliveryZones.includes(cpMatch[1])) {
-        addrRef.current?.focus();
+      if (!/^\d{5}$/.test(cp)) {
+        addrCpRef.current?.focus();
+        return { ok: false, error: 'Code postal de livraison invalide (5 chiffres)' };
+      }
+      if (!current.deliveryZones.includes(cp)) {
+        addrCpRef.current?.focus();
         return {
           ok: false,
-          error: `Livraison non couverte à cette adresse — My Chicken ${current.city} livre les codes postaux : ${current.deliveryZones.join(', ')}`,
+          error: `Livraison non couverte à ce code postal — My Chicken ${current.city} livre : ${current.deliveryZones.join(', ')}`,
         };
       }
+      if (city.length < 2) {
+        addrCityRef.current?.focus();
+        return { ok: false, error: 'Merci d’indiquer votre ville' };
+      }
+      address = `${street}, ${cp} ${city}`;
     }
     const detail = (k: string) => detailRefs.current[k]?.value.trim() || undefined;
     return {
@@ -138,7 +158,8 @@ export default function CartSection() {
       value: {
         name,
         phone,
-        address: mode === 'delivery' ? addrRef.current?.value.trim() : undefined,
+        email,
+        address,
         ...(mode === 'delivery'
           ? {
               building: detail('building'),
@@ -402,7 +423,7 @@ export default function CartSection() {
                         name="mode"
                         value={m.value}
                         checked={mode === m.value}
-                        onChange={() => setMode(m.value)}
+                        onChange={() => setMode(m.value as 'takeaway' | 'delivery')}
                       />
                       <Icon name={m.icon} size={17} />
                       {m.label}
@@ -421,16 +442,45 @@ export default function CartSection() {
                   </div>
                 </fieldset>
 
+                <div className="form-row">
+                  <div className="f-group">
+                    <label htmlFor="dEmail">E-mail *</label>
+                    <input ref={emailRef} id="dEmail" type="email" required placeholder="prenom.nom@mail.com" autoComplete="email" inputMode="email" />
+                  </div>
+                </div>
+
                 {mode === 'delivery' && (
-                  <div className="f-group" id="deliveryFields">
-                    <label htmlFor="dAddr">Adresse de livraison *</label>
-                    <input
-                      ref={addrRef}
-                      id="dAddr"
-                      type="text"
-                      required
-                      placeholder={`12 rue des Écoles, ${current.postal} ${current.city}`}
-                    />
+                  <div id="deliveryFields" className="delivery-fields">
+                    <div className="f-group">
+                      <label htmlFor="dAddr">Adresse de livraison *</label>
+                      <input
+                        ref={addrStreetRef}
+                        id="dAddr"
+                        type="text"
+                        required
+                        autoComplete="street-address"
+                        placeholder={`12 rue des Écoles`}
+                      />
+                    </div>
+                    <div className="form-row">
+                      <div className="f-group">
+                        <label htmlFor="dCp">Code postal *</label>
+                        <input
+                          ref={addrCpRef}
+                          id="dCp"
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={5}
+                          required
+                          autoComplete="postal-code"
+                          placeholder={current.postal}
+                        />
+                      </div>
+                      <div className="f-group">
+                        <label htmlFor="dCity">Ville *</label>
+                        <input ref={addrCityRef} id="dCity" type="text" required autoComplete="address-level2" placeholder={current.city} />
+                      </div>
+                    </div>
                   </div>
                 )}
 

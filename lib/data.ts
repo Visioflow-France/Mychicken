@@ -43,6 +43,8 @@ export type RestaurantLocation = {
   minDelivery: number;
   open: boolean;
   deliveryZones: string[]; // codes postaux livrés
+  lat?: number; // position GPS (proposition du resto le plus proche)
+  lng?: number;
 };
 
 export const LOCATIONS: RestaurantLocation[] = [
@@ -58,6 +60,8 @@ export const LOCATIONS: RestaurantLocation[] = [
     minDelivery: 25,
     open: true,
     deliveryZones: ['77230', '77410', '77270', '77144'],
+    lat: 49.0946,
+    lng: 2.6553,
   },
   {
     id: 'persan',
@@ -71,6 +75,8 @@ export const LOCATIONS: RestaurantLocation[] = [
     minDelivery: 25,
     open: true,
     deliveryZones: ['95340', '95420', '95150', '95270', '95390'],
+    lat: 49.1560,
+    lng: 2.2856,
   },
 ];
 
@@ -125,6 +131,7 @@ export type Order = {
   customer: {
     name?: string;
     phone: string;
+    email?: string;
     address?: string;
     /* Détails de livraison (optionnels) */
     building?: string;

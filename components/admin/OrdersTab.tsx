@@ -69,6 +69,7 @@ function printTicket(o: Order, locName: string, locAddress: string) {
   <hr>
   <div class="row"><span><b>Client</b></span></div>
   <div class="row"><span>${esc(c.name || '—')}</span><span>${esc(c.phone || '')}</span></div>
+  ${c.email ? `<div class="row"><span>${esc(c.email)}</span></div>` : ''}
   ${c.address ? `<div class="row"><span>Adresse : ${esc(c.address || '')}</span></div>` : ''}
   ${dl.length ? `<div class="dl">${dl.map((l) => `<div>${esc(l)}</div>`).join('')}</div>` : ''}
   ${c.note ? `<div class="note"><b>Instructions :</b> ${esc(c.note || '')}</div>` : ''}
@@ -218,6 +219,11 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
           <div className="oc-customer">
             <span>
               <Icon name="phone" size={12} /> <a href={`tel:${o.customer?.phone}`}>{o.customer?.phone}</a>
+              {o.customer?.email ? (
+                <span>
+                  <Icon name="bag" size={12} /> {o.customer.email}
+                </span>
+              ) : null}
               {o.customer?.name ? ` — ${o.customer.name}` : ''}
             </span>
             {o.customer?.address && <span><Icon name="pin" size={12} /> {o.customer.address}</span>}

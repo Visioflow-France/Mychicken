@@ -830,3 +830,36 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .upload-status.ok{color:#7bd88f}
 .upload-status.ko{color:#ff8f7a}
 .upload-hint{font-size:.7rem;color:var(--sand-deep);margin-top:.3rem}
+
+/* ========== BARRE RESTAURAT PERMANENTE ========== */
+.resto-bar{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;padding:.45rem 1rem;background:color-mix(in srgb,var(--wood-900) 92%,transparent);border-bottom:1px solid var(--g-14);font-size:.74rem;color:var(--sand)}
+.resto-bar .rb-info{display:inline-flex;align-items:center;gap:.4rem;letter-spacing:.04em}
+.resto-bar .rb-info svg{color:var(--gold)}
+.resto-bar b{color:var(--gold-light);font-weight:600}
+.rb-mode{color:var(--sand-deep)}
+.rb-change{background:none;border:1px solid var(--g-25);border-radius:var(--pill);color:var(--gold);font:600 .68rem var(--font-montserrat);letter-spacing:.08em;text-transform:uppercase;padding:.32rem .8rem;cursor:pointer;transition:border-color .2s,color .2s}
+.rb-change:hover{border-color:var(--gold);color:var(--gold-light)}
+
+/* ========== PARCOURS D'ENTRÉE (étapes) ========== */
+.lg-mode-choice{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.8rem;margin:1.2rem 0 .6rem}
+.lg-mode{display:flex;flex-direction:column;align-items:center;gap:.35rem;padding:1.3rem 1rem;border:1px solid var(--g-25);border-radius:16px;background:var(--wood-900);color:var(--cream);cursor:pointer;transition:border-color .2s,transform .15s}
+.lg-mode:hover{border-color:var(--gold);transform:translateY(-2px)}
+.lg-mode svg{color:var(--gold)}
+.lg-mode b{font-family:var(--font-garamond);font-size:1.25rem}
+.lg-mode span{font-size:.76rem;color:var(--sand)}
+.lg-geoloc{display:inline-flex;align-items:center;gap:.45rem;margin-top:.6rem;background:none;border:none;color:var(--gold);font:600 .78rem var(--font-montserrat);letter-spacing:.04em;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lg-geoloc:hover{color:var(--gold-light)}
+.lg-geoloc:disabled{opacity:.6;cursor:wait}
+.lg-geo-err{margin-top:.4rem;font-size:.75rem;color:#ff9b7a}
+.lg-back{margin-top:1rem;background:none;border:0;color:var(--sand);font-size:.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:.8}
+.lg-back:hover{opacity:1}
+.lg-nearest{display:inline-flex;font:700 .56rem var(--font-montserrat);letter-spacing:.14em;text-transform:uppercase;color:var(--txt-on-gold);background:var(--grad-gold);border-radius:var(--pill);padding:.2rem .6rem;margin-bottom:.35rem}
+
+/* ========== STABILITÉ MOBILE (paiement) ==========
+   iOS zoome (et fait « bouger » la page) dès qu'un champ fait moins
+   de 16px : on force 16px sur mobile pour tous les champs du tunnel. */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px !important; }
+  html, body { overflow-x: hidden; }
+  .checkout-layout { grid-template-columns: 1fr; }
+}

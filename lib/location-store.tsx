@@ -22,6 +22,7 @@ import { useMenu } from './menu-store';
 
 export const LOCAL_LOCATIONS_KEY = 'mc_locations';
 export const LOCAL_LOCATION_KEY = 'mc_location';
+export const LOCAL_MODE_KEY = 'mc_mode';
 export const LOCATIONS_UPDATED_EVENT = 'mc-locations-updated';
 
 /* Mode démo uniquement : overrides locaux des fiches */
@@ -58,6 +59,10 @@ type LocationContextValue = {
   gateOpen: boolean;
   openGate: () => void;
   closeGate: () => void;
+  /** Mode choisi à l'entrée (livraison / à emporter) — pré-sélection
+     du mode dans le tunnel de paiement. */
+  entryMode: 'takeaway' | 'delivery' | null;
+  setEntryMode: (mode: 'takeaway' | 'delivery') => void;
   /** Trouve le restaurant qui livre ce code postal */
   findByPostal: (postal: string) => RestaurantLocation | null;
 };
@@ -70,13 +75,16 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const [localLocations, setLocalLocations] = useState<RestaurantLocation[] | null>(null);
   const [locationId, setLocationId] = useState<string | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
+  const [entryMode, setEntryModeState] = useState<'takeaway' | 'delivery' | null>(null);
 
   /* Choix mémorisé + overrides locaux (mode démo) */
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LOCAL_LOCATION_KEY);
       if (saved) setLocationId(saved);
-      else setGateOpen(true); // premier accès → popup de choix
+      else setGateOpen(true); // premier accès → parcours de choix
+      const savedMode = localStorage.getItem(LOCAL_MODE_KEY);
+      if (savedMode === 'takeaway' || savedMode === 'delivery') setEntryModeState(savedMode);
     } catch {
       setGateOpen(true);
     }
@@ -94,6 +102,15 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     () => localLocations || menu.locations || LOCATIONS,
     [localLocations, menu.locations]
   );
+
+  const setEntryMode = useCallback((mode: 'takeaway' | 'delivery') => {
+    setEntryModeState(mode);
+    try {
+      localStorage.setItem(LOCAL_MODE_KEY, mode);
+    } catch {
+      /* stockage indisponible */
+    }
+  }, []);
 
   const choose = useCallback((id: string) => {
     setLocationId(id);
@@ -129,9 +146,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       gateOpen,
       openGate: () => setGateOpen(true),
       closeGate: () => setGateOpen(false),
+      entryMode,
+      setEntryMode,
       findByPostal,
     }),
-    [locations, source, current, locationId, choose, gateOpen, findByPostal]
+    [locations, source, current, locationId, choose, gateOpen, entryMode, setEntryMode, findByPostal]
   );
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;

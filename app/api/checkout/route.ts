@@ -21,6 +21,7 @@ type CheckoutBody = {
   locationId?: string;
   customer: {
     name?: string;
+    email?: string;
     phone: string;
     address?: string;
     building?: string;
@@ -66,6 +67,10 @@ export async function POST(req: Request) {
   const custName = (body.customer?.name || '').trim();
   if (custName.length < 3) {
     return NextResponse.json({ error: 'Nom et prénom requis' }, { status: 400 });
+  }
+  const email = (body.customer?.email || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return NextResponse.json({ error: 'E-mail valide requis (confirmation de commande)' }, { status: 400 });
   }
   const mode: OrderMode = ['takeaway', 'delivery'].includes(body.mode) ? body.mode : 'takeaway';
   if (mode === 'delivery' && (body.customer?.address || '').trim().length < 8) {
@@ -208,6 +213,7 @@ export async function POST(req: Request) {
       customer: {
         name: custName,
         phone,
+        email,
         address: mode === 'delivery' ? body.customer?.address?.trim() : undefined,
         ...(mode === 'delivery'
           ? {
