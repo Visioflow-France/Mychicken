@@ -154,7 +154,7 @@ export default function CartSection() {
   }, [mode, current]);
 
   const cartPayload = () =>
-    Object.entries(cart).map(([id, qty]) => ({ id, qty }));
+    cart.map((l) => ({ id: l.id, qty: l.qty, note: l.note }));
 
   const finishOrder = async () => {
     const cust = customerData();
@@ -234,17 +234,18 @@ export default function CartSection() {
                 <Icon name="trash" size={13} /> Vider le panier
               </button>
               <div id="cartItems">
-                {Object.entries(cart).map(([id, q]) => {
-                  const p = menu.products.find((x) => x.id === id);
+                {cart.map((line, i) => {
+                  const p = menu.products.find((x) => x.id === line.id);
                   if (!p) return null;
-                  const lp = priceOf(id);
+                  const lp = priceOf(line.id);
                   return (
-                    <div className="cart-item" key={id}>
+                    <div className="cart-item" key={`${line.id}-${line.note || ''}-${i}`}>
                       <span className="ci-thumb">
                         <SmartImg src={p.img} alt={p.name} loading="lazy" />
                       </span>
                       <div>
                         <p className="ci-name">{p.name}</p>
+                        {line.note && <p className="ci-note">avec {line.note}</p>}
                         <p className="ci-unit">
                           {lp.oldPrice != null && <s className="p-old-price">{fmt(lp.oldPrice)} </s>}
                           {fmt(lp.price)} / unité
@@ -252,15 +253,15 @@ export default function CartSection() {
                         <div className="ci-controls">
                           <button
                             className="qty-btn"
-                            onClick={() => setQty(id, -1)}
+                            onClick={() => setQty(i, -1)}
                             aria-label={`Retirer un ${p.name}`}
                           >
                             <Icon name="minus" size={13} strokeWidth={2.4} />
                           </button>
-                          <span className="qty-value">{q}</span>
+                          <span className="qty-value">{line.qty}</span>
                           <button
                             className="qty-btn"
-                            onClick={() => setQty(id, 1)}
+                            onClick={() => setQty(i, 1)}
                             aria-label={`Ajouter un ${p.name}`}
                           >
                             <Icon name="plus" size={13} strokeWidth={2.4} />
@@ -268,10 +269,10 @@ export default function CartSection() {
                         </div>
                       </div>
                       <div className="ci-side">
-                        <span className="ci-price">{fmt(lp.price * q)}</span>
+                        <span className="ci-price">{fmt(lp.price * line.qty)}</span>
                         <button
                           className="ci-remove"
-                          onClick={() => remove(id)}
+                          onClick={() => remove(i)}
                           aria-label={`Supprimer ${p.name}`}
                         >
                           <Icon name="close" size={15} strokeWidth={2.2} />

@@ -49,11 +49,11 @@ export const LOCATIONS: RestaurantLocation[] = [
   {
     id: 'saint-mard',
     name: 'My Chicken Saint-Mard',
-    address: 'Av. de la Font du Berger',
+    address: 'ZAC de la Fontaine du Berger',
     postal: '77230',
     city: 'Saint-Mard',
     phone: '07 51 50 39 00',
-    hours: '7j/7 · 11h–14h / 18h–22h30',
+    hours: 'Lun–Dim · 11h30–21h30 (vendredi : fermeture 13h–14h30)',
     deliveryFee: 2.9,
     minDelivery: 25,
     open: true,
@@ -66,7 +66,7 @@ export const LOCATIONS: RestaurantLocation[] = [
     postal: '95340',
     city: 'Persan',
     phone: '07 51 56 59 51',
-    hours: '7j/7 · 11h–15h / 18h–23h',
+    hours: 'Lun–Dim · 11h30–21h30 (vendredi : fermeture 13h–14h30)',
     deliveryFee: 2.9,
     minDelivery: 25,
     open: true,
@@ -83,6 +83,9 @@ export type Product = {
   img: string;
   desc: string;
   available?: boolean; // false = épuisé (affiché grisé, commande bloquée)
+  /* Menus : ce que le client doit choisir en guise de contenu inclus
+     (n accompagnements + n boissons, sans supplément). */
+  incl?: { sides: number; drinks: number };
 };
 
 export type MenuData = {
@@ -99,7 +102,7 @@ export type MenuData = {
 export type OrderMode = 'takeaway' | 'dinein' | 'delivery';
 export type OrderStatus = 'nouvelle' | 'en_preparation' | 'prete' | 'terminee' | 'annulee';
 
-export type OrderItem = { id: string; name: string; price: number; qty: number };
+export type OrderItem = { id: string; name: string; price: number; qty: number; note?: string };
 
 export type Order = {
   id: string;
@@ -150,91 +153,84 @@ const U = 'auto=format&fit=crop&w=1200&q=75'; // paramètres Unsplash communs (n
 
 export const PRODUCTS: Product[] = [
   /* ---------------- 01 · NOS MENUS ---------------- */
-  { id: 'menu-cuisse', name: 'Menu Cuisse', price: 7.5, cat: 'menus', popular: true, img: `${F}5b77e643d097.jpg`, desc: '1 cuisse de poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-demi', name: 'Menu Demi Poulet', price: 8.9, cat: 'menus', popular: true, img: `${F}45dd2550dad9.jpg`, desc: '1 demi poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-hotdog', name: 'Menu Hot Dog', price: 7.5, cat: 'menus', img: `${F}5f0ee3b5d64a.jpg`, desc: '1 hot dog + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-pilons', name: 'Menu Pilons', price: 7.5, cat: 'menus', img: `${F}f72a1ab6d609.jpg`, desc: '3 pilons de poulets + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-wings', name: 'Menu Wings', price: 8.5, cat: 'menus', img: `${F}030c7cfcd6bc.jpg`, desc: '6 wings + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-ailes', name: 'Menu Ailes', price: 7.5, cat: 'menus', img: `${F}21181d899cf9.jpg`, desc: '4 ailes de poulets + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-tenders', name: 'Menu Tenders', price: 7.5, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: '3 tenders + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-donuts', name: 'Menu Donut', price: 8.5, cat: 'menus', img: `${F}c917ff812687.jpg`, desc: '1 donut poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-mixte', name: 'Menu Mixte', price: 10.5, cat: 'menus', img: `${F}7d24cd680344.jpg`, desc: '1 cuisse + 2 pilons + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-filet', name: 'Menu Filet', price: 7.9, cat: 'menus', img: `${F}9b58d0eb71ca.jpg`, desc: '1 filet de poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-tiers', name: 'Menu Tiers de Poulet', price: 10.9, cat: 'menus', img: `${F}e4148192fba9.jpg`, desc: '1 tiers de poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', popular: true, img: `${F}4c5945eff50c.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'tasty-crousty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'tasty-crousty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: `${F}4c5945eff50c.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-familial', name: 'Menu Familial', price: 30, cat: 'menus', img: `${F}a1fc59d6204b.jpg`, desc: '4 demi-poulets + 4 accompagnements + 1 boisson 1,5 L' },
-  { id: 'menu-brick', name: 'Menu Brick', price: 8.5, cat: 'menus', img: `${F}853664036f2c.jpeg`, desc: '2 bricks poulet + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-saucisses', name: 'Menu Saucisses', price: 7.5, cat: 'menus', img: `${F}0d66b6622167.jpg`, desc: '2 saucisses + 1 accompagnement + 1 boisson 33 cl' },
-  { id: 'menu-special', name: 'Menu Spécial', price: 25, cat: 'menus', popular: true, img: `${F}02f572b69cfe.jpg`, desc: '1 poulet entier braisé + 2 accompagnements + 1 boisson 1,5 L' },
-  { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'menus', img: `${F}08e205722e55.jpg`, desc: 'Servi avec fromage, crudités et une sauce maison. Au choix : chicken braisé, merguez ou kefta. Grillé au feu de bois.' },
+  { id: 'menu-cuisse', name: 'Menu Cuisse', price: 7.5, cat: 'menus', popular: true, img: `/photos/menu-cuisse.jpg`, desc: '1 cuisse de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-demi', name: 'Menu Demi Poulet', price: 8.9, cat: 'menus', popular: true, img: `/photos/p-poulet-entier.jpg`, desc: '1 demi poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-hotdog', name: 'Menu Hot Dog', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: '1 hot dog + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-pilons', name: 'Menu Pilons', price: 7.5, cat: 'menus', img: `/photos/menu-pilons.jpg`, desc: '3 pilons de poulets + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-wings', name: 'Menu Wings', price: 8.5, cat: 'menus', img: `/photos/menu-wings.jpg`, desc: '6 wings + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-ailes', name: 'Menu Ailes', price: 7.5, cat: 'menus', img: `/photos/menu-ailes.jpg`, desc: '4 ailes de poulets + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-tenders', name: 'Menu Tenders', price: 7.5, cat: 'menus', img: `/photos/menu-tenders.webp`, desc: '3 tenders + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-donuts', name: 'Menu Donut', price: 8.5, cat: 'menus', img: `/photos/menu-donuts.jpg`, desc: '1 donut poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-mixte', name: 'Menu Mixte', price: 10.5, cat: 'menus', img: `/photos/menu-pilons.jpg`, desc: '1 cuisse + 2 pilons + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-filet', name: 'Menu Filet', price: 7.9, cat: 'menus', img: `/photos/assiette-poulet.jpg`, desc: '1 filet de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-tiers', name: 'Menu Tiers de Poulet', price: 10.9, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '1 tiers de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', popular: true, img: `/photos/tasty-crousty-m.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'tasty-crousty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: `/photos/tasty-crousty-l.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'tasty-crousty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: `/photos/tasty-crousty-xl.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'menu-familial', name: 'Menu Familial', price: 30, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '4 demi-poulets + 4 accompagnements + 1 boisson 1,5 L', incl: { sides: 4, drinks: 1 } },
+  { id: 'menu-brick', name: 'Menu Brick', price: 8.5, cat: 'menus', img: `/photos/menu-brick.jpg`, desc: '2 bricks poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-saucisses', name: 'Menu Saucisses', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: '2 saucisses + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-special', name: 'Menu Spécial', price: 25, cat: 'menus', popular: true, img: `/photos/menu-special.jpg`, desc: '1 poulet entier braisé + 2 accompagnements + 1 boisson 1,5 L', incl: { sides: 2, drinks: 1 } },
+  { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: 'Servi avec fromage, crudités et une sauce maison. Au choix : chicken braisé, merguez ou kefta. Grillé au feu de bois.' },
 
   /* ---------------- 02 · NOS TACOS ---------------- */
-  { id: 'tacos-m', name: 'Tacos M', price: 7, cat: 'tacos', popular: true, img: `${F}25dc9eb36338.png`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
-  { id: 'tacos-l', name: 'Tacos L', price: 8, cat: 'tacos', img: `${F}c935735abfc7.jpeg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
-  { id: 'tacos-xl', name: 'Tacos XL', price: 9, cat: 'tacos', img: `${F}25dc9eb36338.png`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
+  { id: 'tacos-m', name: 'Tacos M', price: 7, cat: 'tacos', popular: true, img: `/photos/tacos-m.jpg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
+  { id: 'tacos-l', name: 'Tacos L', price: 8, cat: 'tacos', img: `/photos/tacos-l.jpg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
+  { id: 'tacos-xl', name: 'Tacos XL', price: 9, cat: 'tacos', img: `/photos/tacos-xl.jpg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
 
   /* ---------------- 03 · NOS BURGERS ---------------- */
-  { id: 'burger-classique', name: 'Classique', price: 4.5, cat: 'burgers', img: `${F}df75c8a20b4b.jpg`, desc: '' },
-  { id: 'menu-burger', name: 'Menu Burger', price: 7.5, cat: 'burgers', img: `${F}9bc77e680d44.jpg`, desc: 'Burger + frites + boisson 33 cl' },
+  { id: 'burger-classique', name: 'Classique', price: 4.5, cat: 'burgers', img: `/photos/tasty-crousty-m.jpg`, desc: '' },
+  { id: 'menu-burger', name: 'Menu Burger', price: 7.5, cat: 'burgers', img: `/photos/tasty-crousty-m.jpg`, desc: 'Burger + frites + boisson 33 cl' },
 
   /* ---------------- 04 · NOS SANDWICHS ---------------- */
-  { id: 'sandwich-poulet', name: 'Sandwich Poulet', price: 5, cat: 'sandwichs', img: `${F}8cade619e2fd.jpg`, desc: '' },
-  { id: 'menu-sandwich', name: 'Menu Sandwich', price: 7.5, cat: 'sandwichs', img: `${F}8cade619e2fd.jpg`, desc: 'Sandwich + frites + boisson 33 cl' },
+  { id: 'sandwich-poulet', name: 'Sandwich Poulet', price: 5, cat: 'sandwichs', img: `/photos/sandwich-poulet.jpg`, desc: '' },
+  { id: 'menu-sandwich', name: 'Menu Sandwich', price: 7.5, cat: 'sandwichs', img: `/photos/menu-sandwich.jpg`, desc: 'Sandwich + frites + boisson 33 cl' },
 
   /* ---------------- 05 · NOS ASSIETTES ---------------- */
-  { id: 'assiette-poulet', name: 'Assiette Poulet', price: 8, cat: 'assiettes', img: `${F}c157ab0a8feb.jpg`, desc: 'Poulet braisé + accompagnement + sauce + pain' },
-  { id: 'assiette-mixte', name: 'Assiette Mixte', price: 8.5, cat: 'assiettes', img: `${F}94eebb28a234.png`, desc: 'Cuisse + pilons + accompagnement + sauce' },
+  { id: 'assiette-poulet', name: 'Assiette Poulet', price: 8, cat: 'assiettes', img: `/photos/assiette-poulet.jpg`, desc: 'Poulet braisé + accompagnement + sauce + pain' },
+  { id: 'assiette-mixte', name: 'Assiette Mixte', price: 8.5, cat: 'assiettes', img: `/photos/assiette-poulet.jpg`, desc: 'Cuisse + pilons + accompagnement + sauce' },
 
   /* ---------------- 06 · NOS SALADES ---------------- */
-  { id: 'salade-iranienne', name: 'Salade Iranienne', price: 6.5, cat: 'salades', img: `${F}47d22a191135.jpg`, desc: '' },
-  { id: 'salade-bulgour', name: 'Salade Bulgour', price: 7, cat: 'salades', img: `${F}704105884000.jpg`, desc: '' },
+  { id: 'salade-iranienne', name: 'Salade Iranienne', price: 6.5, cat: 'salades', img: `/photos/salade-bulgour.jpg`, desc: '' },
+  { id: 'salade-bulgour', name: 'Salade Bulgour', price: 7, cat: 'salades', img: `/photos/salade-bulgour.jpg`, desc: '' },
 
   /* ---------------- 07 · PIÈCES SÉPARÉES ---------------- */
-  { id: 'p-3-pilons', name: '3 Pilons', price: 2.5, cat: 'pieces', img: `${F}f72a1ab6d609.jpg`, desc: '' },
-  { id: 'p-4-ailes', name: '4 Ailes', price: 2.5, cat: 'pieces', img: `${F}21181d899cf9.jpg`, desc: '' },
-  { id: 'p-4-nems', name: '4 Nems', price: 5, cat: 'pieces', img: `${F}7cf36fb52134.jpg`, desc: '' },
-  { id: 'p-1-cuisse', name: '1 Cuisse', price: 3.5, cat: 'pieces', img: `${F}5b77e643d097.jpg`, desc: '' },
-  { id: 'p-1-pilon', name: '1 Pilon de Poulet', price: 1, cat: 'pieces', img: `${F}f72a1ab6d609.jpg`, desc: '' },
-  { id: 'p-3-tenders', name: '3 Tenders', price: 2.5, cat: 'pieces', img: `${F}4c5945eff50c.jpg`, desc: '' },
-  { id: 'p-1-brick', name: '1 Brick', price: 2, cat: 'pieces', img: `${F}853664036f2c.jpeg`, desc: '' },
-  { id: 'p-6-wings', name: '6 Wings', price: 4.9, cat: 'pieces', img: `${F}030c7cfcd6bc.jpg`, desc: '' },
-  { id: 'p-1-saucisse', name: '1 Saucisse', price: 1.5, cat: 'pieces', img: `${F}0d66b6622167.jpg`, desc: '' },
-  { id: 'p-demi-poulet', name: 'Demi Poulet', price: 4.9, cat: 'pieces', img: `${F}45dd2550dad9.jpg`, desc: '' },
-  { id: 'p-poulet-entier', name: 'Poulet Entier', price: 8.9, cat: 'pieces', img: `${F}02f572b69cfe.jpg`, desc: '' },
-  { id: 'p-hotdog', name: 'Hot Dog', price: 3.5, cat: 'pieces', img: `${F}5f0ee3b5d64a.jpg`, desc: '' },
-  { id: 'p-donut-poulet', name: '1 Donut de Poulet', price: 2, cat: 'pieces', img: `${F}c917ff812687.jpg`, desc: '' },
+  { id: 'p-3-pilons', name: '3 Pilons', price: 2.5, cat: 'pieces', img: `/photos/menu-pilons.jpg`, desc: '' },
+  { id: 'p-4-ailes', name: '4 Ailes', price: 2.5, cat: 'pieces', img: `/photos/menu-ailes.jpg`, desc: '' },
+  { id: 'p-4-nems', name: '4 Nems', price: 5, cat: 'pieces', img: `/photos/menu-brick.jpg`, desc: '' },
+  { id: 'p-1-cuisse', name: '1 Cuisse', price: 3.5, cat: 'pieces', img: `/photos/menu-cuisse.jpg`, desc: '' },
+  { id: 'p-1-pilon', name: '1 Pilon de Poulet', price: 1, cat: 'pieces', img: `/photos/menu-pilons.jpg`, desc: '' },
+  { id: 'p-3-tenders', name: '3 Tenders', price: 2.5, cat: 'pieces', img: `/photos/menu-tenders.jpg`, desc: '' },
+  { id: 'p-1-brick', name: '1 Brick', price: 2, cat: 'pieces', img: `/photos/p-1-brick.jpg`, desc: '' },
+  { id: 'p-6-wings', name: '6 Wings', price: 4.9, cat: 'pieces', img: `/photos/menu-wings.jpg`, desc: '' },
+  { id: 'p-1-saucisse', name: '1 Saucisse', price: 1.5, cat: 'pieces', img: `/photos/sandwich-poulet.jpg`, desc: '' },
+  { id: 'p-demi-poulet', name: 'Demi Poulet', price: 4.9, cat: 'pieces', img: `/photos/p-poulet-entier.jpg`, desc: '' },
+  { id: 'p-poulet-entier', name: 'Poulet Entier', price: 8.9, cat: 'pieces', img: `/photos/p-poulet-entier.jpg`, desc: '' },
+  { id: 'p-hotdog', name: 'Hot Dog', price: 3.5, cat: 'pieces', img: `/photos/sandwich-poulet.jpg`, desc: '' },
+  { id: 'p-donut-poulet', name: '1 Donut de Poulet', price: 2, cat: 'pieces', img: `/photos/p-donut-poulet.jpg`, desc: '' },
 
   /* ---------------- 08 · NOS ACCOMPAGNEMENTS ---------------- */
-  { id: 'a-frites', name: 'Frites', price: 2.5, cat: 'accompagnements', img: `https://images.unsplash.com/photo-1573080496219-bb080dd4f877?${U}`, desc: '' },
-  { id: 'a-potatoes', name: 'Potatoes', price: 2.5, cat: 'accompagnements', img: `${F}2180184ecd88.jpg`, desc: '' },
-  { id: 'a-plantain', name: 'Banane Plantain', price: 2.5, cat: 'accompagnements', img: `${F}6a6c25ff8af2.jpg`, desc: '' },
-  { id: 'a-riz-thai', name: 'Riz Thaï', price: 2.5, cat: 'accompagnements', img: `https://images.unsplash.com/photo-1512058564366-18510be2db19?${U}`, desc: '' },
-  { id: 'a-salade-verte', name: 'Salade Verte', price: 2.5, cat: 'accompagnements', img: `${F}cc3feac5ad2c.jpg`, desc: '' },
-  { id: 'a-oignons', name: 'Oignons', price: 2.5, cat: 'accompagnements', img: `${F}0319b8a7dabe.png`, desc: '' },
-  { id: 'a-pommes-de-terre', name: 'Pommes de Terre', price: 2.5, cat: 'accompagnements', img: `${F}cf3588cc2c1c.jpg`, desc: '' },
-  { id: 'a-pates', name: 'Pâtes', price: 2.5, cat: 'accompagnements', img: `${F}0f59d4aa56cb.jpg`, desc: '' },
+  { id: 'a-frites', name: 'Frites', price: 2.5, cat: 'accompagnements', img: `/photos/a-frites.jpg`, desc: '' },
+  { id: 'a-potatoes', name: 'Potatoes', price: 2.5, cat: 'accompagnements', img: `/photos/a-pommes-de-terre.jpg`, desc: '' },
+  { id: 'a-plantain', name: 'Banane Plantain', price: 2.5, cat: 'accompagnements', img: `/photos/a-plantain.jpg`, desc: '' },
+  { id: 'a-riz-thai', name: 'Riz Thaï', price: 2.5, cat: 'accompagnements', img: `/photos/a-riz-thai.jpg`, desc: '' },
+  { id: 'a-pommes-de-terre', name: 'Pommes de Terre', price: 2.5, cat: 'accompagnements', img: `/photos/a-pommes-de-terre.jpg`, desc: '' },
+  { id: 'a-pates', name: 'Pâtes', price: 2.5, cat: 'accompagnements', img: `/photos/assiette-poulet.jpg`, desc: '' },
 
   /* ---------------- 09 · NOS SAUCES ---------------- */
-  { id: 's-algerienne', name: 'Sauce Algérienne', price: 0.5, cat: 'sauces', img: `https://images.unsplash.com/photo-1472476443507-c7a5948772fc?${U}`, desc: '' },
-  { id: 's-samourai', name: 'Sauce Samouraï', price: 0.5, cat: 'sauces', img: `https://images.unsplash.com/photo-1596040033229-a9821ebd058d?${U}`, desc: '' },
-  { id: 's-blanche', name: 'Sauce Blanche', price: 0.5, cat: 'sauces', img: `https://images.unsplash.com/photo-1547592166-23ac45744acd?${U}`, desc: '' },
-  { id: 's-biggy', name: 'Sauce Biggy Burger', price: 0.5, cat: 'sauces', img: `${F}f1d806cb94df.jpg`, desc: '' },
-  { id: 's-chili', name: 'Harissa', price: 0.5, cat: 'sauces', img: `${F}a9500ac79e37.jpg`, desc: '' },
-  { id: 's-ketchup', name: 'Ketchup', price: 0.5, cat: 'sauces', img: `${F}779a3bad3cc8.jpg`, desc: '' },
-  { id: 's-mayonnaise', name: 'Mayonnaise', price: 0.5, cat: 'sauces', img: `${F}1ea6d6a4cd39.jpg`, desc: '' },
+  { id: 's-oignons', name: 'Sauce Oignons', price: 0.5, cat: 'sauces', img: `/photos/s-oignons.jpg`, desc: '' },
+  { id: 's-verte', name: 'Sauce Verte', price: 0.5, cat: 'sauces', img: `/photos/s-verte.jpg`, desc: '' },
 
   /* ---------------- 10 · NOS DESSERTS ---------------- */
-  { id: 'd-tiramisu', name: 'Tiramisu', price: 3.5, cat: 'desserts', img: `${F}9cbedf4aef47.jpg`, desc: '' },
-  { id: 'd-tarte-daim', name: 'Tarte au Daim', price: 3.5, cat: 'desserts', img: `${F}1452144526e0.jpg`, desc: '' },
+  { id: 'd-tiramisu', name: 'Tiramisu', price: 3.5, cat: 'desserts', img: `/photos/d-tiramisu.jpg`, desc: '' },
+  { id: 'd-tarte-daim', name: 'Tarte au Daim', price: 3.5, cat: 'desserts', img: `/photos/d-tarte-daim.jpg`, desc: '' },
 
   /* ---------------- 11 · BOISSONS ---------------- */
-  { id: 'b-canette', name: 'Canette 33 cl', price: 1.5, cat: 'boissons', img: `https://images.unsplash.com/photo-1554866585-cd94860890b7?${U}`, desc: '' },
-  { id: 'b-jus-bissap', name: 'Jus de Bissap', price: 2.5, cat: 'boissons', img: `${F}7adea78fdcc4.jpg`, desc: '' },
-  { id: 'b-jus-gingembre', name: 'Jus de Gingembre', price: 2.5, cat: 'boissons', img: `${F}7dfa832641af.jpg`, desc: '' },
-  { id: 'b-redbull', name: 'Red Bull', price: 2.5, cat: 'boissons', img: `${F}6705a972b75f.jpg`, desc: '' },
-  { id: 'b-coca-1l5', name: 'Bouteille Coca-Cola 1,5 L', price: 3.5, cat: 'boissons', img: `${F}40d8249bad00.jpg`, desc: '' },
+  { id: 'b-canette', name: 'Canette 33 cl', price: 1.5, cat: 'boissons', img: `/photos/b-canette.jpg`, desc: '' },
+  { id: 'b-jus-bissap', name: 'Jus de Bissap', price: 2.5, cat: 'boissons', img: `/photos/b-jus-bissap.png`, desc: '' },
+  { id: 'b-jus-gingembre', name: 'Jus de Gingembre', price: 2.5, cat: 'boissons', img: `/photos/b-jus-gingembre.jpg`, desc: '' },
+  { id: 'b-redbull', name: 'Red Bull', price: 2.5, cat: 'boissons', img: `/photos/b-redbull.jpg`, desc: '' },
+  { id: 'b-coca-1l5', name: 'Bouteille Coca-Cola 1,5 L', price: 3.5, cat: 'boissons', img: `/photos/b-canette.jpg`, desc: '' },
 ];
 /* ================= FIN DE LA CARTE ================= */
 

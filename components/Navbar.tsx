@@ -41,12 +41,13 @@ export default function Navbar() {
   return (
     <header className={`navbar${scrolled ? ' scrolled' : ''}`} id="navbar">
       <div className="nav-pill">
-        {/* Marque — wordmark texte + point doré, retour accueil */}
+        {/* Marque — logo officiel du flyer + wordmark, retour accueil */}
         <Link href="/" className="brand" onClick={closeMenu} aria-label="My Chicken — Accueil">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand-logo" src="/logo.png" alt="" width={36} height={36} />
           <span className="brand-text">
             <span className="my">My</span>
             <span className="ck">Chicken</span>
-            <span className="brand-dot" aria-hidden="true" />
           </span>
         </Link>
 

@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
    ================================================================ */
 
 type CheckoutBody = {
-  items: { id: string; qty: number }[];
+  items: { id: string; qty: number; note?: string }[];
   mode: OrderMode;
   promoCode?: string;
   locationId?: string;
@@ -89,7 +89,11 @@ export async function POST(req: Request) {
     const p = menu.products.find((x) => x.id === line.id);
     if (!p || p.available === false) continue;
     const qty = clamp(Math.floor(line.qty || 0), 0, 50);
-    if (qty > 0) items.push({ id: p.id, name: p.name, price: promoPrice(p.price, menu.promos[p.id]), qty });
+    if (qty > 0) {
+      // Composition du menu choisie par le client (« Frites · Coca 33 cl »)
+      const note = typeof line.note === 'string' ? line.note.trim().slice(0, 120) || undefined : undefined;
+      items.push({ id: p.id, name: p.name, price: promoPrice(p.price, menu.promos[p.id]), qty, ...(note ? { note } : {}) });
+    }
   }
   if (items.length === 0) {
     return NextResponse.json({ error: 'Aucun article disponible dans le panier' }, { status: 400 });
@@ -145,6 +149,7 @@ export async function POST(req: Request) {
       unit_amount: euro(it.price),
       product_data: {
         name: it.name,
+        ...(it.note ? { description: `Avec ${it.note}` } : {}),
         ...( /^https?:\/\//.test(menu.products.find((p) => p.id === it.id)?.img || '')
           ? { images: [menu.products.find((p) => p.id === it.id)!.img] }
           : {} ),

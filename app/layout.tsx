@@ -49,18 +49,34 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'My CHICKEN — Saint-Mard & Persan | Poulet mijoté, menus & livraison',
+  title: 'My CHICKEN — Saint-Mard & Persan | Poulet braisé, menus & livraison',
   description:
-    'My CHICKEN : poulet mijoté, menus généreux, sauces maison et livraison dès 25 €. Saint-Mard (Av. de la Font du Berger) et Persan (Av. Jacques Vogt).',
+    'My CHICKEN : poulet braisé, menus généreux, sauces maison et livraison dès 25 €. Saint-Mard (ZAC de la Fontaine du Berger) et Persan (Av. Jacques Vogt) — ouvert 7j/7, 11h30–21h30.',
   manifest: '/manifest.webmanifest',
   applicationName: 'My Chicken',
+  icons: {
+    icon: [
+      { url: '/icon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/icon-180.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: [{ url: '/favicon.ico' }],
+  },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'My Chicken' },
   openGraph: {
     title: 'My CHICKEN — Saint-Mard & Persan',
     description:
-      'Poulet mijoté 24h, frites maison, sauces préparées chaque jour. À emporter ou livré dès 25 €.',
+      'Poulet braisé, frites maison, sauces préparées chaque jour. À emporter ou livré dès 25 €.',
     type: 'website',
     locale: 'fr_FR',
+    images: [{ url: '/icon-512.png', width: 512, height: 512, alt: 'My Chicken — logo officiel' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'My CHICKEN — Saint-Mard & Persan',
+    description: 'Poulet braisé, menus généreux, livraison dès 25 €.',
+    images: ['/icon-512.png'],
   },
 };
 

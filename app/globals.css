@@ -148,8 +148,12 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .hidden{display:none!important}
 
 /* Transition de page (via app/template.tsx) */
+/* Opacité seule : un transform (même identité, figé par fill-mode both)
+   ferait de .page-fade le bloc conteneur des position:fixed (popup
+   restaurant, pilule de nav…) — popup centrée sur toute la page,
+   hors écran dès qu'on a défilé. */
 .page-fade{animation:pageIn .55s var(--ease) both}
-@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pageIn{from{opacity:0}to{opacity:1}}
 
 .eyebrow{display:block;font-size:.68rem;font-weight:600;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:1.1rem}
 .eyebrow .n{color:var(--sand-deep);margin-right:.6rem}
@@ -178,7 +182,8 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .nav-pill{pointer-events:auto;position:relative;z-index:1200;display:inline-flex;align-items:center;gap:clamp(1.3rem,2.6vw,2rem);max-width:calc(100% - 2rem);padding:.6rem .62rem .6rem 1.45rem;border-radius:var(--pill);background:color-mix(in srgb,var(--wood-975) 74%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);border:1px solid var(--g-14);box-shadow:0 12px 34px rgba(5,2,0,.45),inset 0 1px 0 var(--g-08);transition:background .45s var(--ease),box-shadow .45s var(--ease),border-color .45s,padding .45s var(--ease)}
 .navbar.scrolled .nav-pill{background:color-mix(in srgb,#100702 88%,transparent);border-color:var(--g-25);box-shadow:0 16px 44px rgba(0,0,0,.55),inset 0 1px 0 var(--g-08);padding-block:.5rem}
 /* Marque — wordmark texte « MY CHICKEN » + point doré */
-.brand{display:inline-flex;align-items:center;min-width:0;flex-shrink:0}
+.brand{display:inline-flex;align-items:center;gap:.55rem;min-width:0;flex-shrink:0}
+.brand-logo{width:34px;height:34px;border-radius:50%;box-shadow:0 2px 10px rgba(0,0,0,.45);flex:none}
 .brand-text{display:inline-flex;align-items:baseline;line-height:1;font-family:var(--sans);font-weight:800;font-size:1.02rem;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 .brand .my{color:var(--cream);margin-right:.4em}
 .brand .ck{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -225,7 +230,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .brand-text{font-size:.82rem}
 }
 
-/* ========== 4. HERO — photo bois sous voile sombre ========== */
+/* ========== 4. HERO — sobre : logo officiel sur bois brûlé ========== */
 .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 1.2rem 6.5rem;overflow:hidden}
 .hero-veil{position:absolute;inset:0;background:
   radial-gradient(ellipse 70% 55% at 50% 42%,var(--e-08),transparent 65%),
@@ -233,20 +238,14 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   linear-gradient(180deg,color-mix(in srgb,var(--wood-975) 62%,transparent),transparent 34%,color-mix(in srgb,var(--wood-975) 42%,transparent) 68%,var(--wood-975))}
 .hero-content{position:relative;z-index:3;max-width:860px}
 .hero-content>*{animation:rise 1s var(--ease) both}
-.hero-content>*:nth-child(2){animation-delay:.12s}
-.hero-content>*:nth-child(3){animation-delay:.24s}
-.hero-content>*:nth-child(4){animation-delay:.36s}
-.hero-content>*:nth-child(5){animation-delay:.5s}
-@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.hero-content>*:nth-child(2){animation-delay:.15s}
+.hero-content>*:nth-child(3){animation-delay:.3s}
+.hero-content>*:nth-child(4){animation-delay:.45s}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.hero-logo{width:clamp(150px,26vw,230px);height:auto;border-radius:50%;box-shadow:0 24px 70px rgba(0,0,0,.55);margin:0 auto 2rem;display:block}
 .hero-kicker{font-size:.7rem;font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:var(--sand-deep)}
 .hero-kicker b{color:var(--gold);font-weight:600}
-.hero-title{font-family:var(--serif);font-weight:500;font-size:clamp(3.6rem,11vw,7.6rem);line-height:1;margin:1.6rem 0 0;color:var(--cream);text-wrap:balance}
-.hero-title em{font-style:italic;font-weight:600;color:var(--gold)}
-.hero-rule{display:flex;align-items:center;justify-content:center;gap:1rem;margin:2rem 0 1.7rem}
-.hero-rule::before,.hero-rule::after{content:'';height:1px;width:min(120px,22vw);background:linear-gradient(90deg,transparent,var(--g-45))}
-.hero-rule::after{transform:scaleX(-1)}
-.hero-rule i{width:6px;height:6px;background:var(--gold);transform:rotate(45deg)}
-.hero-tagline{max-width:560px;margin:0 auto;color:var(--sand);font-size:clamp(.98rem,2vw,1.12rem);font-weight:400;text-wrap:pretty}
+.hero-tagline{max-width:560px;margin:1.1rem auto 0;color:var(--sand);font-size:clamp(.98rem,2vw,1.12rem);font-weight:400;text-wrap:pretty}
 .hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2.6rem}
 .hero-info{position:relative;z-index:3;margin-top:4.2rem;display:inline-flex;flex-wrap:wrap;justify-content:center;border-top:1px solid var(--g-14);border-bottom:1px solid var(--g-14)}
 .hero-info span{display:inline-flex;align-items:center;gap:.55rem;padding:.85rem 1.6rem;font-size:.68rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);white-space:nowrap}
@@ -258,20 +257,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .hero-info span{border:none!important;padding:.5rem 0}
 }
 
-/* ========== 5. TICKER ========== */
-.ticker{overflow:hidden;border-block:1px solid var(--g-14);padding:.9rem 0;
-  background-image:linear-gradient(color-mix(in srgb,var(--wood-900) 50%,transparent),color-mix(in srgb,var(--wood-900) 50%,transparent)),url('/fond-bois.jpg');
-  background-image:linear-gradient(color-mix(in srgb,var(--wood-900) 50%,transparent),color-mix(in srgb,var(--wood-900) 50%,transparent)),-webkit-image-set(url('/fond-bois.avif') type('image/avif') 1x);
-  background-image:linear-gradient(color-mix(in srgb,var(--wood-900) 50%,transparent),color-mix(in srgb,var(--wood-900) 50%,transparent)),image-set(url('/fond-bois.avif') type('image/avif') 1x);
-  background-size:cover;background-position:center;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
-.ticker-track{display:inline-flex;align-items:center;white-space:nowrap;animation:tick 42s linear infinite;will-change:transform}
-.ticker:hover .ticker-track{animation-play-state:paused}
-.tick-item{font-size:.68rem;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--sand-deep);margin:0 1.6rem}
-.tick-sep{width:5px;height:5px;background:var(--gold);transform:rotate(45deg);opacity:.7}
-@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-
-/* ========== 6. BOUTONS ========== */
+/* ========== 5. BOUTONS ========== */
 .btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:.7rem;padding:1.05rem 2.3rem;border-radius:var(--pill);border:none;cursor:pointer;font-size:.72rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;transition:transform .4s var(--ease),box-shadow .4s var(--ease),background .3s,color .3s,border-color .3s}
 .btn:active{transform:scale(.97)}
 .btn-solid{background:var(--grad-gold);color:var(--txt-on-gold);box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -475,6 +461,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .ci-thumb{width:62px;height:62px;border-radius:12px;overflow:hidden;border:1px solid var(--g-25)}
 .ci-thumb img{width:100%;height:100%;object-fit:cover}
 .ci-name{font-family:var(--serif);font-weight:600;font-size:1.2rem;color:var(--cream)}
+.ci-note{font-size:.76rem;color:var(--gold-light);margin:.05rem 0 0;font-style:italic}
 .ci-unit{font-size:.74rem;color:var(--sand-deep);margin:.1rem 0 .55rem;font-variant-numeric:tabular-nums}
 .ci-controls{display:flex;align-items:center;gap:.6rem}
 .qty-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--g-25);background:transparent;color:var(--cream);font-weight:600;font-size:.95rem;display:grid;place-items:center;cursor:pointer;transition:background .3s,color .3s,transform .25s var(--ease),box-shadow .3s}
@@ -668,6 +655,9 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .ao-chip-price{font-size:.66rem;font-weight:700;font-variant-numeric:tabular-nums;opacity:.8}
 .ao-chip.on .ao-chip-price{opacity:1}
 .ao-free{font-family:var(--font-caveat),cursive;font-size:1.1rem;color:var(--sand-deep)}
+/* Choix inclus du menu : mis en avant au-dessus des extras */
+.ao-incl h4{display:flex;align-items:center;gap:.5rem;color:var(--gold-light)}
+.ao-incl-tag{font:700 .58rem var(--font-montserrat);letter-spacing:.14em;text-transform:uppercase;color:var(--txt-on-gold);background:var(--grad-gold);border-radius:var(--pill);padding:.18rem .55rem}
 /* Pied collant : quantité + « Ajouter au panier » restent visibles en bas
    de la bulle pendant le défilement des options (sur mobile le bouton
    était à ~1100 px sous l'écran → perçu comme coupé). */

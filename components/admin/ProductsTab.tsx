@@ -310,6 +310,15 @@ export default function ProductsTab({ draft, mutate }: { draft: MenuData; mutate
                   {uploading && <span className="upload-status">Compression &amp; envoi…</span>}
                   {uploadInfo && <span className="upload-status ok">{uploadInfo}</span>}
                   {uploadError && <span className="upload-status ko">{uploadError}</span>}
+                  {editing.img && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost small"
+                      onClick={() => setEditing({ ...editing, img: '' })}
+                    >
+                      <Icon name="trash" size={13} /> Retirer la photo
+                    </button>
+                  )}
                 </div>
                 <p className="upload-hint">
                   Compressée automatiquement en WebP (max 800 px, ≤ 150 Ko). L&apos;ancienne

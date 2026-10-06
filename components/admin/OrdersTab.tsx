@@ -59,7 +59,7 @@ function printTicket(o: Order, locName: string, locAddress: string) {
   <div class="row"><span>Paiement</span><span>${o.paid ? 'Payé en ligne' : 'À la réception'} · ${o.payment === 'card' ? 'Carte' : 'Téléphone'}</span></div>
   <hr>
   <div class="items">
-    ${o.items.map((it) => `<div class="row"><span><b>${it.qty}×</b> ${esc(it.name)}</span><span>${esc(fmt(it.price * it.qty))}</span></div>`).join('\n    ')}
+    ${o.items.map((it) => `<div class="row"><span><b>${it.qty}×</b> ${esc(it.name)}${it.note ? `<br><small>avec ${esc(it.note)}</small>` : ''}</span><span>${esc(fmt(it.price * it.qty))}</span></div>`).join('\n    ')}
   </div>
   <hr>
   <div class="row"><span>Sous-total</span><span>${esc(fmt(o.subtotal))}</span></div>
@@ -200,9 +200,10 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
           </div>
 
           <div className="oc-items">
-            {o.items.map((it) => (
-              <span key={it.id}>
+            {o.items.map((it, i) => (
+              <span key={`${it.id}-${i}`}>
                 {it.qty}× {it.name}
+                {it.note ? <em className="oc-item-note"> · {it.note}</em> : null}
               </span>
             ))}
           </div>
