@@ -832,7 +832,9 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .upload-hint{font-size:.7rem;color:var(--sand-deep);margin-top:.3rem}
 
 /* ========== BARRE RESTAURAT PERMANENTE ========== */
-.resto-bar{display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;padding:.45rem 1rem;background:color-mix(in srgb,var(--wood-900) 92%,transparent);border-bottom:1px solid var(--g-14);font-size:.74rem;color:var(--sand)}
+/* Collante : démarre sous la pilule de navigation et reste visible
+   au scroll (jamais cachée derrière la navbar flottante). */
+.resto-bar{position:sticky;top:calc(var(--nav-h) + var(--promo-strip-h,0px) + .4rem);z-index:900;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + .4rem);padding:.45rem 1rem;background:color-mix(in srgb,var(--wood-900) 96%,transparent);border-block:1px solid var(--g-14);font-size:.74rem;color:var(--sand)}
 .resto-bar .rb-info{display:inline-flex;align-items:center;gap:.4rem;letter-spacing:.04em}
 .resto-bar .rb-info svg{color:var(--gold)}
 .resto-bar b{color:var(--gold-light);font-weight:600}
@@ -860,6 +862,8 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
    de 16px : on force 16px sur mobile pour tous les champs du tunnel. */
 @media (max-width: 640px) {
   input, select, textarea { font-size: 16px !important; }
-  html, body { overflow-x: hidden; }
+  /* clip (et non hidden) : hidden ferait de body un conteneur de scroll
+     et casserait position:sticky (barre resto, barre catégories). */
+  html, body { overflow-x: clip; }
   .checkout-layout { grid-template-columns: 1fr; }
 }
