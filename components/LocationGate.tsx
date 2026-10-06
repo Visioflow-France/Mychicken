@@ -59,8 +59,6 @@ export default function LocationGate() {
     };
   }, [gateOpen]);
 
-  if (!gateOpen) return null;
-
   /* Restaurant le plus proche : par GPS si fourni, sinon par
      département du code postal (95 → Persan, 77 → Saint-Mard). */
   const ordered = useMemo(() => {
@@ -74,6 +72,8 @@ export default function LocationGate() {
     if (/^77/.test(cp)) return [...locations].sort((a) => (a.postal.startsWith('77') ? -1 : 1));
     return locations;
   }, [locations, coords, cp]);
+
+  if (!gateOpen) return null;
 
   const useMyLocation = () => {
     setGeoError('');
