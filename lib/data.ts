@@ -86,6 +86,9 @@ export type Product = {
   /* Menus : ce que le client doit choisir en guise de contenu inclus
      (n accompagnements + n boissons, sans supplément). */
   incl?: { sides: number; drinks: number };
+  /* Variantes au choix (ex. Tasty Crousty : Original, Dynamite…),
+     choix obligatoire à l'ajout au panier. */
+  recipes?: { id: string; name: string; desc: string }[];
 };
 
 export type MenuData = {
@@ -136,6 +139,7 @@ export type Order = {
 
 export const CATEGORIES: Category[] = [
   { id: 'menus', num: '01', label: 'Nos Menus' },
+  { id: 'sandwichs', num: '02', label: 'Nos Sandwichs' },
   { id: 'pieces', num: '07', label: 'Pièces Séparées' },
   { id: 'accompagnements', num: '08', label: 'Nos Accompagnements' },
   { id: 'sauces', num: '09', label: 'Nos Sauces' },
@@ -146,18 +150,19 @@ export const CATEGORIES: Category[] = [
 const F = 'https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt/';
 const U = 'auto=format&fit=crop&w=1200&q=75'; // paramètres Unsplash communs (nets sur écrans 2x/3x)
 
+/* Recettes Tasty Crousty — le client choisit sa version à l'ajout */
+const TASTY_RECIPES = [
+  { id: 'original', name: 'Original', desc: 'Sauce chili thaï, persil' },
+  { id: 'dynamite', name: 'Dynamite', desc: 'Sauce piquante, persil, aneth' },
+  { id: 'boursin', name: 'Boursin', desc: 'Sauce boursin, persil, ciboulette' },
+  { id: 'dz', name: 'Dz', desc: 'Sauce algérienne, persil' },
+];
+
 export const PRODUCTS: Product[] = [
   /* ---------------- 01 · NOS MENUS ---------------- */
-  /* ---------------- TASTY CROUSTY ----------------
-     Riz thaï parfumé, sauce crousty maison, poulet croustillant, onions crispy.
-     Recettes : Original (sauce chili thaï, persil), Dynamite (piquante, persil, aneth),
-     Boursin (sauce boursin, persil, ciboulette), Dz (sauce algérienne, persil). */
-  { id: 'tasty-m', name: 'Tasty Crousty M', price: 6.9, cat: 'menus', img: '/photos/tasty-crousty-m.jpg', desc: 'Riz thaï, sauce crousty maison, poulet croustillant, onions crispy — Original, Dynamite, Boursin ou Dz' },
-  { id: 'tasty-m-boisson', name: 'Tasty Crousty M + Boisson', price: 7.9, cat: 'menus', img: '/photos/tasty-crousty-m.jpg', desc: 'Tasty Crousty M + 1 boisson 33 cl — Original, Dynamite, Boursin ou Dz', incl: { sides: 0, drinks: 1 } },
-  { id: 'tasty-l', name: 'Tasty Crousty L', price: 8.9, cat: 'menus', img: '/photos/tasty-crousty-l.jpg', desc: 'Riz thaï, sauce crousty maison, poulet croustillant, onions crispy — Original, Dynamite, Boursin ou Dz' },
-  { id: 'tasty-l-boisson', name: 'Tasty Crousty L + Boisson', price: 9.9, cat: 'menus', img: '/photos/tasty-crousty-l.jpg', desc: 'Tasty Crousty L + 1 boisson 33 cl — Original, Dynamite, Boursin ou Dz', incl: { sides: 0, drinks: 1 } },
-  { id: 'tasty-xl', name: 'Tasty Crousty XL', price: 9.9, cat: 'menus', img: '/photos/tasty-crousty-xl.jpg', desc: 'Riz thaï, sauce crousty maison, poulet croustillant, onions crispy — Original, Dynamite, Boursin ou Dz' },
-  { id: 'tasty-xl-boisson', name: 'Tasty Crousty XL + Boisson', price: 10.9, cat: 'menus', img: '/photos/tasty-crousty-xl.jpg', desc: 'Tasty Crousty XL + 1 boisson 33 cl — Original, Dynamite, Boursin ou Dz', incl: { sides: 0, drinks: 1 } },
+  { id: 'tasty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', img: '/photos/tasty-crousty-m.jpg', desc: 'Riz thaï, sauce crousty maison, poulet croustillant, onions crispy + 1 boisson 33 cl — recette au choix', incl: { sides: 0, drinks: 1 }, recipes: TASTY_RECIPES },
+  { id: 'tasty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: '/photos/tasty-crousty-l.jpg', desc: 'Riz thaï, sauce crousty maison, poulet croustillant, onions crispy + 1 boisson 33 cl — recette au choix', incl: { sides: 0, drinks: 1 }, recipes: TASTY_RECIPES },
+  { id: 'tasty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: '/photos/tasty-crousty-xl.jpg', desc: 'Riz thaï, sauce crousty maison, poulet croustillant, onions crispy + 1 boisson 33 cl — recette au choix', incl: { sides: 0, drinks: 1 }, recipes: TASTY_RECIPES },
 
   { id: 'menu-cuisse', name: 'Menu Cuisse', price: 7.5, cat: 'menus', img: `/photos/menu-cuisse.jpg`, desc: '1 cuisse de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-demi', name: 'Menu Demi Poulet', price: 8.9, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '1 demi poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
@@ -170,7 +175,7 @@ export const PRODUCTS: Product[] = [
   { id: 'menu-familial', name: 'Menu Familial', price: 30, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '4 demi-poulets + 4 accompagnements + 1 boisson 1,5 L', incl: { sides: 4, drinks: 1 } },
   { id: 'menu-brick', name: 'Menu Brick', price: 8.5, cat: 'menus', img: `/photos/menu-brick.jpg`, desc: '2 bricks poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-saucisses', name: 'Menu Saucisses', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: '2 saucisses + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
-  { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: 'Grillé au feu de bois — servi avec fromage, crudités et une sauce maison' },
+  { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'sandwichs', img: `/photos/sandwich-poulet.jpg`, desc: 'Grillé au feu de bois — servi avec fromage, crudités et une sauce maison' },
 
   /* ---------------- 02 · NOS TACOS ---------------- */
 

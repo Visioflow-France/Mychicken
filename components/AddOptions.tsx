@@ -42,6 +42,8 @@ export default function AddOptions({
   const { add } = useCart();
   const toast = useToast();
   const [picked, setPicked] = useState<Record<string, boolean>>({});
+  /* Recette choisie (Tasty Crousty : Original, Dynamite, Boursin, Dz) */
+  const [recipe, setRecipe] = useState<string | null>(null);
   /* Choix du contenu inclus du menu : ids de produits (accompagnements
      puis boissons), limités au nombre prévu par product.incl. */
   const [inclSides, setInclSides] = useState<string[]>([]);
@@ -136,7 +138,8 @@ export default function AddOptions({
 
   /* Le menu ne part au panier que complètement composé */
   const inclDone =
-    !incl || (inclSides.length === incl.sides && inclDrinks.length === incl.drinks);
+    (!incl || (inclSides.length === incl.sides && inclDrinks.length === incl.drinks)) &&
+    (!product.recipes || recipe !== null);
 
   const toggle = (id: string) =>
     setPicked((s) => ({ ...s, [id]: !s[id] }));
@@ -154,9 +157,11 @@ export default function AddOptions({
 
   const confirm = () => {
     if (!inclDone) return;
-    const note = incl
-      ? [...inclSides, ...inclDrinks].map(nameOf).join(' · ')
-      : undefined;
+    const parts = [
+      ...(recipe ? [product.recipes?.find((r) => r.id === recipe)?.name || recipe] : []),
+      ...(incl ? [...inclSides, ...inclDrinks].map(nameOf) : []),
+    ];
+    const note = parts.length ? parts.join(' · ') : undefined;
     for (let i = 0; i < qty; i++) add(product.id, note);
     extras.forEach((id) => add(id));
     toast({
@@ -209,6 +214,33 @@ export default function AddOptions({
           {product.desc && <p className="ao-desc">{product.desc}</p>}
 
           <div className="ao-groups">
+            {/* 0 · Recette au choix (Tasty Crousty) — obligatoire, décrite */}
+            {product.recipes && product.recipes.length > 0 && (
+              <section className="ao-group ao-incl" key="recipe">
+                <h4>
+                  Choisissez votre recette
+                  <span className="ao-incl-tag">inclus</span>
+                </h4>
+                <div className="ao-chips ao-chips-recipes">
+                  {product.recipes.map((r) => {
+                    const on = recipe === r.id;
+                    return (
+                      <button
+                        type="button"
+                        key={r.id}
+                        className={`ao-chip ao-chip-recipe${on ? ' on' : ''}`}
+                        onClick={() => setRecipe(on ? null : r.id)}
+                        aria-pressed={on}
+                      >
+                        <span className="ao-chip-name">{r.name}</span>
+                        {r.desc && <span className="ao-chip-desc">{r.desc}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {/* 1 · Contenu INCLUS du menu — choix obligatoire, sans supplément */}
             {incl && incl.sides > 0 && inclChoices.accompagnements.length > 0 && (
               <section className="ao-group ao-incl" key="incl-sides">
