@@ -136,7 +136,6 @@ export type Order = {
 
 export const CATEGORIES: Category[] = [
   { id: 'menus', num: '01', label: 'Nos Menus' },
-  { id: 'tacos', num: '02', label: 'Nos Tacos' },
   { id: 'burgers', num: '03', label: 'Nos Burgers' },
   { id: 'sandwichs', num: '04', label: 'Nos Sandwichs' },
   { id: 'assiettes', num: '05', label: 'Nos Assiettes' },
@@ -153,8 +152,8 @@ const U = 'auto=format&fit=crop&w=1200&q=75'; // paramètres Unsplash communs (n
 
 export const PRODUCTS: Product[] = [
   /* ---------------- 01 · NOS MENUS ---------------- */
-  { id: 'menu-cuisse', name: 'Menu Cuisse', price: 7.5, cat: 'menus', popular: true, img: `/photos/menu-cuisse.jpg`, desc: '1 cuisse de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
-  { id: 'menu-demi', name: 'Menu Demi Poulet', price: 8.9, cat: 'menus', popular: true, img: `/photos/p-poulet-entier.jpg`, desc: '1 demi poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-cuisse', name: 'Menu Cuisse', price: 7.5, cat: 'menus', img: `/photos/menu-cuisse.jpg`, desc: '1 cuisse de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
+  { id: 'menu-demi', name: 'Menu Demi Poulet', price: 8.9, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '1 demi poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-hotdog', name: 'Menu Hot Dog', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: '1 hot dog + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-pilons', name: 'Menu Pilons', price: 7.5, cat: 'menus', img: `/photos/menu-pilons.jpg`, desc: '3 pilons de poulets + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-wings', name: 'Menu Wings', price: 8.5, cat: 'menus', img: `/photos/menu-wings.jpg`, desc: '6 wings + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
@@ -164,19 +163,16 @@ export const PRODUCTS: Product[] = [
   { id: 'menu-mixte', name: 'Menu Mixte', price: 10.5, cat: 'menus', img: `/photos/menu-pilons.jpg`, desc: '1 cuisse + 2 pilons + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-filet', name: 'Menu Filet', price: 7.9, cat: 'menus', img: `/photos/assiette-poulet.jpg`, desc: '1 filet de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-tiers', name: 'Menu Tiers de Poulet', price: 10.9, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '1 tiers de poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
-  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', popular: true, img: `/photos/tasty-crousty-m.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
+  { id: 'tasty-crousty-m', name: 'Tasty Crousty M', price: 7.9, cat: 'menus', img: `/photos/tasty-crousty-m.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'tasty-crousty-l', name: 'Tasty Crousty L', price: 9.9, cat: 'menus', img: `/photos/tasty-crousty-l.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'tasty-crousty-xl', name: 'Tasty Crousty XL', price: 10.9, cat: 'menus', img: `/photos/tasty-crousty-xl.jpg`, desc: 'Original, Dynamite, Boursin ou Dz + 1 accompagnement + 1 boisson 33 cl' },
   { id: 'menu-familial', name: 'Menu Familial', price: 30, cat: 'menus', img: `/photos/p-poulet-entier.jpg`, desc: '4 demi-poulets + 4 accompagnements + 1 boisson 1,5 L', incl: { sides: 4, drinks: 1 } },
   { id: 'menu-brick', name: 'Menu Brick', price: 8.5, cat: 'menus', img: `/photos/menu-brick.jpg`, desc: '2 bricks poulet + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
   { id: 'menu-saucisses', name: 'Menu Saucisses', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: '2 saucisses + 1 accompagnement + 1 boisson 33 cl', incl: { sides: 1, drinks: 1 } },
-  { id: 'menu-special', name: 'Menu Spécial', price: 25, cat: 'menus', popular: true, img: `/photos/menu-special.jpg`, desc: '1 poulet entier braisé + 2 accompagnements + 1 boisson 1,5 L', incl: { sides: 2, drinks: 1 } },
+  { id: 'menu-special', name: 'Menu Spécial', price: 25, cat: 'menus', img: `/photos/menu-special.jpg`, desc: '1 poulet entier braisé + 2 accompagnements + 1 boisson 1,5 L', incl: { sides: 2, drinks: 1 } },
   { id: 'sandwich-baguette', name: 'Sandwich Baguette', price: 7.5, cat: 'menus', img: `/photos/sandwich-poulet.jpg`, desc: 'Servi avec fromage, crudités et une sauce maison. Au choix : chicken braisé, merguez ou kefta. Grillé au feu de bois.' },
 
   /* ---------------- 02 · NOS TACOS ---------------- */
-  { id: 'tacos-m', name: 'Tacos M', price: 7, cat: 'tacos', popular: true, img: `/photos/tacos-m.jpg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
-  { id: 'tacos-l', name: 'Tacos L', price: 8, cat: 'tacos', img: `/photos/tacos-l.jpg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
-  { id: 'tacos-xl', name: 'Tacos XL', price: 9, cat: 'tacos', img: `/photos/tacos-xl.jpg`, desc: 'Galette, viande au choix, frites, sauce — suppl. viande + 2,50 €' },
 
   /* ---------------- 03 · NOS BURGERS ---------------- */
   { id: 'burger-classique', name: 'Classique', price: 4.5, cat: 'burgers', img: `/photos/tasty-crousty-m.jpg`, desc: '' },

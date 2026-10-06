@@ -60,7 +60,9 @@ export default function AddOptions({
   }, [onClose]);
 
   /* La bulle se colle au bouton : dessous, ou au-dessus si ça ne tient
-     pas ; recalculé au scroll/resize et quand la hauteur change. */
+     pas. Position FIGÉE à l'ouverture (et recalculée au resize ou quand
+     la hauteur de contenu change) : elle ne suit plus le scroll de la
+     page ni celui de sa propre liste — elle reste stable sous le doigt. */
   useLayoutEffect(() => {
     const placeBubble = () => {
       const pop = popRef.current;
@@ -88,10 +90,8 @@ export default function AddOptions({
       setPlace({ left, top, arrow, above, docked: false });
     };
     placeBubble();
-    window.addEventListener('scroll', placeBubble, true);
     window.addEventListener('resize', placeBubble);
     return () => {
-      window.removeEventListener('scroll', placeBubble, true);
       window.removeEventListener('resize', placeBubble);
     };
   }, [anchor, picked, qty, inclSides, inclDrinks]);

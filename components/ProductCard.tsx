@@ -30,7 +30,7 @@ export default function ProductCard({ p }: { p: Product }) {
     if (!soldOut) setAnchor(e.currentTarget);
   };
 
-  const flag = soldOut ? 'Épuisé' : price.promo ? 'Promo' : p.popular ? 'Best-seller' : null;
+  const flag = soldOut ? 'Épuisé' : price.promo ? 'Promo' : null;
 
   return (
     <>
