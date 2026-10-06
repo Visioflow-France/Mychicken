@@ -26,7 +26,16 @@ jobs:
         run: npm ci
 
       - name: Construire (Next.js + OpenNext pour Cloudflare)
-        run: npx opennextjs-cloudflare build
+        # Les runners GitHub échouent parfois à télécharger les polices
+        # Google (next/font) pour une simple raison réseau : on retente.
+        run: |
+          for i in 1 2 3; do
+            npx opennextjs-cloudflare build && exit 0
+            echo "::warning::Build échoué (tentative $i/3) — nouvelle tentative…"
+            rm -rf .next .open-next
+            sleep 20
+          done
+          exit 1
 
       - name: Déployer le Worker
         uses: cloudflare/wrangler-action@v3
