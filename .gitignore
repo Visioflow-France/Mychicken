@@ -21,3 +21,5 @@ next-env.d.ts
 # build open-next / cloudflare
 /.open-next
 /.wrangler
+scan-*.jpg
+scan-*.png
