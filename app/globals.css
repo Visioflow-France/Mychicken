@@ -437,8 +437,11 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .c-line p,.c-line a{font-size:.94rem;color:var(--parchment);line-height:1.65}
 .c-line a{border-bottom:1px solid var(--g-35);transition:color .3s,border-color .3s}
 .c-line a:hover{color:var(--gold);border-color:var(--gold)}
-.form-row{display:grid;gap:1.1rem;margin-bottom:1.1rem}
-@media(min-width:640px){.form-row{grid-template-columns:1fr 1fr}}
+/* Paires de champs sur 2 colonnes, même sur téléphone (nom/téléphone,
+   code postal/ville…) — l'adresse reste pleine largeur. */
+.form-row{display:grid;gap:.8rem;margin-bottom:1.1rem;grid-template-columns:1fr 1fr}
+@media(max-width:359px){.form-row{grid-template-columns:1fr}}
+.form-row .f-group{min-width:0}
 .f-group{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.1rem}
 .f-group label{font-size:.64rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--sand-deep)}
 .f-group input,.f-group textarea{font-size:.95rem;padding:.9rem 1.1rem;border-radius:10px;border:1px solid var(--s-22);background:rgba(255,248,225,.04);color:var(--cream);transition:border-color .3s,box-shadow .3s,background .3s}
@@ -866,4 +869,10 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
      et casserait position:sticky (barre resto, barre catégories). */
   html, body { overflow-x: clip; }
   .checkout-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .f-group input { padding: .78rem .9rem; }
+  .f-group { gap: .35rem; margin-bottom: .85rem; }
+  .form-row { margin-bottom: .85rem; }
 }
