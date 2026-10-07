@@ -15,7 +15,7 @@ const LINKS = [
 
 export default function Navbar() {
   const { count } = useCart();
-  const { current, locationId, openGate } = useLocationCtx();
+  const { current, locationId } = useLocationCtx();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -72,17 +72,15 @@ export default function Navbar() {
 
         {/* CTA Commander + panier */}
         <div className="nav-end">
-          <button
+          {/* Indicateur du restaurant — le changement passe UNIQUEMENT par
+              le bandeau « Changer de restaurant » (pas ce bouton). */}
+          <span
             className="nav-loc"
-            onClick={() => {
-              closeMenu();
-              openGate();
-            }}
             title={`Restaurant sélectionné : ${current?.name || 'à choisir'}`}
           >
             <Icon name="pin" size={14} />
             <span>{locationId ? current.city : 'Choisir'}</span>
-          </button>
+          </span>
           <Link
             href="/commander"
             className={`nav-cta${pathname === '/commander' ? ' active' : ''}`}

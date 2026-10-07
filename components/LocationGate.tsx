@@ -95,16 +95,28 @@ export default function LocationGate() {
           const data = (await res.json()) as { address?: { postcode?: string } };
           const pc = (data.address?.postcode || '').replace(/\D/g, '').slice(0, 5);
           if (pc.length === 5) setCp(pc);
+          else setGeoError('Position trouvée mais code postal inconnu — saisissez-le ci-dessus');
         } catch {
           /* pas de reverse geocoding → on garde juste les coordonnées */
         }
         setLocating(false);
       },
-      () => {
+      (err) => {
         setLocating(false);
-        setGeoError('Position refusée — entrez votre code postal');
+        // Message précis selon la cause réelle du refus
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoError(
+            'Position refusée par le navigateur — autorisez la localisation pour ce site (icône cadenas près de l’adresse), ou entrez votre code postal'
+          );
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGeoError('Position indisponible (GPS coupé ?) — entrez votre code postal');
+        } else if (err.code === err.TIMEOUT) {
+          setGeoError('Délai dépassé pour obtenir la position — réessayez ou entrez votre code postal');
+        } else {
+          setGeoError('Géolocalisation impossible — entrez votre code postal');
+        }
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
     );
   };
 

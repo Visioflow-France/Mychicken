@@ -762,7 +762,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .lg-skip:hover{opacity:1}
 
 /* --- Badge restaurant dans la navbar --- */
-.nav-loc{display:inline-flex;align-items:center;gap:.4rem;padding:.42rem .8rem;border:1px solid var(--g-25);border-radius:999px;background:var(--g-08);color:var(--cream);font:600 .74rem var(--font-montserrat);letter-spacing:.05em;cursor:pointer;transition:border-color .2s}
+.nav-loc{display:inline-flex;align-items:center;gap:.4rem;padding:.42rem .8rem;border:1px solid var(--g-25);border-radius:999px;background:var(--g-08);color:var(--cream);font:600 .74rem var(--font-montserrat);letter-spacing:.05em;transition:border-color .2s}
 .nav-loc:hover{border-color:var(--gold)}
 .nav-loc .icon{color:var(--gold)}
 
@@ -875,4 +875,23 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .f-group input { padding: .78rem .9rem; }
   .f-group { gap: .35rem; margin-bottom: .85rem; }
   .form-row { margin-bottom: .85rem; }
+}
+
+/* ========== CADRAGE MOBILE DU PAIEMENT ==========
+   Les panneaux (récap, formulaire, lignes d'article) avaient une
+   largeur min de contenu > écran : on rend tout compressible. */
+@media (max-width: 640px) {
+  .checkout-layout { grid-template-columns: minmax(0, 1fr); }
+  .checkout-layout > * { min-width: 0; max-width: 100%; }
+  .summary, .order-form, .order-form .panel { max-width: 100%; }
+  .cart-item { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .cart-item > div { min-width: 0; }
+  .ci-name, .ci-unit, .ci-note { overflow-wrap: anywhere; }
+  .sum-row, .sum-note, .dp-head, .delivery-progress, .promo-code-row,
+  .order-location { min-width: 0; flex-wrap: wrap; }
+  .promo-code-row input { min-width: 0; flex: 1 1 120px; }
+  .promo-code-row .btn { flex: none; }
+  .c-sub { font-size: 1.35rem; flex-wrap: wrap; }
+  .sum-note, .sum-note span, .note-ico { white-space: normal; overflow-wrap: anywhere; }
+  .ol-change { margin-left: 0; }
 }

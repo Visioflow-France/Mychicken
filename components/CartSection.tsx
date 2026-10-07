@@ -23,6 +23,11 @@ export default function CartSection() {
   const { current, locationId, openGate, entryMode } = useLocationCtx();
   const toast = useToast();
   const [mode, setMode] = useState<'takeaway' | 'delivery'>(entryMode || 'takeaway');
+  /* Le choix d'entrée arrive un rendu plus tard (localStorage) : on
+     resynchronise le mode du paiement dès qu'il est connu. */
+  useEffect(() => {
+    if (entryMode) setMode(entryMode);
+  }, [entryMode]);
   const [orderNum, setOrderNum] = useState<SuccessState | null>(null);
   const [codeInput, setCodeInput] = useState('');
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
@@ -414,22 +419,39 @@ export default function CartSection() {
                     Changer
                   </button>
                 </div>
-                <fieldset>
-                  <legend>Mode</legend>
-                  {MODES(current.minDelivery).map((m) => (
-                    <label className="radio-opt" key={m.value}>
-                      <input
-                        type="radio"
-                        name="mode"
-                        value={m.value}
-                        checked={mode === m.value}
-                        onChange={() => setMode(m.value as 'takeaway' | 'delivery')}
-                      />
-                      <Icon name={m.icon} size={17} />
-                      {m.label}
-                    </label>
-                  ))}
-                </fieldset>
+                {/* Mode figé par le parcours d'entrée (livraison / à emporter
+                    choisis au départ) — modifiable uniquement en changeant de
+                    restaurant via le bandeau. Si pas de choix initial, on demande. */}
+                {entryMode ? (
+                  <fieldset>
+                    <legend>Mode</legend>
+                    <div className="radio-opt">
+                      <Icon name={mode === 'delivery' ? 'scooter' : 'bag'} size={17} />
+                      <span>
+                        {mode === 'delivery'
+                          ? `Livraison par My Chicken ${current.city}`
+                          : 'À emporter — retrait au comptoir'}
+                      </span>
+                    </div>
+                  </fieldset>
+                ) : (
+                  <fieldset>
+                    <legend>Mode</legend>
+                    {MODES(current.minDelivery).map((m) => (
+                      <label className="radio-opt" key={m.value}>
+                        <input
+                          type="radio"
+                          name="mode"
+                          value={m.value}
+                          checked={mode === m.value}
+                          onChange={() => setMode(m.value as 'takeaway' | 'delivery')}
+                        />
+                        <Icon name={m.icon} size={17} />
+                        {m.label}
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
 
                 <fieldset>
                   <legend>Paiement</legend>
