@@ -1,0 +1,56 @@
+#!/bin/bash
+# Télécharge les photos sélectionnées (produit-id -> URL) dans tmp-img/
+BASE="https://image-search-mcp-cn-beijing.oss-cn-beijing.aliyuncs.com/image-search-mcp/images-ppt"
+declare -A M=(
+  [tasty-m]="46bb5d924f9e.jpg"
+  [tasty-l]="f1c33ef5a100.jpg"
+  [tasty-xl]="16a00eded5a2.jpg"
+  [menu-cuisse]="848264ea4f25.jpg"
+  [menu-demi]="c96d1e2df21f.jpg"
+  [menu-hotdog]="a9f231d4d2d2.jpeg"
+  [menu-pilons]="2ac83409b149.jpg"
+  [menu-wings]="7731275e341e.jpg"
+  [menu-ailes]="82f5e013351f.webp"
+  [menu-tenders]="9ceb3af2e438.jpg"
+  [menu-saucisses]="0d894703762a.jpeg"
+  [menu-familial]="2b76cadbaaf12.jpg"
+  [sandwich-baguette]="8a895149815b.jpg"
+  [p-3-pilons]="d20ef1b80294.jpg"
+  [p-4-ailes]="5b7706ffb84a.jpg"
+  [p-4-nems]="7831c016c26f.jpg"
+  [p-1-cuisse]="48201b7b6268.jpg"
+  [p-1-pilon]="6d82cc561ad6.jpg"
+  [p-3-tenders]="6b97cf09e0db.jpg"
+  [p-6-wings]="4904a5f7b66a.jpg"
+  [p-1-saucisse]="db1a49ed01c1.jpg"
+  [p-demi-poulet]="6e235c8b26c6.jpg"
+  [p-poulet-entier]="14fced2abbd9.jpg"
+  [p-hotdog]="ddb11fa52fd1.jpg"
+  [a-frites]="f80e09964b90.jpg"
+  [a-potatoes]="b048ac9ce52c.jpg"
+  [a-plantain]="f8f1698fa391.jpg"
+  [a-riz-thai]="b270b5d2359d.jpeg"
+  [a-pommes-de-terre]="09eb82429b06.jpg"
+  [s-oignons]="cef2976c7ff9.jpg"
+  [d-tiramisu]="eaff8d2d223f.jpg"
+  [d-tarte-daim]="7c2046e9e795.jpg"
+  [b-canette]="23d7cc939184.jpg"
+  [b-jus-bissap]="9e0ef2fa0fbc.jpg"
+  [b-jus-gingembre]="6cfda53bed4f.jpg"
+  [b-coca-1l5]="51f0047a700d.jpg"
+  # --- candidats à vérifier visuellement ---
+  [cand-donut1]="054c1ca98efd.png"
+  [cand-donut2]="33745ff87460.jpg"
+  [cand-donut3]="93769bd8dee0.jpeg"
+  [cand-donut4]="be91077cfbd7.jpg"
+  [cand-pates1]="d35492ad0a41.jpg"
+  [cand-pates2]="0de5d6320aa4.jpg"
+  [cand-sverte]="63dc07ad0da5.jpg"
+)
+ok=0; ko=0
+for id in "${!M[@]}"; do
+  ext="${M[$id]##*.}"
+  if curl -sL --max-time 40 -o "tmp-img/$id.$ext" "$BASE/${M[$id]}"; then ok=$((ok+1)); else ko=$((ko+1)); echo "ECHEC: $id"; fi
+done
+echo "telecharges OK=$ok KO=$ko"
+ls tmp-img/ | wc -l
