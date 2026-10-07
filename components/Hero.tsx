@@ -1,9 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 import Icon from './Icon';
+import { useLocationCtx } from '@/lib/location-store';
 
-/* Hero sobre : le logo officiel (découpé du flyer) pose l'identité,
-   une phrase claire, deux boutons, les infos pratiques. Pas d'artifice. */
+/* Hero sobre : le logo officiel (fourni par le gérant) pose l'identité,
+   une phrase claire, deux boutons, les infos pratiques DU RESTAURANT
+   CHOISI (l'adresse suit la sélection Persan / Saint-Mard). */
 export default function Hero() {
+  const { current, locationId } = useLocationCtx();
+
   return (
     <div className="hero">
       <div className="hero-veil" aria-hidden="true" />
@@ -17,18 +23,20 @@ export default function Hero() {
         </p>
         <div className="hero-actions">
           <Link href="/la-carte" className="btn btn-solid">Découvrir la carte</Link>
-          <a href="tel:+33751565951" className="btn btn-ghost">07.51.56.59.51</a>
+          <a href={`tel:+33${current.phone.replace(/\D/g, '').slice(1)}`} className="btn btn-ghost">
+            {current.phone}
+          </a>
         </div>
       </div>
       <div className="hero-info">
         <span>
-          <Icon name="pin" size={15} /> Avenue Jacques Vogt, <b>Persan</b>
+          <Icon name="pin" size={15} /> {current.address}, <b>{current.city}</b>
         </span>
         <span>
-          <Icon name="scooter" size={16} /> Livraison dès <b>25&nbsp;€</b>
+          <Icon name="scooter" size={16} /> Livraison dès <b>{current.minDelivery}&nbsp;€</b>
         </span>
         <span>
-          <Icon name="clock" size={15} /> 7j/7 · <b>11h30–21h30</b>
+          <Icon name="clock" size={15} /> {current.hours}
         </span>
         <span>
           <Icon name="check" size={15} /> <b>Viande halal</b>
