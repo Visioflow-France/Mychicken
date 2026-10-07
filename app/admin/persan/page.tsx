@@ -7,6 +7,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
   /* PWA dédiée Persan : s'installe avec sa propre icône */
   manifest: '/admin-manifest-ps.webmanifest',
+  icons: {
+    icon: '/admin-icon-ps-192.png',
+    apple: '/admin-icon-ps-192.png',
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'MC Persan',
+    statusBarStyle: 'black-translucent',
+  },
 };
 
 export const viewport: Viewport = {

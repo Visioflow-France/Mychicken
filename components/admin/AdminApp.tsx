@@ -52,6 +52,17 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
   const [draft, setDraft] = useState<MenuData>(menu);
   const [publishing, setPublishing] = useState(false);
 
+  /* Sous-domaine dédié (ex. persan.mondomaine.fr) : le restaurant est
+     déduit du nom d'hôte — même verrou que la PWA du resto, quel que soit
+     le domaine futur. Déterminé après montage (pas d'écart d'hydratation). */
+  const [hostLocation, setHostLocation] = useState<string>();
+  useEffect(() => {
+    const h = window.location.hostname.toLowerCase();
+    if (h.startsWith('persan.')) setHostLocation('persan');
+    else if (h.startsWith('saint-mard.') || h.startsWith('saintmard.') || h.startsWith('sm.')) setHostLocation('saint-mard');
+  }, []);
+  const lockedLocation = initialLocation || hostLocation;
+
   /* Session au chargement */
   useEffect(() => {
     checkSession()
@@ -65,8 +76,8 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
   /* Restaurant imposé par la PWA (ex. /admin/persan) : on force le choix
      à chaque ouverture pour que l'app ouvre toujours sur « son » resto. */
   useEffect(() => {
-    if (initialLocation) choose(initialLocation);
-  }, [initialLocation, choose]);
+    if (lockedLocation) choose(lockedLocation);
+  }, [lockedLocation, choose]);
 
   /* Le brouillon suit la carte live tant qu'il n'y a pas de modifications en cours */
   useEffect(() => {
@@ -195,21 +206,31 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
           </div>
         </div>
         <div className="at-right">
-          {/* Où êtes-vous ? — filtre les commandes affichées */}
-          <label className="at-loc" aria-label="Restaurant actif dans ce dashboard">
-            <Icon name="pin" size={13} />
-            <select
-              value={locationId || ''}
-              onChange={(e) => choose(e.target.value)}
-              aria-label="Restaurant sélectionné"
-            >
-              {locations.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.city}
-                </option>
-              ))}
-            </select>
-          </label>
+          {/* Où êtes-vous ? — filtre les commandes affichées.
+              App dédiée (/admin/persan, /admin/saint-mard) : restaurant
+              VERROUILLÉ — le personnel ne peut pas basculer sur l'autre. */}
+          {lockedLocation ? (
+            <span className="at-loc at-loc-locked" title="Application dédiée à ce restaurant">
+              <Icon name="pin" size={13} />
+              <b>{current.city}</b>
+              <Icon name="lock" size={12} />
+            </span>
+          ) : (
+            <label className="at-loc" aria-label="Restaurant actif dans ce dashboard">
+              <Icon name="pin" size={13} />
+              <select
+                value={locationId || ''}
+                onChange={(e) => choose(e.target.value)}
+                aria-label="Restaurant sélectionné"
+              >
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.city}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <a href="/" target="_blank" rel="noreferrer" className="at-link">
             Voir le site <Icon name="arrowRight" size={14} strokeWidth={2.2} />
           </a>

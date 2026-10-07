@@ -7,10 +7,11 @@
      restaurants) vit dans le document unique « menu/published ».
      Résultat mis en cache par onglet (sessionStorage) → navigation
      dans le site = 0 lecture supplémentaire.
-     PAS de onSnapshot ici : le temps réel est réservé aux commandes
-     du dashboard (onSnapshot sur « orders » uniquement).
-     Un rafraîchissement unique a lieu quand l'admin publie
-     (événement MENU_UPDATED_EVENT après appel API réussi).
+     Exception : dans le DASHBOARD (/admin…), la carte est suivie en
+     direct (onSnapshot) — une publication depuis un autre appareil
+     s'affiche sans recharger. Le site client, lui, ne fait qu'une
+     lecture par visite (événement MENU_UPDATED_EVENT en plus après
+     une publication admin réussie).
    • Firebase absent → MODE DÉMO : overrides dans le localStorage
      (clé mc_menu_overrides), synchronisés entre onglets.
    • En cas d'erreur réseau → valeurs embarquées de lib/data.ts.
@@ -25,7 +26,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import {
   DEFAULT_MENU,
   promoPrice,
@@ -111,6 +112,20 @@ function writeCache(menu: MenuData) {
   }
 }
 
+/* Fusion du menu publié avec les valeurs embarquées (champs manquants). */
+function mergePublished(d: Partial<MenuData>): MenuData {
+  return {
+    ...DEFAULT_MENU,
+    products: d.products || DEFAULT_MENU.products,
+    categories: d.categories || DEFAULT_MENU.categories,
+    promos: d.promos || {},
+    promoCodes: d.promoCodes || [],
+    config: { ...DEFAULT_MENU.config, ...d.config },
+    banner: { ...DEFAULT_MENU.banner, ...d.banner },
+    locations: d.locations || DEFAULT_MENU.locations,
+  };
+}
+
 /* ---------- Provider ---------- */
 
 export function MenuProvider({ children }: { children: ReactNode }) {
@@ -134,6 +149,23 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     const db = getClientDb();
     if (!db) return;
 
+    /* DASHBOARD (/admin…) : carte en DIRECT via onSnapshot — une publication
+       depuis un AUTRE appareil apparaît sans recharger (le dashboard reste
+       ouvert au comptoir toute la journée). Le site client garde sa lecture
+       unique + cache session (quota Spark). */
+    if (window.location.pathname.startsWith('/admin')) {
+      const unsub = onSnapshot(
+        doc(db, PUBLISHED_DOC),
+        (snap) => {
+          const d = snap.data() as Partial<MenuData> | undefined;
+          if (d && Array.isArray(d.products) && d.products.length) setMenu(mergePublished(d));
+          else setMenu(DEFAULT_MENU);
+        },
+        (e) => console.error('[menu] suivi direct impossible, menu embarqué utilisé :', e)
+      );
+      return () => unsub();
+    }
+
     let cancelled = false;
     const load = async () => {
       const cached = readCache();
@@ -146,16 +178,7 @@ export function MenuProvider({ children }: { children: ReactNode }) {
         if (cancelled) return;
         const d = snap.data() as Partial<MenuData> | undefined;
         if (d && Array.isArray(d.products) && d.products.length) {
-          const merged: MenuData = {
-            ...DEFAULT_MENU,
-            products: d.products,
-            categories: d.categories || DEFAULT_MENU.categories,
-            promos: d.promos || {},
-            promoCodes: d.promoCodes || [],
-            config: { ...DEFAULT_MENU.config, ...d.config },
-            banner: { ...DEFAULT_MENU.banner, ...d.banner },
-            locations: d.locations || DEFAULT_MENU.locations,
-          };
+          const merged = mergePublished(d);
           setMenu(merged);
           writeCache(merged);
         } else {

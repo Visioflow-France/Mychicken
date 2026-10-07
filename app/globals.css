@@ -777,6 +777,9 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .at-loc .icon{color:var(--gold)}
 .at-loc select{background:transparent;border:0;color:var(--cream);font:600 .78rem var(--font-montserrat);cursor:pointer}
 .at-loc select option{color:#241209;background:var(--cream)}
+/* App dédiée à un restaurant (PWA) : étiquette fixe, pas de sélecteur */
+.at-loc-locked{cursor:default}
+.at-loc-locked b{color:var(--cream);font:600 .78rem var(--font-montserrat)}
 
 /* --- Footer : bouton adresse cliquable --- */
 .fc-loc{background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--g-35);text-underline-offset:3px}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon, { type IconName } from '@/components/Icon';
 import { useOrders } from '@/lib/orders-store';
 import { useLocationCtx } from '@/lib/location-store';
@@ -25,6 +25,34 @@ const timeFmt = (ts: number) =>
   new Date(ts).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/* « Ding-dong » WebAudio (aucun fichier audio requis) — le dashboard
+   reste ouvert au comptoir : on entend les nouvelles commandes sans
+   regarder l'écran. Peut nécessiter une interaction préalable
+   (écran de connexion) selon le navigateur. */
+function beep() {
+  try {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    void ctx.resume().catch(() => {});
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, t0);
+    osc.frequency.setValueAtTime(660, t0 + 0.22);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.3, t0 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.55);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.6);
+    osc.onended = () => void ctx.close().catch(() => {});
+  } catch {
+    /* audio indisponible — alerte visuelle seulement */
+  }
+}
 
 /* Ticket cuisine complet — ouvert dans une fenêtre d'impression dédiée */
 function printTicket(o: Order, locName: string, locAddress: string) {
@@ -109,6 +137,23 @@ function printTicket(o: Order, locName: string, locAddress: string) {
 export default function OrdersTab({ locationId, variant = 'active' }: { locationId?: string; variant?: 'active' | 'all' }) {
   const { orders: all, source } = useOrders();
   const { locations } = useLocationCtx();
+
+  /* Alerte sonore + vibration à chaque NOUVELLE commande (temps réel).
+     La première réception mémorise l'existant sans soner. */
+  const seen = useRef<Set<string>>(new Set());
+  const firstSnap = useRef(true);
+  useEffect(() => {
+    const fresh = all.filter((o) => !seen.current.has(o.id));
+    all.forEach((o) => seen.current.add(o.id));
+    if (firstSnap.current) {
+      firstSnap.current = false;
+      return;
+    }
+    if (fresh.length) {
+      beep();
+      navigator.vibrate?.([120, 80, 120]);
+    }
+  }, [all]);
   /* Commandes du restaurant sélectionné (les anciennes sans locationId restent visibles) */
   const orders = locationId
     ? all.filter((o) => !o.locationId || o.locationId === locationId)
