@@ -180,7 +180,7 @@ export default function CartSection() {
   }, [mode, current]);
 
   const cartPayload = () =>
-    cart.map((l) => ({ id: l.id, qty: l.qty, note: l.note }));
+    cart.map((l) => ({ id: l.id, qty: l.qty, note: l.note, ...(l.sizeId ? { sizeId: l.sizeId } : {}) }));
 
   const finishOrder = async () => {
     const cust = customerData();
@@ -263,14 +263,16 @@ export default function CartSection() {
                 {cart.map((line, i) => {
                   const p = menu.products.find((x) => x.id === line.id);
                   if (!p) return null;
-                  const lp = priceOf(line.id);
+                  /* Produit à tailles (Tasty M/L/XL) : prix de la taille choisie */
+                  const size = line.sizeId ? p.sizes?.find((s) => s.id === line.sizeId) : undefined;
+                  const lp = size ? { price: size.price, oldPrice: null } : priceOf(line.id);
                   return (
                     <div className="cart-item" key={`${line.id}-${line.note || ''}-${i}`}>
                       <span className="ci-thumb">
                         <SmartImg src={p.img} alt={p.name} loading="lazy" />
                       </span>
                       <div>
-                        <p className="ci-name">{p.name}</p>
+                        <p className="ci-name">{size ? `${p.name} ${size.label}` : p.name}</p>
                         {line.note && <p className="ci-note">avec {line.note}</p>}
                         <p className="ci-unit">
                           {lp.oldPrice != null && <s className="p-old-price">{fmt(lp.oldPrice)} </s>}

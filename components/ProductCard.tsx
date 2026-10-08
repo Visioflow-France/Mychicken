@@ -45,7 +45,9 @@ export default function ProductCard({ p }: { p: Product }) {
           <div className="p-foot">
             <span className="p-price">
               {price.oldPrice != null && <s className="p-old-price">{fmt(price.oldPrice)}</s>}
-              {fmt(price.price)}
+              {p.sizes && p.sizes.length > 0
+                ? `dès ${fmt(Math.min(...p.sizes.map((s) => s.price)))}`
+                : fmt(price.price)}
             </span>
             <button
               className={`p-add${soldOut ? ' disabled' : ''}`}

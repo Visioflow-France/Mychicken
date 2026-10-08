@@ -42,6 +42,8 @@ export default function AddOptions({
   const { add } = useCart();
   const toast = useToast();
   const [picked, setPicked] = useState<Record<string, boolean>>({});
+  /* Taille choisie (Tasty Crousty : M / L / XL) — obligatoire */
+  const [sizeId, setSizeId] = useState<string | null>(null);
   /* Recette choisie (Tasty Crousty : Original, Dynamite, Boursin, Dz) */
   const [recipe, setRecipe] = useState<string | null>(null);
   /* Choix du contenu inclus du menu : ids de produits (accompagnements
@@ -96,7 +98,7 @@ export default function AddOptions({
     return () => {
       window.removeEventListener('resize', placeBubble);
     };
-  }, [anchor, picked, qty, inclSides, inclDrinks]);
+  }, [anchor, picked, qty, inclSides, inclDrinks, sizeId]);
 
   /* Menus publiés sans champ incl (édition admin) : on le déduit de
      la description (« … + 2 accompagnements + 1 boisson … »). */
@@ -132,12 +134,16 @@ export default function AddOptions({
   );
 
   const price = effective(product);
+  /* Produit à tailles (Tasty Crousty) : le prix suit la taille choisie */
+  const size = product.sizes?.find((s) => s.id === sizeId);
+  const unit = size ? size.price : price.price;
   const extras = Object.keys(picked).filter((id) => picked[id]);
   const extrasTotal = extras.reduce((s, id) => s + priceOf(id).price, 0);
-  const total = (price.price + extrasTotal) * qty;
+  const total = (unit + extrasTotal) * qty;
 
   /* Le menu ne part au panier que complètement composé */
   const inclDone =
+    (!product.sizes || sizeId !== null) &&
     (!incl || (inclSides.length === incl.sides && inclDrinks.length === incl.drinks)) &&
     (!product.recipes || recipe !== null);
 
@@ -158,15 +164,16 @@ export default function AddOptions({
   const confirm = () => {
     if (!inclDone) return;
     const parts = [
+      ...(size ? [size.label] : []),
       ...(recipe ? [product.recipes?.find((r) => r.id === recipe)?.name || recipe] : []),
       ...(incl ? [...inclSides, ...inclDrinks].map(nameOf) : []),
     ];
     const note = parts.length ? parts.join(' · ') : undefined;
-    for (let i = 0; i < qty; i++) add(product.id, note);
+    for (let i = 0; i < qty; i++) add(product.id, note, sizeId ?? undefined);
     extras.forEach((id) => add(id));
     toast({
       img: product.img,
-      title: product.name,
+      title: size ? `${product.name} ${size.label}` : product.name,
       note: note
         ? `Ajouté — avec ${note}`
         : extras.length > 0
@@ -202,8 +209,12 @@ export default function AddOptions({
             <div className="ao-head-txt">
               <h3>{product.name}</h3>
               <p className="ao-price">
-                {price.oldPrice != null && <s className="p-old-price">{fmt(price.oldPrice)}</s>}
-                {fmt(price.price)}
+                {price.oldPrice != null && !size && <s className="p-old-price">{fmt(price.oldPrice)}</s>}
+                {product.sizes && !size ? (
+                  <>dès {fmt(Math.min(...product.sizes.map((s) => s.price)))}</>
+                ) : (
+                  fmt(unit)
+                )}
               </p>
             </div>
             <button className="ao-close" onClick={onClose} aria-label="Fermer">
@@ -214,6 +225,33 @@ export default function AddOptions({
           {product.desc && <p className="ao-desc">{product.desc}</p>}
 
           <div className="ao-groups">
+            {/* -1 · Taille (Tasty Crousty M/L/XL) — obligatoire, prix dédiés */}
+            {product.sizes && product.sizes.length > 0 && (
+              <section className="ao-group ao-incl" key="size">
+                <h4>
+                  Choisissez votre taille
+                  <span className="ao-incl-tag">requis</span>
+                </h4>
+                <div className="ao-chips ao-chips-sizes">
+                  {product.sizes.map((s) => {
+                    const on = sizeId === s.id;
+                    return (
+                      <button
+                        type="button"
+                        key={s.id}
+                        className={`ao-chip ao-chip-size${on ? ' on' : ''}`}
+                        onClick={() => setSizeId(on ? null : s.id)}
+                        aria-pressed={on}
+                      >
+                        <span className="ao-chip-name">{s.label}</span>
+                        <span className="ao-chip-price">{fmt(s.price)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             {/* 0 · Recette au choix (Tasty Crousty) — obligatoire, décrite */}
             {product.recipes && product.recipes.length > 0 && (
               <section className="ao-group ao-incl" key="recipe">
@@ -344,7 +382,11 @@ export default function AddOptions({
               disabled={!inclDone}
               style={inclDone ? undefined : { opacity: 0.5, cursor: 'not-allowed' }}
             >
-              {inclDone ? `Ajouter au panier · ${fmt(total)}` : 'Choisissez le contenu du menu'}
+              {inclDone
+                ? `Ajouter au panier · ${fmt(total)}`
+                : product.sizes && !sizeId
+                  ? 'Choisissez votre taille'
+                  : 'Choisissez le contenu du menu'}
             </button>
           </div>
         </div>

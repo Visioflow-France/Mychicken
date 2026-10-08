@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
    ================================================================ */
 
 type CheckoutBody = {
-  items: { id: string; qty: number; note?: string }[];
+  items: { id: string; qty: number; note?: string; sizeId?: string }[];
   mode: OrderMode;
   promoCode?: string;
   locationId?: string;
@@ -95,9 +95,17 @@ export async function POST(req: Request) {
     if (!p || p.available === false) continue;
     const qty = clamp(Math.floor(line.qty || 0), 0, 50);
     if (qty > 0) {
+      // Taille choisie (Tasty Crousty M/L/XL) : prix dédié, libellé distinct
+      const size = line.sizeId ? p.sizes?.find((s) => s.id === line.sizeId) : undefined;
       // Composition du menu choisie par le client (« Frites · Coca 33 cl »)
       const note = typeof line.note === 'string' ? line.note.trim().slice(0, 120) || undefined : undefined;
-      items.push({ id: p.id, name: p.name, price: promoPrice(p.price, menu.promos[p.id]), qty, ...(note ? { note } : {}) });
+      items.push({
+        id: p.id,
+        name: size ? `${p.name} ${size.label}` : p.name,
+        price: size ? size.price : promoPrice(p.price, menu.promos[p.id]),
+        qty,
+        ...(note ? { note } : {}),
+      });
     }
   }
   if (items.length === 0) {

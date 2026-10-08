@@ -13,16 +13,16 @@ import { useMenu } from './menu-store';
 
 /* Panier en lignes : chaque ligne = un produit + une quantité, et
    éventuellement la composition choisie pour un menu (« avec Frites ·
-   Coca 33 cl »). Deux exemplaires d'un même menu composés différemment
-   forment deux lignes distinctes. */
-export type CartLine = { id: string; qty: number; note?: string };
+   Coca 33 cl ») et la taille (ex. Tasty Crousty L). Deux exemplaires
+   d'un même menu composés différemment forment deux lignes distinctes. */
+export type CartLine = { id: string; qty: number; note?: string; sizeId?: string };
 
 type CartContextValue = {
   cart: CartLine[];
   count: number;
-  /** Sous-total en prix réels (promos produit appliquées) */
+  /** Sous-total en prix réels (promos produit + taille appliquées) */
   total: number;
-  add: (id: string, note?: string) => void;
+  add: (id: string, note?: string, sizeId?: string) => void;
   setQty: (index: number, delta: number) => void;
   remove: (index: number) => void;
   clear: () => void;
@@ -35,7 +35,21 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const { priceOf } = useMenu(); // prix temps réel (promos incluses)
+  const { menu, priceOf } = useMenu(); // prix temps réel (promos incluses)
+
+  /* Prix unitaire d'une ligne : le prix de la TAILLE choisie si le
+     produit en propose (Tasty Crousty M/L/XL), sinon le prix produit. */
+  const unitOf = useCallback(
+    (l: CartLine): number => {
+      if (l.sizeId) {
+        const p = menu.products.find((x) => x.id === l.id);
+        const size = p?.sizes?.find((s) => s.id === l.sizeId);
+        if (size) return size.price;
+      }
+      return priceOf(l.id).price;
+    },
+    [menu.products, priceOf]
+  );
 
   // Chargement depuis le localStorage après montage (évite tout décalage d'hydratation)
   useEffect(() => {
@@ -56,15 +70,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
   }, [cart, loaded]);
 
-  const add = useCallback((id: string, note?: string) => {
+  const add = useCallback((id: string, note?: string, sizeId?: string) => {
     setCart((c) => {
-      const i = c.findIndex((l) => l.id === id && l.note === note);
+      const i = c.findIndex((l) => l.id === id && l.note === note && l.sizeId === sizeId);
       if (i >= 0) {
         const next = [...c];
         next[i] = { ...next[i], qty: next[i].qty + 1 };
         return next;
       }
-      return [...c, { id, qty: 1, ...(note ? { note } : {}) }];
+      return [...c, { id, qty: 1, ...(note ? { note } : {}), ...(sizeId ? { sizeId } : {}) }];
     });
   }, []);
 
@@ -88,9 +102,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const count = cart.reduce((a, l) => a + l.qty, 0);
-    const total = cart.reduce((s, l) => s + priceOf(l.id).price * l.qty, 0);
+    const total = cart.reduce((s, l) => s + unitOf(l) * l.qty, 0);
     return { cart, count, total: Math.round(total * 100) / 100, add, setQty, remove, clear };
-  }, [cart, priceOf, add, setQty, remove, clear]);
+  }, [cart, unitOf, add, setQty, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
