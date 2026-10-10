@@ -202,9 +202,9 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .cart-badge{min-width:20px;height:20px;padding:0 5px;border-radius:var(--pill);display:inline-grid;place-items:center;font-size:.66rem;font-weight:700;line-height:1;color:var(--gold-light);background:color-mix(in srgb,#140904 88%,transparent);border:1px solid var(--g-45)}
 .cart-badge.badge-bounce{animation:badgeSpring .55s cubic-bezier(.34,1.56,.64,1)}
 @keyframes badgeSpring{0%{transform:scale(1)}35%{transform:scale(1.5)}68%{transform:scale(.9)}100%{transform:scale(1)}}
-/* Menu mobile : panneau déroulant sous la pilule (règles actives dans le
-   media query téléphone ci-dessous) — caché sur ordinateur */
-.nav-drawer{display:none}
+/* Menu mobile : panneau déroulant + voile (règles actives dans le media
+   query téléphone ci-dessous) — cachés sur ordinateur */
+.nav-drawer,.nav-backdrop{display:none}
 .burger{display:none;background:none;border:none;color:var(--cream);cursor:pointer;padding:.4rem .5rem;z-index:1102}
 .burger svg{display:block}
 @media(max-width:900px){
@@ -217,9 +217,12 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .nav-cta-label{display:none}
   .nav-cta .cart-badge{position:absolute;top:-4px;right:-6px}
   .burger{display:grid;place-items:center}
-  /* Panneau qui se DÉROULE sous la pilule : la navbar s'agrandit pour
-     accueillir Carte / Histoire / Contact, la page reste visible autour
-     (plus de plein écran). */
+  /* Panneau qui se déroule sous la pilule — mouvement calqué sur la
+     référence : fade .28s ease + glisse/zoom .34s en easeOutExpo
+     (cubic-bezier(.16,1,.3,1)). À la fermeture, `visibility` ne bascule
+     qu'après .34s (visibility 0s linear .34s) pour laisser l'animation
+     de sortie se jouer ; à l'ouverture, transition-delay:0s annule ce
+     délai. Les liens apparaissent avec le panneau, d'un bloc. */
   .nav-drawer{
     display:flex;position:absolute;top:calc(100% + 8px);left:50%;z-index:1100;
     transform:translateX(-50%) translateY(-10px) scale(.97);transform-origin:top center;
@@ -229,17 +232,18 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
     -webkit-backdrop-filter:blur(22px) saturate(1.2);backdrop-filter:blur(22px) saturate(1.2);
     box-shadow:0 26px 60px rgba(0,0,0,.55),inset 0 1px 0 var(--g-08);
     opacity:0;visibility:hidden;pointer-events:none;
-    transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s;
+    transition:opacity .28s ease,transform .34s cubic-bezier(.16,1,.3,1),visibility 0s linear .34s;
   }
-  .nav-drawer.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
-  .nav-drawer a{font-size:.74rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--sand);padding:.9rem 1.4rem;border-radius:12px;text-align:center;opacity:0;transform:translateY(-6px);transition:opacity .4s var(--ease),transform .4s var(--ease),color .3s,background .3s}
+  .nav-drawer.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1);transition-delay:0s}
+  .nav-drawer a{font-size:.74rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--sand);padding:.9rem 1.4rem;border-radius:12px;text-align:center;transition:color .3s,background .3s}
   .nav-drawer a:hover,.nav-drawer a.active{color:var(--gold-light);background:var(--g-08)}
-  .nav-drawer.open a{opacity:1;transform:none}
-  .nav-drawer.open a:nth-child(1){transition-delay:.05s}
-  .nav-drawer.open a:nth-child(2){transition-delay:.11s}
-  .nav-drawer.open a:nth-child(3){transition-delay:.17s}
-  /* Capteur transparent plein écran : cliquer à côté du panneau le referme */
-  .nav-catcher{position:fixed;inset:0;z-index:1090;display:block;background:transparent;border:0;padding:0;cursor:default;pointer-events:auto}
+  /* Voile assombri + flouté derrière le menu ouvert (comme la référence) :
+     noir 30% + blur(6px), fondu .3s. Cliquable pour refermer le menu.
+     Enfant direct de l'en-tête — sans backdrop-filter sur un ancêtre —
+     pour que position:fixed couvre bien tout l'écran ; sous la pilule
+     (z-index 1200) dont le burger reste cliquable. */
+  .nav-backdrop{display:block;position:fixed;inset:0;z-index:1090;background:rgba(0,0,0,.3);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s ease}
+  .nav-backdrop.open{opacity:1;pointer-events:auto}
 }
 @media(max-width:400px){
   .brand-text{font-size:.82rem}

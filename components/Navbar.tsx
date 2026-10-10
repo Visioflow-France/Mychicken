@@ -28,8 +28,25 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* Menu mobile : panneau déroulant sous la pilule — plus besoin de
-     verrouiller le scroll de la page (plus de plein écran). */
+  /* Menu mobile : panneau déroulant sous la pilule, voile flouté derrière.
+     Échap referme (écouteur posé seulement quand le menu est ouvert),
+     repasser en vue desktop (> 900px = breakpoint du media query) aussi. */
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 900) setOpen(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const closeMenu = () => setOpen(false);
 
@@ -101,12 +118,14 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Menu mobile : panneau qui se déroule SOUS la pilule (la navbar
-         s'agrandit pour accueillir les pages) + capteur transparent
-         pour le refermer d'un clic à côté. */}
-      {open && (
-        <button className="nav-catcher" aria-hidden="true" tabIndex={-1} onClick={closeMenu} />
-      )}
+      {/* Menu mobile : voile assombri + flouté derrière le panneau, toujours
+         monté pour jouer son fondu à la fermeture — cliquer dessus referme.
+         Enfant direct de l'en-tête pour que position:fixed couvre l'écran. */}
+      <div
+        className={`nav-backdrop${open ? ' open' : ''}`}
+        aria-hidden="true"
+        onClick={closeMenu}
+      />
       <nav className={`nav-drawer${open ? ' open' : ''}`} aria-label="Navigation mobile">
         {LINKS.map((l) => (
           <Link
