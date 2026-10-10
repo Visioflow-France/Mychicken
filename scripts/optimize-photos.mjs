@@ -13,7 +13,7 @@
    ================================================================ */
 
 import sharp from 'sharp';
-import { readdirSync, writeFileSync, renameSync, existsSync, rmSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, renameSync, existsSync, rmSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
@@ -53,39 +53,46 @@ const WEBP_Q = 90;
    publiée dans Firestore (qui référence /photos/xxx.jpg) voit donc les
    nouvelles photos sans republication. */
 const NEW_PHOTOS = {
-  'saucisse.PNG': 'p-1-saucisse',
-  'menu ailes.PNG': 'menu-ailes',
-  'menu donut.PNG': 'menu-donuts',
-  'Menu pilon.png': 'menu-pilons',
-  'Menu wings.png': 'menu-wings',
-  'Menu cuisse.png': 'menu-cuisse',
-  'menu tenders.PNG': 'menu-tenders',
-  '1 pilon.PNG': 'p-1-pilon',
-  'ailes.PNG': 'p-4-ailes',
-  'banane plantain.PNG': 'a-plantain',
-  'boursin.PNG': 'tasty-boursin',
-  'brick.PNG': 'p-1-brick',
-  'cuisse de poulet.PNG': 'p-1-cuisse',
-  'demi poulet.PNG': 'p-demi-poulet',
-  'donut de poulet.PNG': 'p-donut-poulet',
-  'dynamite.PNG': 'tasty-dynamite',
-  'dz.PNG': 'tasty-dz',
-  'frites.PNG': 'a-frites',
-  'hot dog.PNG': 'p-hotdog',
+  // ---- fournies le 10/10/2026 (28 photos) ----
+  '3 pilons.PNG': 'p-3-pilons',
   'menu tasty crousty.PNG': 'tasty-m',
-  'nems.PNG': 'p-4-nems',
-  'original.PNG': 'tasty-original',
-  'pommes de terre.PNG': 'a-pommes-de-terre',
-  'potatoes.PNG': 'a-potatoes',
-  'poulet entier.PNG': 'p-poulet-entier',
-  'riz thai.PNG': 'a-riz-thai',
-  'tarte au daim.PNG': 'd-tarte-daim',
-  'tenders.PNG': 'p-3-tenders',
-  'tiramisu.PNG': 'd-tiramisu',
-  'wings.PNG': 'p-6-wings',
+  'menu cuisse.PNG': 'menu-cuisse',
+  'menu demi poulet.PNG': 'menu-demi',
   'menu hot dog.PNG': 'menu-hotdog',
-  'Menu demi poulet.png': 'menu-demi',
+  'menu pilons.PNG': 'menu-pilons',
+  'menu wings.PNG': 'menu-wings',
+  'menu donut.PNG': 'menu-donuts',
+  'menu tenders.PNG': 'menu-tenders',
+  'menu ailes.PNG': 'menu-ailes',
+  'menu familial.PNG': 'menu-familial',
+  'menu brick.PNG': 'menu-brick',
+  'menu saucisses.PNG': 'menu-saucisses',
+  'sandwich baguette.PNG': 'sandwich-baguette',
+  'ailes.PNG': 'p-4-ailes',
+  'tenders.PNG': 'p-3-tenders',
+  'wings.PNG': 'p-6-wings',
+  'demi-poulet.PNG': 'p-demi-poulet',
+  'poulet entier.PNG': 'p-poulet-entier',
+  'sauce oignon.PNG': 's-oignons',
+  'sauce verte.PNG': 's-verte',
+  'tarte au daim.PNG': 'd-tarte-daim',
+  'jus de bissap.PNG': 'b-jus-bissap',
+  'jus de gingembre.PNG': 'b-jus-gingembre',
+  'canette 33 cl.PNG': 'b-canette',
+  'red bull.PNG': 'b-redbull',
+  'bouteille coca-cola 1,5 L.PNG': 'b-coca-1l5',
+  'pates.PNG': 'a-pates',
 };
+
+/* Manifeste précédent : les bases non remplacées dont toutes les variantes
+   existent déjà sont conservées telles quelles (aucun ré-encodage, donc
+   aucune perte de qualité supplémentaire à chaque exécution). */
+let previous = {};
+try {
+  previous = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
+} catch {
+  /* premier lancement */
+}
 
 const manifest = {};
 const report = [];
@@ -131,12 +138,26 @@ async function emitBase(pipeline, base, fullW, sourceLabel) {
 /* ---------- 1. Nouvelles photos (recadrage 4:3 pleine résolution) ---------- */
 for (const [src, base] of Object.entries(NEW_PHOTOS)) {
   const file = join(ROOT, src);
+  if (!existsSync(file)) {
+    console.warn(`⚠ Source absente, ignorée : ${src}`);
+    continue;
+  }
+  /* Purge des anciennes variantes (une largeur pleine plus petite qu'avant
+     peut rendre un -1200 obsolète : on repart d'un dossier propre). */
+  for (const f of readdirSync(PHOTOS_DIR)) {
+    if (f.startsWith(`${base}-`) && /\d+\.(jpg|webp)$/.test(f)) {
+      rmSync(join(PHOTOS_DIR, f), { force: true });
+    }
+  }
   const { w, h, left, top } = await cropInfo(file);
   const pipeline = sharp(file).extract({ left, top, width: w, height: h });
   await emitBase(pipeline, base, w, `${src} → ${base}`);
 }
 
-/* ---------- 2. Variantes pour les photos existantes non remplacées ---------- */
+/* ---------- 2. Photos existantes non remplacées ----------
+   Conserver l'entrée du manifeste précédent quand tous les fichiers sont
+   présents : pas de ré-encodage (donc pas de perte de génération). Une base
+   incomplète (fichier manquant, jamais passée au script) est (re)générée. */
 const replaced = new Set(Object.values(NEW_PHOTOS));
 const existing = readdirSync(PHOTOS_DIR)
   .filter((f) => f.endsWith('.jpg') && !/-\d+\.jpg$/.test(f))
@@ -144,6 +165,19 @@ const existing = readdirSync(PHOTOS_DIR)
   .filter((base) => !replaced.has(base));
 
 for (const base of existing) {
+  const key = `/photos/${base}.jpg`;
+  const widths = previous[key];
+  /* La dernière largeur du manifeste EST le fichier de base (plat.jpg) :
+     on ne vérifie l'existence que des variantes suffixées. */
+  if (
+    widths &&
+    existsSync(join(PHOTOS_DIR, `${base}.webp`)) &&
+    widths.slice(0, -1).every((w) => existsSync(join(PHOTOS_DIR, `${base}-${w}.jpg`)) && existsSync(join(PHOTOS_DIR, `${base}-${w}.webp`)))
+  ) {
+    manifest[key] = widths;
+    report.push(`${base.padEnd(34)} conservée telle quelle (aucun ré-encodage)`);
+    continue;
+  }
   const file = join(PHOTOS_DIR, `${base}.jpg`);
   const meta = await sharp(file).metadata();
   await emitBase(sharp(file), base, meta.width, `(existante) ${base}`);
