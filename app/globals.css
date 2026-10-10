@@ -202,8 +202,8 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .cart-badge{min-width:20px;height:20px;padding:0 5px;border-radius:var(--pill);display:inline-grid;place-items:center;font-size:.66rem;font-weight:700;line-height:1;color:var(--gold-light);background:color-mix(in srgb,#140904 88%,transparent);border:1px solid var(--g-45)}
 .cart-badge.badge-bounce{animation:badgeSpring .55s cubic-bezier(.34,1.56,.64,1)}
 @keyframes badgeSpring{0%{transform:scale(1)}35%{transform:scale(1.5)}68%{transform:scale(.9)}100%{transform:scale(1)}}
-/* Menu mobile plein écran — enfant direct de l'en-tête (hors pilule/flou)
-   pour que position:fixed couvre bien tout l'écran */
+/* Menu mobile : panneau déroulant sous la pilule (règles actives dans le
+   media query téléphone ci-dessous) — caché sur ordinateur */
 .nav-drawer{display:none}
 .burger{display:none;background:none;border:none;color:var(--cream);cursor:pointer;padding:.4rem .5rem;z-index:1102}
 .burger svg{display:block}
@@ -217,21 +217,36 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .nav-cta-label{display:none}
   .nav-cta .cart-badge{position:absolute;top:-4px;right:-6px}
   .burger{display:grid;place-items:center}
-  .nav-drawer{display:flex;position:fixed;inset:0;z-index:1100;flex-direction:column;justify-content:center;gap:2.2rem;background:color-mix(in srgb,#140904 96%,transparent);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s var(--ease),visibility .4s}
-  .nav-drawer.open{opacity:1;visibility:visible;pointer-events:auto}
-  .nav-drawer a{position:relative;font-family:var(--serif);font-size:1.7rem;letter-spacing:.06em;text-transform:none;font-weight:500;color:var(--sand);opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease),transform .5s var(--ease),color .3s}
-  .nav-drawer a:hover,.nav-drawer a.active{color:var(--gold-light)}
+  /* Panneau qui se DÉROULE sous la pilule : la navbar s'agrandit pour
+     accueillir Carte / Histoire / Contact, la page reste visible autour
+     (plus de plein écran). */
+  .nav-drawer{
+    display:flex;position:absolute;top:calc(100% + 8px);left:50%;z-index:1100;
+    transform:translateX(-50%) translateY(-10px) scale(.97);transform-origin:top center;
+    flex-direction:column;gap:.25rem;min-width:min(68vw,250px);padding:.55rem;
+    border-radius:18px;border:1px solid var(--g-14);
+    background:color-mix(in srgb,#140904 90%,transparent);
+    -webkit-backdrop-filter:blur(22px) saturate(1.2);backdrop-filter:blur(22px) saturate(1.2);
+    box-shadow:0 26px 60px rgba(0,0,0,.55),inset 0 1px 0 var(--g-08);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s;
+  }
+  .nav-drawer.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0) scale(1)}
+  .nav-drawer a{font-size:.74rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--sand);padding:.9rem 1.4rem;border-radius:12px;text-align:center;opacity:0;transform:translateY(-6px);transition:opacity .4s var(--ease),transform .4s var(--ease),color .3s,background .3s}
+  .nav-drawer a:hover,.nav-drawer a.active{color:var(--gold-light);background:var(--g-08)}
   .nav-drawer.open a{opacity:1;transform:none}
-  .nav-drawer.open a:nth-child(1){transition-delay:.08s}
-  .nav-drawer.open a:nth-child(2){transition-delay:.16s}
-  .nav-drawer.open a:nth-child(3){transition-delay:.24s}
+  .nav-drawer.open a:nth-child(1){transition-delay:.05s}
+  .nav-drawer.open a:nth-child(2){transition-delay:.11s}
+  .nav-drawer.open a:nth-child(3){transition-delay:.17s}
+  /* Capteur transparent plein écran : cliquer à côté du panneau le referme */
+  .nav-catcher{position:fixed;inset:0;z-index:1090;display:block;background:transparent;border:0;padding:0;cursor:default;pointer-events:auto}
 }
 @media(max-width:400px){
   .brand-text{font-size:.82rem}
 }
 
 /* ========== 4. HERO — sobre : logo officiel sur bois brûlé ========== */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 1.2rem 6.5rem;overflow:hidden}
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8rem 1.2rem 6.5rem;overflow:hidden}
 .hero-veil{position:absolute;inset:0;background:
   radial-gradient(ellipse 70% 55% at 50% 42%,var(--e-08),transparent 65%),
   radial-gradient(ellipse at 50% 45%,transparent 30%,color-mix(in srgb,var(--wood-975) 78%,transparent) 88%),
@@ -247,14 +262,26 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .hero-kicker b{color:var(--gold);font-weight:600}
 .hero-tagline{max-width:560px;margin:1.1rem auto 0;color:var(--sand);font-size:clamp(.98rem,2vw,1.12rem);font-weight:400;text-wrap:pretty}
 .hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:2.6rem}
+/* Libellés des boutons sur une seule ligne — le letter-spacing large
+   laissait « Découvrir la carte » se couper en deux sur téléphone. */
+.hero-actions .btn{white-space:nowrap}
 .hero-info{position:relative;z-index:3;margin-top:4.2rem;display:inline-flex;flex-wrap:wrap;justify-content:center;border-top:1px solid var(--g-14);border-bottom:1px solid var(--g-14)}
 .hero-info span{display:inline-flex;align-items:center;gap:.55rem;padding:.85rem 1.6rem;font-size:.68rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--sand);white-space:nowrap}
 .hero-info svg{color:var(--gold);flex-shrink:0}
 .hero-info span b{color:var(--gold-light);font-weight:600}
 .hero-info span+span{border-left:1px solid var(--g-14)}
 @media(max-width:640px){
-  .hero-info{flex-direction:column;border:none}
-  .hero-info span{border:none!important;padding:.5rem 0}
+  /* Cadrage mobile complet du hero : le kicker très espacé et l'adresse
+     (white-space:nowrap) débordaient de l'écran — tout passe à la ligne
+     proprement, tailles et marges resserrées. */
+  .hero{padding:6.5rem 1rem 4.5rem}
+  .hero-logo{width:clamp(128px,36vw,180px);margin:0 auto 1.4rem}
+  .hero-kicker{font-size:.6rem;letter-spacing:.26em;text-wrap:balance}
+  .hero-tagline{font-size:.94rem;margin-top:.9rem}
+  .hero-actions{gap:.7rem;margin-top:2rem}
+  .hero-actions .btn{padding:.95rem 1.4rem;font-size:.66rem;letter-spacing:.18em}
+  .hero-info{flex-direction:column;border:none;margin-top:2.4rem;gap:.05rem}
+  .hero-info span{border:none!important;padding:.42rem .35rem;font-size:.6rem;letter-spacing:.13em;white-space:normal;line-height:1.6;justify-content:center;text-align:center;overflow-wrap:anywhere}
 }
 
 /* ========== 5. BOUTONS ========== */
@@ -741,8 +768,14 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
    ================================================================ */
 
 /* --- Popup plein écran --- */
-.lg-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:1.2rem;background:rgba(23,11,5,.78);backdrop-filter:blur(8px);animation:fadeIn .3s ease both}
-.lg-card{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--wood-950);border:1px solid var(--g-25);border-radius:22px;padding:2.2rem 2rem 1.4rem;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+/* Statique de bout en bout : touch-action:none + overscroll-behavior:none
+   empêchent le doigt de faire défiler (1er plan ET arrière-plan, y compris
+   l'élastique iOS) ; le scroll du body est verrouillé en JS (position:fixed). */
+.lg-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:1.2rem;background:rgba(23,11,5,.78);backdrop-filter:blur(8px);animation:lgFadeIn .3s ease both;overflow:hidden;touch-action:none;overscroll-behavior:none}
+@keyframes lgFadeIn{from{opacity:0}to{opacity:1}}
+/* La carte ne défile JAMAIS (overflow:hidden) : son contenu est calibré
+   pour tenir à l'écran, y compris sur les petits téléphones ci-dessous. */
+.lg-card{width:min(560px,100%);max-height:92vh;max-height:calc(92svh);overflow:hidden;background:var(--wood-950);border:1px solid var(--g-25);border-radius:22px;padding:2.2rem 2rem 1.4rem;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.55)}
 .lg-badge{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:var(--grad-gold);color:var(--txt-on-gold);margin-bottom:1rem}
 .lg-card h2{font-family:var(--font-garamond);font-size:1.9rem;color:var(--cream);margin-bottom:.4rem}
 .lg-sub{color:var(--sand);font-size:.92rem;margin-bottom:1.4rem}
@@ -759,8 +792,12 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .lg-delivery{text-align:left}
 .lg-label{display:block;font:600 .72rem var(--font-montserrat);letter-spacing:.18em;text-transform:uppercase;color:var(--sand);margin-bottom:.5rem}
 .lg-cp-row{display:flex;gap:.6rem}
-.lg-cp-row input{flex:1;background:var(--wood-900);border:1px solid var(--g-25);border-radius:12px;padding:.8rem 1rem;color:var(--cream);font:600 1.15rem var(--font-montserrat);letter-spacing:.35em;text-align:center}
+.lg-cp-row input{flex:1;min-width:0;background:var(--wood-900);border:1px solid var(--g-25);border-radius:12px;padding:.8rem 1rem;color:var(--cream);font:600 1.15rem var(--font-montserrat);letter-spacing:.35em;text-align:center}
 .lg-cp-row input:focus{outline:2px solid var(--gold)}
+/* « Vérifier » : padding et letter-spacing calibrés pour que le mot tienne
+   sur une seule ligne à côté du champ, même sur 320 px. */
+.lg-cp-row .btn{flex:none;white-space:nowrap;padding:.9rem 1.2rem;font-size:.68rem;letter-spacing:.16em}
+.lg-cp-hint{margin-top:.55rem;font-size:.74rem;color:var(--sand);letter-spacing:.04em}
 .lg-result{margin-top:1rem;display:flex;gap:.7rem;padding:1rem;border-radius:14px;font-size:.86rem;line-height:1.5}
 .lg-result.ok{background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.4);color:var(--cream)}
 .lg-result.ko{background:rgba(230,60,15,.12);border:1px solid rgba(230,60,15,.4);color:var(--cream)}
@@ -863,11 +900,14 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 .lg-mode svg{color:var(--gold)}
 .lg-mode b{font-family:var(--font-garamond);font-size:1.25rem}
 .lg-mode span{font-size:.76rem;color:var(--sand)}
-.lg-geoloc{display:inline-flex;align-items:center;gap:.45rem;margin-top:.6rem;background:none;border:none;color:var(--gold);font:600 .78rem var(--font-montserrat);letter-spacing:.04em;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lg-geoloc{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.1rem;background:none;border:none;color:var(--gold);font:600 .78rem var(--font-montserrat);letter-spacing:.04em;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .lg-geoloc:hover{color:var(--gold-light)}
 .lg-geoloc:disabled{opacity:.6;cursor:wait}
-.lg-geo-err{margin-top:.4rem;font-size:.75rem;color:#ff9b7a}
-.lg-back{margin-top:1rem;background:none;border:0;color:var(--sand);font-size:.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:.8}
+.lg-geo-err{margin-top:.5rem;font-size:.75rem;color:#ff9b7a;line-height:1.5}
+/* « Retour » bien détaché du lien de géolocalisation : bloc pleine
+   largeur sous un filet, sur sa propre ligne (inline, il se collait
+   au texte « Utiliser ma position actuelle » sur la même ligne). */
+.lg-back{display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;margin-top:1.6rem;padding-top:1.2rem;border:none;border-top:1px solid var(--g-14);background:none;color:var(--sand);font-size:.78rem;cursor:pointer;text-decoration:underline;text-underline-offset:3px;opacity:.85}
 .lg-back:hover{opacity:1}
 .lg-nearest{display:inline-flex;font:700 .56rem var(--font-montserrat);letter-spacing:.14em;text-transform:uppercase;color:var(--txt-on-gold);background:var(--grad-gold);border-radius:var(--pill);padding:.2rem .6rem;margin-bottom:.35rem}
 
@@ -905,4 +945,62 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
   .c-sub { font-size: 1.35rem; flex-wrap: wrap; }
   .sum-note, .sum-note span, .note-ico { white-space: normal; overflow-wrap: anywhere; }
   .ol-change { margin-left: 0; }
+}
+
+/* ================================================================
+   PARCOURS D'ENTRÉE — CADRAGE MOBILE (page statique, sans scroll)
+   La carte ne défile pas (overflow:hidden) : sur téléphone son contenu
+   est compacté pour tenir dans l'écran, y compris le cas le plus haut
+   (à emporter + les deux restaurants proposés).
+   ================================================================ */
+@media (max-width: 640px) {
+  .lg-overlay{padding:.8rem}
+  .lg-card{padding:1.5rem 1.1rem 1.1rem;border-radius:18px;max-height:calc(100svh - 1.6rem)}
+  .lg-badge{width:42px;height:42px;margin-bottom:.65rem}
+  .lg-badge svg{width:16px;height:16px}
+  .lg-card h2{font-size:1.45rem}
+  .lg-sub{font-size:.84rem;line-height:1.6;margin-bottom:1rem}
+  .lg-mode{padding:1.05rem .8rem}
+  .lg-mode b{font-size:1.1rem}
+  .lg-mode span{font-size:.72rem}
+  .lg-choice{padding:.8rem 1rem}
+  .lg-city{font-size:1.15rem}
+  .lg-addr{font-size:.8rem}
+  .lg-hours{font-size:.7rem}
+  .lg-result{padding:.85rem;font-size:.8rem;line-height:1.45}
+  .lg-continue{font-size:.62rem;letter-spacing:.14em;padding:.85rem 1.2rem}
+  .lg-geoloc{font-size:.74rem}
+  .lg-back{margin-top:1.2rem;padding-top:.95rem}
+}
+/* Très petits téléphones (≤380 px) : resserrage supplémentaire pour que
+   tout tienne sans jamais faire défiler la carte, même dans le cas le
+   plus haut (à emporter + les deux restaurants). */
+@media (max-width: 380px) {
+  .lg-overlay{padding:.6rem}
+  .lg-card{padding:1rem .85rem .8rem;max-height:calc(100svh - 1.2rem)}
+  .lg-badge{display:none}
+  .lg-card h2{font-size:1.25rem;margin-bottom:.25rem}
+  .lg-sub{font-size:.76rem;margin-bottom:.8rem}
+  .lg-cp-row{gap:.5rem}
+  .lg-cp-row .btn{padding:.8rem .9rem;font-size:.62rem;letter-spacing:.12em}
+  .lg-choice{padding:.55rem .8rem;gap:.15rem}
+  .lg-city{font-size:1.05rem}
+  .lg-addr{font-size:.72rem}
+  .lg-hours{font-size:.64rem}
+  .lg-go{margin-top:.25rem;font-size:.72rem}
+  .lg-back{margin-top:.7rem;padding-top:.6rem}
+  .nav-drawer a{padding:.8rem 1rem;font-size:.68rem;letter-spacing:.2em}
+}
+
+/* ================================================================
+   CATÉGORIE À PRODUIT UNIQUE (ex. Nos Sandwichs) — la carte du
+   Sandwich Baguette est centrée dans la section au lieu de rester
+   calée dans la première colonne de la grille.
+   ================================================================ */
+.menu-cat .grid.grid-single{grid-template-columns:minmax(0,1fr);max-width:430px;margin-inline:auto}
+
+/* Garde-fou tablettes : aucun débordement horizontal ne dépasse
+   de l'écran (clip ne casse pas position:sticky, contrairement à hidden). */
+@media (max-width: 900px) {
+  html, body { overflow-x: clip; }
 }

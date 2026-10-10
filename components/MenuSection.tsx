@@ -28,21 +28,24 @@ export default function MenuSection() {
 
       <div id="menuCats" className="bg-bois">
         <div className="container">
-          {visibleCats.map((c) => (
-            <div className="menu-cat" id={`cat-${c.id}`} key={c.id}>
-              <div className="mc-head">
-                <span className="mc-num">— {c.num}</span>
-                <h3>{c.label}</h3>
-              </div>
-              <div className="grid grid-3">
-                {menu.products
-                  .filter((p) => p.cat === c.id)
-                  .map((p) => (
+          {visibleCats.map((c) => {
+            const items = menu.products.filter((p) => p.cat === c.id);
+            return (
+              <div className="menu-cat" id={`cat-${c.id}`} key={c.id}>
+                <div className="mc-head">
+                  <span className="mc-num">— {c.num}</span>
+                  <h3>{c.label}</h3>
+                </div>
+                {/* Produit unique dans la catégorie (ex. Sandwich Baguette) :
+                    grille « single » → la carte est centrée dans la section. */}
+                <div className={`grid grid-3${items.length === 1 ? ' grid-single' : ''}`}>
+                  {items.map((p) => (
                     <ProductCard key={p.id} p={p} />
                   ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </>

@@ -51,11 +51,30 @@ export default function LocationGate() {
     }
   }, [gateOpen]);
 
-  /* Bloque le scroll quand la popup est ouverte */
+  /* Verrouille TOTALEMENT le scroll tant que la popup est ouverte :
+     ni en arrière-plan ni en premier plan, la page reste statique.
+     Sur iOS, overflow:hidden sur body ne suffit pas (le doigt fait
+     défiler quand même) → body passe en position:fixed, et la position
+     de défilement est restituée à la fermeture. Le 1er plan est bloqué
+     côté CSS (touch-action:none + overflow:hidden sur la carte). */
   useEffect(() => {
-    document.body.style.overflow = gateOpen ? 'hidden' : '';
+    if (!gateOpen) return;
+    const scrollY = window.scrollY;
+    const { body } = document;
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = '';
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
+      body.style.overflow = '';
+      window.scrollTo(0, scrollY);
     };
   }, [gateOpen]);
 
@@ -187,21 +206,32 @@ export default function LocationGate() {
               <input
                 type="text"
                 inputMode="numeric"
+                pattern="\d{5}"
+                minLength={5}
                 maxLength={5}
+                autoComplete="postal-code"
+                enterKeyHint="go"
                 value={cp}
                 onChange={(e) => {
-                  setCp(e.target.value.replace(/\D/g, ''));
+                  /* Un code postal français : 5 chiffres exactement —
+                     ni moins (bouton bloqué), ni plus (coupé à 5). */
+                  setCp(e.target.value.replace(/\D/g, '').slice(0, 5));
                   setVerdict(null);
                   setCoords(null);
                 }}
                 placeholder="Code postal"
-                aria-label="Votre code postal"
+                aria-label="Votre code postal (5 chiffres)"
                 onKeyDown={(e) => e.key === 'Enter' && cp.length === 5 && check()}
               />
-              <button className="btn btn-solid" onClick={check} disabled={cp.length !== 5 && !coords}>
+              <button className="btn btn-solid" onClick={check} disabled={cp.length !== 5}>
                 Vérifier
               </button>
             </div>
+            {cp.length > 0 && cp.length < 5 && (
+              <p className="lg-cp-hint" aria-live="polite">
+                Code postal à 5 chiffres — encore {5 - cp.length} chiffre{5 - cp.length > 1 ? 's' : ''}
+              </p>
+            )}
             <button className="lg-geoloc" onClick={useMyLocation} disabled={locating}>
               <Icon name="pin" size={14} /> {locating ? 'Localisation…' : 'Utiliser ma position actuelle'}
             </button>

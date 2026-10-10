@@ -28,13 +28,8 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* Menu mobile : on bloque le scroll de la page quand il est ouvert */
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
+  /* Menu mobile : panneau déroulant sous la pilule — plus besoin de
+     verrouiller le scroll de la page (plus de plein écran). */
 
   const closeMenu = () => setOpen(false);
 
@@ -106,8 +101,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Menu mobile plein écran — enfant direct de l'en-tête (hors pilule)
-         pour que position:fixed couvre tout l'écran malgré le flou de la pilule */}
+      {/* Menu mobile : panneau qui se déroule SOUS la pilule (la navbar
+         s'agrandit pour accueillir les pages) + capteur transparent
+         pour le refermer d'un clic à côté. */}
+      {open && (
+        <button className="nav-catcher" aria-hidden="true" tabIndex={-1} onClick={closeMenu} />
+      )}
       <nav className={`nav-drawer${open ? ' open' : ''}`} aria-label="Navigation mobile">
         {LINKS.map((l) => (
           <Link
