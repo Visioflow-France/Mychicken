@@ -269,7 +269,7 @@ export default function CartSection() {
                   return (
                     <div className="cart-item" key={`${line.id}-${line.note || ''}-${i}`}>
                       <span className="ci-thumb">
-                        <SmartImg src={p.img} alt={p.name} loading="lazy" />
+                        <SmartImg src={p.img} alt={p.name} loading="lazy" sizes="120px" />
                       </span>
                       <div>
                         <p className="ci-name">{size ? `${p.name} ${size.label}` : p.name}</p>

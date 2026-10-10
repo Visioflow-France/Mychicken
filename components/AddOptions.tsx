@@ -7,7 +7,7 @@ import Icon from './Icon';
 import { useCart } from '@/lib/cart';
 import { useToast } from '@/lib/toast';
 import { useMenu } from '@/lib/menu-store';
-import { fmt, type Product } from '@/lib/data';
+import { fmt, recipeImg, type Product } from '@/lib/data';
 
 /* ================================================================
    Bulle « que mettre avec ? » — s'ouvre ancrée au bouton Ajouter
@@ -204,7 +204,7 @@ export default function AddOptions({
           {/* En-tête compact : la vignette du plat, son nom, son prix */}
           <div className="ao-head">
             <span className="ao-thumb">
-              <SmartImg src={product.img} alt={product.name} />
+              <SmartImg src={product.img} alt={product.name} sizes="120px" />
             </span>
             <div className="ao-head-txt">
               <h3>{product.name}</h3>
@@ -262,6 +262,7 @@ export default function AddOptions({
                 <div className="ao-chips ao-chips-recipes">
                   {product.recipes.map((r) => {
                     const on = recipe === r.id;
+                    const thumb = r.img || recipeImg(product.id, r.id);
                     return (
                       <button
                         type="button"
@@ -270,6 +271,11 @@ export default function AddOptions({
                         onClick={() => setRecipe(on ? null : r.id)}
                         aria-pressed={on}
                       >
+                        {thumb && (
+                          <span className="ao-chip-thumb">
+                            <SmartImg src={thumb} alt={r.name} loading="lazy" sizes="240px" />
+                          </span>
+                        )}
                         <span className="ao-chip-name">{r.name}</span>
                         {r.desc && <span className="ao-chip-desc">{r.desc}</span>}
                       </button>

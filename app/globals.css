@@ -663,9 +663,13 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + var(--promo-strip-h,0px) + 12p
 /* Choix inclus du menu : mis en avant au-dessus des extras */
 .ao-incl h4{display:flex;align-items:center;gap:.5rem;color:var(--gold-light)}
 .ao-incl-tag{font:700 .58rem var(--font-montserrat);letter-spacing:.14em;text-transform:uppercase;color:var(--txt-on-gold);background:var(--grad-gold);border-radius:var(--pill);padding:.18rem .55rem}
-/* Recettes au choix (Tasty Crousty) : chips larges avec description */
-.ao-chips-recipes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.5rem}
-.ao-chip-recipe{flex-direction:column;align-items:flex-start;gap:.15rem;padding:.6rem .75rem;text-align:left}
+/* Recettes au choix (Tasty Crousty) : chips larges avec photo + description */
+.ao-chips-recipes{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.5rem}
+.ao-chip-recipe{flex-direction:column;align-items:stretch;gap:.3rem;padding:.5rem .55rem .6rem;text-align:left}
+.ao-chip-thumb{display:block;position:relative;width:100%;aspect-ratio:4/3;border-radius:10px;overflow:hidden;border:1px solid var(--g-14);margin-bottom:.2rem}
+.ao-chip-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
+.ao-chip-recipe:hover .ao-chip-thumb img{transform:scale(1.06)}
+.ao-chip-recipe.on .ao-chip-thumb{border-color:var(--gold)}
 /* Tailles (Tasty Crousty M/L/XL) — même présentation que les recettes */
 .ao-chips-sizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:.5rem}
 .ao-chip-size{flex-direction:column;align-items:center;gap:.15rem;padding:.6rem .5rem}

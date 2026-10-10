@@ -94,7 +94,7 @@ export type Product = {
   incl?: { sides: number; drinks: number };
   /* Variantes au choix (ex. Tasty Crousty : Original, Dynamite…),
      choix obligatoire à l'ajout au panier. */
-  recipes?: { id: string; name: string; desc: string }[];
+  recipes?: { id: string; name: string; desc: string; img?: string }[];
   /* Tailles au choix (ex. Tasty Crousty M / L / XL) — une seule carte
      à l'écran, la taille se choisit dans la bulle d'ajout. Le prix
      affiché sur la carte est le moins cher (« dès … »). */
@@ -163,10 +163,10 @@ const U = 'auto=format&fit=crop&w=1200&q=75'; // paramètres Unsplash communs (n
 
 /* Recettes Tasty Crousty — le client choisit sa version à l'ajout */
 const TASTY_RECIPES = [
-  { id: 'original', name: 'Original', desc: 'Sauce chili thaï, persil' },
-  { id: 'dynamite', name: 'Dynamite', desc: 'Sauce piquante, persil, aneth' },
-  { id: 'boursin', name: 'Boursin', desc: 'Sauce boursin, persil, ciboulette' },
-  { id: 'dz', name: 'Dz', desc: 'Sauce algérienne, persil' },
+  { id: 'original', name: 'Original', desc: 'Sauce chili thaï, persil', img: '/photos/tasty-original.jpg' },
+  { id: 'dynamite', name: 'Dynamite', desc: 'Sauce piquante, persil, aneth', img: '/photos/tasty-dynamite.jpg' },
+  { id: 'boursin', name: 'Boursin', desc: 'Sauce boursin, persil, ciboulette', img: '/photos/tasty-boursin.jpg' },
+  { id: 'dz', name: 'Dz', desc: 'Sauce algérienne, persil', img: '/photos/tasty-dz.jpg' },
 ];
 
 /* Tailles Tasty Crousty — une seule carte, taille choisie à l'ajout */
@@ -263,6 +263,12 @@ export const CONFIG = {
 
 export const byId = (id: string) => PRODUCTS.find((p) => p.id === id);
 export const byIdIn = (menu: MenuData, id: string) => menu.products.find((p) => p.id === id);
+
+/** Photo d'une variante de recette (ex. Tasty Original). Même si la carte
+    publiée (Firestore) décrit la recette sans champ img, on retombe sur
+    la photo prévue dans la carte embarquée ci-dessus. */
+export const recipeImg = (productId: string, recipeId: string) =>
+  byId(productId)?.recipes?.find((r) => r.id === recipeId)?.img;
 
 /** Préfixe du numéro de commande selon le restaurant (SM-… / PS-…). */
 export function orderPrefix(locationId?: string): string {
