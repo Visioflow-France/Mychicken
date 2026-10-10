@@ -1,7 +1,7 @@
 /* Service worker My Chicken — cache des assets statiques uniquement.
    Les pages, API et Firestore restent en network-first pour toujours
    servir la carte et les commandes à jour. */
-const CACHE = 'mychicken-v6';
+const CACHE = 'mychicken-v7';
 const PRECACHE = [
   '/',
   '/la-carte',
@@ -35,8 +35,23 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(e.request).catch(() => caches.match(url.pathname).then((r) => r || caches.match('/'))));
     return;
   }
-  // Assets statiques : cache-first
-  e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
+  // Photos produits : network-first — un remplacement de photo (même nom de
+  // fichier, imposé par la carte Firestore) doit être visible dès la visite
+  // suivante ; le cache ne sert qu'en secours hors-ligne.
+  if (url.pathname.startsWith('/photos/')) {
+    e.respondWith(
+      fetch(e.request)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Autres assets statiques : cache-first
+  e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request).then(res => {
     const copy = res.clone();
     caches.open(CACHE).then((c) => c.put(e.request, copy));
     return res;
