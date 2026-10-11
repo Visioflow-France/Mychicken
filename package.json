@@ -8,6 +8,7 @@
     "start": "next start",
     "preview": "opennextjs-cloudflare build && wrangler dev",
     "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "stripe:connect": "node scripts/stripe-connect.mjs",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

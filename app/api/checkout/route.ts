@@ -7,9 +7,11 @@ export const dynamic = 'force-dynamic';
 
 /* ================================================================
    PAIEMENT — création d'une session Stripe Checkout.
-   Prêt pour Stripe Connect : dès que STRIPE_CONNECT_ACCOUNT_ID
-   (acct_…) est défini, l'encaissement part directement sur le
-   compte du restaurant.
+   Stripe Connect : chaque restaurant a SON compte connecté
+   (STRIPE_CONNECT_ACCOUNT_PERSAN / _SAINT_MARD, acct_…) rattaché à
+   la plateforme — l'encaissement part directement sur le compte du
+   restaurant qui vend (charge directe). STRIPE_CONNECT_ACCOUNT_ID
+   reste accepté comme valeur par défaut pour les deux.
    Les prix sont TOUJOURS recalculés côté serveur depuis la carte
    (Firestore ou valeurs par défaut) — jamais depuis le client.
    ================================================================ */
@@ -48,8 +50,15 @@ async function getStripe() {
   return new Stripe(key);
 }
 
-function stripeAccount(): string | undefined {
-  const acct = process.env.STRIPE_CONNECT_ACCOUNT_ID;
+/** Compte Stripe Connect du restaurant qui encaisse (undefined = plateforme). */
+function stripeAccountFor(locationId?: string): string | undefined {
+  const perLocation =
+    locationId === 'persan'
+      ? process.env.STRIPE_CONNECT_ACCOUNT_PERSAN
+      : locationId === 'saint-mard'
+        ? process.env.STRIPE_CONNECT_ACCOUNT_SAINT_MARD
+        : undefined;
+  const acct = perLocation || process.env.STRIPE_CONNECT_ACCOUNT_ID;
   return acct && acct.startsWith('acct_') ? acct : undefined;
 }
 
@@ -153,6 +162,9 @@ export async function POST(req: Request) {
   }
   const num = `${prefix}${serviceNum}`;
 
+  /* Compte connecté qui encaisse : le restaurant qui vend */
+  const acct = stripeAccountFor(location.id);
+
   /* ---- 3. Session Stripe Checkout ---- */
   const origin = originOf(req);
   const lineItems: Record<string, unknown>[] = items.map((it) => ({
@@ -185,7 +197,7 @@ export async function POST(req: Request) {
     if (discount > 0) {
       const coupon = await stripe.coupons.create(
         { amount_off: euro(discount), currency: 'eur', duration: 'once', name: `Code promo ${appliedCode}` },
-        stripeAccount() ? { stripeAccount: stripeAccount() } : undefined
+        acct ? { stripeAccount: acct } : undefined
       );
       couponId = coupon.id;
     }
@@ -198,9 +210,11 @@ export async function POST(req: Request) {
         ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
         success_url: `${origin}/commander?paid=1&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/commander?canceled=1`,
-        metadata: { num, phone, mode, locationId: location.id },
+        /* ref = docId Firestore : c'est LUI que le webhook utilise pour
+           marquer la commande payée (num n'est que le numéro affiché). */
+        metadata: { num, phone, mode, locationId: location.id, ref: docId },
       },
-      stripeAccount() ? { stripeAccount: stripeAccount() } : undefined
+      acct ? { stripeAccount: acct } : undefined
     );
 
     /* ---- 4. Commande enregistrée (Firestore si configuré) ---- */
@@ -250,18 +264,24 @@ export async function POST(req: Request) {
   }
 }
 
-/** Vérification après retour de Stripe : ?session_id=… */
+/** Vérification après retour de Stripe : ?session_id=…&location=persan|saint-mard */
 export async function GET(req: Request) {
-  const sessionId = new URL(req.url).searchParams.get('session_id');
+  const params = new URL(req.url).searchParams;
+  const sessionId = params.get('session_id');
   if (!sessionId) return NextResponse.json({ error: 'session_id manquant' }, { status: 400 });
   const stripe = await getStripe();
   if (!stripe) return NextResponse.json({ error: 'stripe_not_configured' }, { status: 503 });
+  const acct = stripeAccountFor(params.get('location') || undefined);
   try {
-    const session = await stripe.checkout.sessions.retrieve(
-      sessionId,
-      undefined,
-      stripeAccount() ? { stripeAccount: stripeAccount() } : undefined
-    );
+    let session;
+    try {
+      session = await stripe.checkout.sessions.retrieve(sessionId, undefined, acct ? { stripeAccount: acct } : undefined);
+    } catch {
+      if (!acct) throw new Error('not_found');
+      // Filet de sécurité : session peut-être liée à l'autre compte (changement
+      // de restaurant entre la commande et le retour de Stripe)
+      session = await stripe.checkout.sessions.retrieve(sessionId);
+    }
     return NextResponse.json({
       paid: session.payment_status === 'paid',
       num: session.metadata?.num || null,

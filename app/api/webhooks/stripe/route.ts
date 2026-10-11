@@ -10,6 +10,10 @@ export const dynamic = 'force-dynamic';
      https://votre-domaine.fr/api/webhooks/stripe
    Événement : checkout.session.completed
    Secret : STRIPE_WEBHOOK_SECRET (whsec_…)
+   Stripe Connect : créer l'endpoint en cochant « Les comptes
+   connectés » (catégorie d'événements Connect) — les paiements
+   ayant lieu SUR les comptes des restaurants, c'est le seul moyen
+   de recevoir checkout.session.completed.
    ================================================================ */
 
 export async function POST(req: Request) {
@@ -40,17 +44,19 @@ export async function POST(req: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as { payment_status?: string; metadata?: Record<string, string> };
-    const num = session.metadata?.num;
-    if (num && session.payment_status === 'paid') {
+    // ref = docId Firestore (fiable) ; num = numéro affiché (ancien format,
+    // gardé en secours pour les commandes passées avant la correction)
+    const docRef = session.metadata?.ref || session.metadata?.num;
+    if (docRef && session.payment_status === 'paid') {
       const db = await getAdminDb();
       if (db) {
         try {
-          await db.collection(ORDERS_COLLECTION).doc(num).update({ paid: true, status: 'nouvelle' });
+          await db.collection(ORDERS_COLLECTION).doc(docRef).update({ paid: true, status: 'nouvelle' });
         } catch (e) {
           console.error('[stripe-webhook] mise à jour commande impossible :', e);
         }
       }
-      console.log(`[stripe-webhook] commande ${num} payée ✓`);
+      console.log(`[stripe-webhook] commande ${session.metadata?.num || docRef} payée ✓`);
     }
   }
 

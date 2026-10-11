@@ -8,7 +8,7 @@
    Dans les deux cas, le MenuProvider réagit instantanément.
    ================================================================ */
 
-import { firebaseEnabled } from './firebase';
+import { firebaseEnabled, getClientAuth } from './firebase';
 import type { MenuData, OrderStatus, RestaurantLocation } from './data';
 import { writeLocalMenu, refreshPublishedMenu } from './menu-store';
 import { writeLocalLocations } from './location-store';
@@ -75,8 +75,12 @@ export async function patchOrder(id: string, patch: { status?: OrderStatus; paid
 
 /* ---------- Session admin ---------- */
 
-export async function checkSession(): Promise<{ authed: boolean; defaultPassword?: boolean }> {
-  return api('/api/admin/auth', { method: 'GET' }) as Promise<{ authed: boolean; defaultPassword?: boolean }>;
+export async function checkSession(): Promise<{ authed: boolean; defaultPassword?: boolean; authMode?: 'firebase' | 'password' }> {
+  return api('/api/admin/auth', { method: 'GET' }) as Promise<{
+    authed: boolean;
+    defaultPassword?: boolean;
+    authMode?: 'firebase' | 'password';
+  }>;
 }
 
 export async function login(password: string): Promise<{ ok?: boolean; defaultPassword?: boolean; error?: string }> {
@@ -87,6 +91,32 @@ export async function login(password: string): Promise<{ ok?: boolean; defaultPa
   });
 }
 
+/** Connexion Firebase Auth : sign in → ID token → cookie admin signé. */
+export async function loginFirebase(email: string, password: string): Promise<{ ok?: boolean; error?: string }> {
+  const auth = await getClientAuth();
+  if (!auth) throw new Error('Firebase non configuré');
+  const { signInWithEmailAndPassword } = await import('firebase/auth');
+  const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+  const firebaseToken = await cred.user.getIdToken();
+  try {
+    return await api('/api/admin/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firebaseToken }),
+    });
+  } catch (e) {
+    // Compte non autorisé ou token refusé : on ne garde pas la session Firebase
+    const { signOut } = await import('firebase/auth');
+    await signOut(auth).catch(() => {});
+    throw e;
+  }
+}
+
 export async function logout(): Promise<void> {
   await api('/api/admin/auth', { method: 'DELETE' });
+  const auth = await getClientAuth();
+  if (auth) {
+    const { signOut } = await import('firebase/auth');
+    await signOut(auth).catch(() => {});
+  }
 }

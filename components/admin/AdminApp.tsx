@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMenu } from '@/lib/menu-store';
 import { useToast } from '@/lib/toast';
-import { checkSession, login, logout, publishMenu, resetMenu } from '@/lib/admin-client';
+import { checkSession, login, loginFirebase, logout, publishMenu, resetMenu } from '@/lib/admin-client';
 import type { MenuData } from '@/lib/data';
 import Icon, { RoosterMark } from '@/components/Icon';
 import ProductsTab from './ProductsTab';
@@ -45,9 +45,12 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
   const { locations, current, choose, locationId } = useLocationCtx();
   const [authed, setAuthed] = useState<boolean | null>(null); // null = vérification en cours
   const [defaultPassword, setDefaultPassword] = useState(false);
+  const [authMode, setAuthMode] = useState<'firebase' | 'password'>('password');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [loggingIn, setLoggingIn] = useState(false);
   const [tab, setTab] = useState<Tab>('orders');
   const [draft, setDraft] = useState<MenuData>(menu);
   const [publishing, setPublishing] = useState(false);
@@ -69,6 +72,7 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
       .then((s) => {
         setAuthed(s.authed);
         setDefaultPassword(Boolean(s.defaultPassword));
+        if (s.authMode) setAuthMode(s.authMode);
       })
       .catch(() => setAuthed(false));
   }, []);
@@ -88,17 +92,37 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
 
   const mutate = useCallback((fn: (d: MenuData) => MenuData) => setDraft(fn), []);
 
+  /* Firebase Auth traduit ses codes d'erreur en messages compréhensibles */
+  const firebaseError = (e: unknown): string => {
+    const code = (e as { code?: string })?.code || '';
+    if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found')
+      return 'E-mail ou mot de passe incorrect';
+    if (code === 'auth/too-many-requests') return 'Trop de tentatives — réessayez dans quelques minutes';
+    if (code === 'auth/network-request-failed') return 'Connexion réseau impossible';
+    if (code === 'auth/operation-not-allowed')
+      return 'Connexion e-mail/mot de passe désactivée dans Firebase (Authentication → Sign-in method)';
+    return e instanceof Error ? e.message : 'Connexion impossible';
+  };
+
   const doLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+    setLoggingIn(true);
     try {
-      const res = await login(password);
+      if (authMode === 'firebase') {
+        await loginFirebase(email, password);
+        setDefaultPassword(false);
+      } else {
+        const res = await login(password);
+        setDefaultPassword(Boolean(res.defaultPassword));
+      }
       setAuthed(true);
-      setDefaultPassword(Boolean(res.defaultPassword));
       setPassword('');
       toast('Bienvenue dans votre dashboard !');
     } catch (err) {
-      setLoginError(err instanceof Error ? err.message : 'Connexion impossible');
+      setLoginError(authMode === 'firebase' ? firebaseError(err) : err instanceof Error ? err.message : 'Connexion impossible');
+    } finally {
+      setLoggingIn(false);
     }
   };
 
@@ -156,6 +180,21 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
           <h1>Espace administrateur</h1>
           <p className="al-sub">My Chicken — gestion de la carte, des promos et des commandes</p>
           {loginError && <p className="al-error">{loginError}</p>}
+          {authMode === 'firebase' && (
+            <div className="f-group al-pass">
+              <label htmlFor="adminEmail">E-mail</label>
+              <input
+                id="adminEmail"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="patron@mychicken.fr"
+                autoComplete="username"
+                autoFocus
+                required
+              />
+            </div>
+          )}
           <div className="f-group al-pass">
             <label htmlFor="adminPass">Mot de passe</label>
             <div className="al-pass-wrap">
@@ -165,7 +204,8 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                autoFocus
+                autoComplete="current-password"
+                autoFocus={authMode !== 'firebase'}
                 required
               />
               <button
@@ -179,12 +219,19 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
               </button>
             </div>
           </div>
-          <button type="submit" className="btn btn-solid btn-block">
-            Entrer
+          <button type="submit" className="btn btn-solid btn-block" disabled={loggingIn}>
+            {loggingIn ? 'Connexion…' : 'Entrer'}
           </button>
-          <p className="al-hint">
-            Mot de passe par défaut : <b>mychicken</b> — à changer via la variable ADMIN_PASSWORD.
-          </p>
+          {authMode === 'firebase' ? (
+            <p className="al-hint">
+              Connectez-vous avec le compte du restaurant — mot de passe oublié ? Il se réinitialise depuis la console
+              Firebase (Authentication → Users).
+            </p>
+          ) : (
+            <p className="al-hint">
+              Mot de passe par défaut : <b>mychicken</b> — à changer via la variable ADMIN_PASSWORD.
+            </p>
+          )}
         </form>
       </div>
     );

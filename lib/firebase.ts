@@ -9,6 +9,7 @@
 
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import type { Auth } from 'firebase/auth';
 
 /* Projet Firebase My Chicken — l'API key (sensitive mais publique)
    reste dans .env.local ; le reste de la config est dérivable du projet. */
@@ -35,6 +36,16 @@ export function getClientDb(): Firestore | null {
     _db = getFirestore(app);
   }
   return _db;
+}
+
+/* ---------- Authentification (dashboard /admin) ----------
+   Import dynamique : firebase/auth n'est chargé que sur la page de
+   connexion admin, jamais sur le site public. */
+export async function getClientAuth(): Promise<Auth | null> {
+  if (!firebaseEnabled) return null;
+  if (!getClientDb()) return null; // garantit que l'app est initialisée
+  const { getAuth } = await import('firebase/auth');
+  return getAuth();
 }
 
 /* ---------- Structure des documents Firestore ---------- */

@@ -24,7 +24,9 @@ sur [vercel.com](https://vercel.com) — zéro configuration nécessaire.
 
 ### 1. Dashboard admin — `/admin`
 
-Mot de passe par défaut : **`mychicken`** (à changer, voir `.env.example`).
+**Connexion : Firebase Auth** (e-mail + mot de passe du patron — voir
+« Brancher Firebase » ci-dessous ; `ADMIN_EMAILS` contrôle qui a accès).
+Sans Firebase configuré, un mot de passe partagé fait office (mode démo).
 
 - **Carte** : créer / modifier / supprimer des produits (nom, prix, photo, description,
   best-seller, épuisé), tri par catégories, recherche
@@ -34,6 +36,12 @@ Mot de passe par défaut : **`mychicken`** (à changer, voir `.env.example`).
 - **Commandes** : arrivée en temps réel, statuts (nouvelle → en préparation → prête →
   terminée), suivi des paiements, chiffre d'affaires
 - **Réglages** : restaurant ouvert/fermé, frais de livraison, minimum de commande
+
+**Un seul dashboard pour les deux restaurants** : un sélecteur Persan ↔ Saint-Mard
+en haut à droite (les données sont filtrées par restaurant). En plus,
+`/admin/persan` et `/admin/saint-mard` sont des **PWA installables séparées**
+(« MC Persan », « MC Saint-Mard ») qui s'ouvrent directement sur leur restaurant —
+idéal pour un gérant qui ne doit voir que le sien.
 
 Le bouton **« Publier en direct »** pousse les modifications : tous les visiteurs voient
 la carte se mettre à jour **instantanément**, sans recharger la page.
@@ -52,11 +60,16 @@ Tant que `STRIPE_SECRET_KEY` n'est pas définie, seule l'option téléphone est 
 
 1. [console.firebase.google.com](https://console.firebase.google.com) → créer un projet
 2. **Build → Firestore Database** → créer la base (mode production)
-3. **Paramètres du projet → Vos applications → Web** : copier la config dans `.env.local`
+3. **Build → Authentication → Sign-in method** → activer **Email/Password**,
+   puis **Users → Add user** : créer le compte du patron (e-mail + mot de passe)
+4. **Paramètres du projet → Vos applications → Web** : copier la config dans `.env.local`
    (les 6 variables `NEXT_PUBLIC_FIREBASE_*`)
-4. **Paramètres → Comptes de service → Générer une clé privée** : coller tout le JSON
+5. **Paramètres → Comptes de service → Générer une clé privée** : coller tout le JSON
    dans `FIREBASE_SERVICE_ACCOUNT=` (sur une seule ligne)
-5. **Règles Firestore** (onglet Règles) :
+6. **`.env.local`** : `ADMIN_EMAILS=le-mail-du-patron` (plusieurs e-mails séparés par
+   des virgules). Le patron se connecte ensuite à `/admin` avec son compte ; les
+   autres comptes Firebase, même s'ils existent, sont refusés.
+7. **Règles Firestore** (onglet Règles) :
 
 ```
 rules_version = '2';
@@ -72,15 +85,29 @@ service cloud.firestore {
 > que lire. Redéployez : la carte publiée depuis `/admin` est visible par tout le monde
 > en temps réel, et les commandes arrivent dans l'onglet Commandes.
 
-## ⚙️ Brancher Stripe
+## ⚙️ Brancher Stripe + Stripe Connect
+
+Ton compte Stripe est la **plateforme** ; chaque restaurant a **son propre compte
+Stripe Connect Standard** rattaché : le client paie via ta plateforme, l'argent est
+encaissé **directement sur le compte du restaurant**, qui reçoit ses virements et
+voit ses paiements dans **son** dashboard Stripe.
 
 1. [dashboard.stripe.com](https://dashboard.stripe.com) → **Développeurs → Clés API** :
    `STRIPE_SECRET_KEY` dans `.env.local`
-2. **Webhooks → Ajouter un endpoint** : `https://votre-domaine/api/webhooks/stripe`,
-   événement `checkout.session.completed` → `STRIPE_WEBHOOK_SECRET`
-3. **Stripe Connect** (encaisser sur le compte du restaurant) : ajouter
-   `STRIPE_CONNECT_ACCOUNT_ID=acct_…` — sans cette variable, l'encaissement se fait
-   sur le compte principal de la clé.
+2. **Créer les comptes connectés des deux restaurants** (une fois) :
+   ```bash
+   npm run stripe:connect -- create persan mail-du-patron@…
+   npm run stripe:connect -- create saint-mard mail-du-patron@…
+   ```
+   Le script affiche un **lien d'onboarding** à ouvrir avec le patron : il crée (ou
+   relie) son compte Stripe et complète ses infos (SIRET, IBAN, dirigeant…).
+   Reporter ensuite les `acct_…` dans `.env.local` :
+   `STRIPE_CONNECT_ACCOUNT_PERSAN` / `STRIPE_CONNECT_ACCOUNT_SAINT_MARD`.
+   Vérifier l'avancement : `npm run stripe:connect -- status`.
+3. **Webhooks → Ajouter un endpoint** : `https://votre-domaine/api/webhooks/stripe`,
+   événement `checkout.session.completed` — **cocher « Les comptes connectés »**
+   (les paiements ont lieu sur les comptes des restaurants, la plateforme ne reçoit
+   ces événements qu'en mode Connect) → `STRIPE_WEBHOOK_SECRET`
 
 Les prix sont **toujours recalculés côté serveur** depuis la carte : impossible de
 manipuler un montant depuis le navigateur.
@@ -114,8 +141,9 @@ components/       → composants du site + components/admin/ (dashboard)
   commande par téléphone) — chaque brique s'active quand sa config arrive.
 - Le panier reste dans le navigateur (`localStorage`, clé `mc_cart_v2`).
 - Les polices (Cormorant Garamond + Montserrat) sont chargées via `next/font`.
-- Sécurité : écritures Firestore réservées au serveur, mots de passe administrateur
-  jamais exposés au client (cookie httpOnly signé), montants Stripe recalculés serveur.
+- Sécurité : écritures Firestore réservées au serveur, connexion dashboard par compte
+  Firebase vérifié côté serveur + liste blanche `ADMIN_EMAILS`, montants Stripe
+  recalculés serveur.
 
 ## Déploiement Cloudflare
 
@@ -133,7 +161,8 @@ Première fois : `npx wrangler login` (ouvre le navigateur pour connecter ton co
 
 Variables à définir sur Cloudflare (dashboard → Workers → my-chicken → Settings →
 Variables, ou `npx wrangler secret put NOM`) : celles de `.env.local`
-(ADMIN_PASSWORD, NEXT_PUBLIC_FIREBASE_*, FIREBASE_SERVICE_ACCOUNT, STRIPE_*…).
+(ADMIN_EMAILS, ADMIN_SECRET, NEXT_PUBLIC_FIREBASE_*, FIREBASE_SERVICE_ACCOUNT,
+STRIPE_*…).
 
 Après le déploiement, mettre `NEXT_PUBLIC_SITE_URL=https://ton-domaine` et, dans le
 dashboard Stripe, pointer le webhook vers `https://ton-domaine/api/webhooks/stripe`.

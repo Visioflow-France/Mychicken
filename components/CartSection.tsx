@@ -61,7 +61,7 @@ export default function CartSection() {
     window.history.replaceState({}, '', '/commander');
     (async () => {
       try {
-        const res = await fetch(`/api/checkout?session_id=${encodeURIComponent(sessionId)}`);
+        const res = await fetch(`/api/checkout?session_id=${encodeURIComponent(sessionId)}&location=${current.id}`);
         const data = (await res.json()) as { paid?: boolean; num?: string | null; total?: number | null };
         setOrderNum({ num: data.num || 'MC', paid: Boolean(data.paid), total: data.total });
         clear();
