@@ -8,6 +8,7 @@ import { useLocationCtx } from '@/lib/location-store';
 import Icon from './Icon';
 
 const LINKS = [
+  { href: '/', label: 'Accueil' },
   { href: '/la-carte', label: 'Carte' },
   { href: '/notre-histoire', label: 'Histoire' },
   { href: '/contact', label: 'Contact' },

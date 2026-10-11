@@ -1,4 +1,19 @@
 {
+  "/photos/p-1-brick.jpg": [
+    480,
+    800,
+    1255
+  ],
+  "/photos/histoire-1.jpg": [
+    480,
+    754
+  ],
+  "/photos/histoire-2.jpg": [
+    480,
+    800,
+    1200,
+    1536
+  ],
   "/photos/p-3-pilons.jpg": [
     480,
     800,
@@ -56,7 +71,8 @@
   "/photos/menu-familial.jpg": [
     480,
     800,
-    1255
+    1200,
+    1671
   ],
   "/photos/menu-brick.jpg": [
     480,
@@ -183,11 +199,6 @@
     480,
     800,
     1149
-  ],
-  "/photos/p-1-brick.jpg": [
-    480,
-    800,
-    1255
   ],
   "/photos/p-1-cuisse.jpg": [
     480,

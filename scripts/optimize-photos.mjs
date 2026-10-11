@@ -53,6 +53,10 @@ const WEBP_Q = 90;
    publiée dans Firestore (qui référence /photos/xxx.jpg) voit donc les
    nouvelles photos sans republication. */
 const NEW_PHOTOS = {
+  // ---- fournies le 11/10/2026 (3 photos) ----
+  'brick.PNG': 'p-1-brick',
+  'image 1.jpg': 'histoire-1',
+  'image 2.PNG': 'histoire-2',
   // ---- fournies le 10/10/2026 (28 photos) ----
   '3 pilons.PNG': 'p-3-pilons',
   'menu tasty crousty.PNG': 'tasty-m',
@@ -83,6 +87,17 @@ const NEW_PHOTOS = {
   'bouteille coca-cola 1,5 L.PNG': 'b-coca-1l5',
   'pates.PNG': 'a-pates',
 };
+
+/* Photos affichées telles quelles, SANS recadrage 4:3 : la page Histoire
+   gère le ratio à l'affichage (style inline) et ces visuels ne doivent
+   rien perdre — affiche portrait, photo 3:2 avec logo et texte intégrés. */
+const NO_CROP = new Set(['histoire-1', 'histoire-2']);
+
+/* « Menu familial » : le recadrage central 4:3 rogne la bouteille de
+   Coca-Cola et les bords de l'assiette. On letterboxe la scène ENTIÈRE
+   sur un fond flouté/assombri de la photo elle-même → tout est visible,
+   sans trop dézoomer (la nourriture garde ~75 % de la hauteur). */
+const FULL_FIT = new Set(['menu-familial']);
 
 /* Manifeste précédent : les bases non remplacées dont toutes les variantes
    existent déjà sont conservées telles quelles (aucun ré-encodage, donc
@@ -149,9 +164,39 @@ for (const [src, base] of Object.entries(NEW_PHOTOS)) {
       rmSync(join(PHOTOS_DIR, f), { force: true });
     }
   }
-  const { w, h, left, top } = await cropInfo(file);
-  const pipeline = sharp(file).extract({ left, top, width: w, height: h });
-  await emitBase(pipeline, base, w, `${src} → ${base}`);
+  let pipeline;
+  let fullW;
+  if (NO_CROP.has(base)) {
+    const meta = await sharp(file).metadata();
+    pipeline = sharp(file);
+    fullW = meta.width;
+  } else if (FULL_FIT.has(base)) {
+    /* Scène complète centrée sur canvas 4:3 ; le fond est la photo
+       elle-même, zoomée pour couvrir puis floutée et assombrie. */
+    const meta = await sharp(file).metadata();
+    const canvasW = meta.width;
+    const canvasH = Math.round(canvasW / ASPECT);
+    const bg = await sharp(file)
+      .resize(canvasW, canvasH, { fit: 'cover' })
+      .blur(30)
+      .modulate({ brightness: 0.72 })
+      .toBuffer();
+    const fgH = Math.round(canvasW * (meta.height / meta.width));
+    const fg = await sharp(file).resize(canvasW, fgH, { kernel: 'lanczos3' }).toBuffer();
+    /* Composite matérialisé en buffer : sharp applique toujours resize
+       AVANT composite, ce qui casserait la génération des variantes. */
+    const merged = await sharp(bg)
+      .composite([{ input: fg, left: 0, top: Math.round((canvasH - fgH) / 2) }])
+      .png()
+      .toBuffer();
+    pipeline = sharp(merged);
+    fullW = canvasW;
+  } else {
+    const { w, h, left, top } = await cropInfo(file);
+    pipeline = sharp(file).extract({ left, top, width: w, height: h });
+    fullW = w;
+  }
+  await emitBase(pipeline, base, fullW, `${src} → ${base}`);
 }
 
 /* ---------- 2. Photos existantes non remplacées ----------

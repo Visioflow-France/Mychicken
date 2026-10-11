@@ -15,10 +15,14 @@ export default function Story() {
         <div className="chapter">
           <Reveal as="figure" className="chapter-fig">
             <div className="frame">
+              {/* Affiche portrait : ratio natif pour ne rien rogner
+                 (le cadre par défaut de la page est 4:3). */}
               <SmartImg
-                src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=75"
-                alt="Épices et marinade de la maison"
+                src="/photos/histoire-1.jpg"
+                alt="L'affiche My Chicken — le chef et son poulet grillé à la braise"
                 loading="lazy"
+                sizes="(max-width:919px) 92vw, 440px"
+                style={{ aspectRatio: '754 / 1024' }}
               />
             </div>
           </Reveal>
@@ -42,10 +46,13 @@ export default function Story() {
         <div className="chapter rev">
           <Reveal as="figure" className="chapter-fig">
             <div className="frame">
+              {/* Visuel 3:2 avec logo et slogan : ratio natif, rien coupé. */}
               <SmartImg
-                src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=75"
-                alt="Cuisine maison, préparation du jour"
+                src="/photos/histoire-2.jpg"
+                alt="Poulet braisé, frites maison et sauces préparées chez nous"
                 loading="lazy"
+                sizes="(max-width:919px) 92vw, 440px"
+                style={{ aspectRatio: '1536 / 1024' }}
               />
             </div>
           </Reveal>
