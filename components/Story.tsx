@@ -1,8 +1,44 @@
+'use client';
+
 import Link from 'next/link';
 import Reveal from './Reveal';
 import SmartImg from './SmartImg';
+import { useLocationCtx } from '@/lib/location-store';
 
+/* Page « Notre histoire » — elle suit le restaurant choisi :
+   - restaurant sélectionné → l'histoire est racontée pour CETTE maison
+     (ville, adresse, seuil de livraison de la fiche) ;
+   - pas encore de choix (« Continuer sans choisir » ou 1re visite avant
+     le parcours) → version générale, valable pour les DEUX restaurants.
+   Les deux visuels restent identiques dans tous les cas. */
 export default function Story() {
+  const { current, locationId, locations } = useLocationCtx();
+  const chosen = locationId !== null;
+
+  /* Où le parfum du premier service se répand : la ville de la maison
+     choisie, ou simplement le quartier tant qu'on n'a pas choisi. */
+  const scent = chosen ? current.city : 'le quartier';
+
+  /* Seuil de livraison affiché : celui de la maison choisie, ou le plus
+     bas des deux pour la version générale. */
+  const minDel = chosen
+    ? current.minDelivery
+    : Math.min(...locations.map((l) => l.minDelivery));
+
+  /* La timeline se termine par l'adresse de la maison choisie, ou par
+     les deux adresses quand aucun restaurant n'est sélectionné. */
+  const todayTitle = chosen ? `My CHICKEN à ${current.city}` : 'My CHICKEN près de chez vous';
+  const todayText = chosen ? (
+    <>
+      {current.address}, 7j/7. À emporter, ou livré chez vous dès {minDel}&nbsp;€.
+    </>
+  ) : (
+    <>
+      Deux restaurants, une seule recette&nbsp;: {locations.map((l) => `${l.address} à ${l.city}`).join(', et ')}.
+      7j/7, à emporter ou livré chez vous dès {minDel}&nbsp;€.
+    </>
+  );
+
   return (
     <>
       <div className="section after-nav">
@@ -37,7 +73,7 @@ export default function Story() {
               </p>
               <p>
                 C&apos;est cette lenteur qui fait tout le goût&nbsp;: une peau dorée, une chair
-                fondante, ce parfum qui embaume toute l&apos;avenue dès l&apos;ouverture.
+                fondante, ce parfum qui embaume {scent} dès l&apos;ouverture.
               </p>
             </Reveal>
           </div>
@@ -88,14 +124,16 @@ export default function Story() {
           </div>
           <div className="tl-item">
             <span className="tl-when">Aujourd&apos;hui</span>
-            <h4>My CHICKEN à Persan</h4>
-            <p>Avenue Jacques Vogt, 7j/7. À emporter, ou livré chez vous dès 25&nbsp;€.</p>
+            <h4>{todayTitle}</h4>
+            <p>{todayText}</p>
           </div>
         </Reveal>
 
         <Reveal as="blockquote" className="big-quote">
           Ici, chaque poulet est préparé comme à la maison — avec du temps, du feu et du cœur.
-          <footer>L&apos;équipe My CHICKEN</footer>
+          <footer>
+            {chosen ? `L'équipe My CHICKEN ${current.city}` : `Les équipes My CHICKEN — ${locations.map((l) => l.city).join(' & ')}`}
+          </footer>
         </Reveal>
 
         <div className="story-cta">
