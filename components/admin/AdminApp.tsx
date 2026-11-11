@@ -63,7 +63,9 @@ export default function AdminApp() {
   const [hostState, setHostState] = useState<string | null | undefined>();
   useEffect(() => {
     const h = window.location.hostname.toLowerCase();
-    if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost')) return;
+    /* localhost + *.workers.dev : pas de sous-domaines possibles →
+       sélecteur libre (le verrouillage reprendra dès le vrai domaine). */
+    if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost') || h.endsWith('.workers.dev')) return;
     if (h.startsWith('persan.')) setHostState('persan');
     else if (h.startsWith('saint-mard.') || h.startsWith('saintmard.') || h.startsWith('sm.')) setHostState('saint-mard');
     else setHostState(null);
