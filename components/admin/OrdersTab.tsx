@@ -138,13 +138,15 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
   const { orders: all, source } = useOrders();
   const { locations } = useLocationCtx();
 
-  /* Alerte sonore + vibration à chaque NOUVELLE commande (temps réel).
-     La première réception mémorise l'existant sans soner. */
+  /* Alerte sonore + vibration à chaque NOUVELLE commande de CE
+     restaurant (pas celle de l'autre). La première réception
+     mémorise l'existant sans soner. */
   const seen = useRef<Set<string>>(new Set());
   const firstSnap = useRef(true);
   useEffect(() => {
-    const fresh = all.filter((o) => !seen.current.has(o.id));
-    all.forEach((o) => seen.current.add(o.id));
+    const mine = locationId ? all.filter((o) => !o.locationId || o.locationId === locationId) : all;
+    const fresh = mine.filter((o) => !seen.current.has(o.id));
+    all.forEach((o) => seen.current.add(o.id)); // l'autre resto aussi : pas de son en retard
     if (firstSnap.current) {
       firstSnap.current = false;
       return;
@@ -153,7 +155,7 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
       beep();
       navigator.vibrate?.([120, 80, 120]);
     }
-  }, [all]);
+  }, [all, locationId]);
   /* Commandes du restaurant sélectionné (les anciennes sans locationId restent visibles) */
   const orders = locationId
     ? all.filter((o) => !o.locationId || o.locationId === locationId)
@@ -167,6 +169,12 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
     ? orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee')
     : orders;
   const active = orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee');
+
+  /* Recettes de CE restaurant (annulées exclues) — du jour et total. */
+  const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+  const counted = orders.filter((o) => o.status !== 'annulee');
+  const dayRevenue = counted.filter((o) => o.createdAt >= dayStart.getTime()).reduce((s, o) => s + o.total, 0);
+  const allRevenue = counted.reduce((s, o) => s + o.total, 0);
 
   /* Recherche dans les anciennes commandes : n°, nom, téléphone, adresse */
   const [search, setSearch] = useState('');
@@ -201,6 +209,19 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
           <b>{orders.filter((o) => o.paid).length}</b>
           <span>payées en ligne</span>
         </div>
+        {/* Recette calculée sur les commandes de CE restaurant uniquement
+            (chaque dashboard voit sa propre recette, même si l'argent
+            arrive sur un compte Stripe unique). Annulées exclues. */}
+        <div className="ostat">
+          <b>{fmt(dayRevenue)} €</b>
+          <span>recette du jour</span>
+        </div>
+        {variant === 'all' && (
+          <div className="ostat">
+            <b>{fmt(allRevenue)} €</b>
+            <span>recette totale</span>
+          </div>
+        )}
       </div>
 
       {/* La recherche n'a de sens que dans l'historique complet */}

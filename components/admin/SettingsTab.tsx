@@ -7,7 +7,25 @@ import type { MenuData } from '@/lib/data';
 
 type Mutate = (fn: (d: MenuData) => MenuData) => void;
 
-type SysConfig = { stripe: boolean; connect: boolean; firebaseWrite: boolean };
+type SysConfig = {
+  stripe: boolean;
+  stripeMode: 'test' | 'live' | null;
+  connect: boolean;
+  feePercent: number;
+  firebaseWrite: boolean;
+};
+
+/* État du compte Stripe Connect de My Chicken (/api/stripe/account).
+   UN compte unique : Persan et Saint-Mard ont le même compte bancaire. */
+type LocAccount = {
+  connected: boolean;
+  source?: 'dashboard' | 'env';
+  accountId?: string;
+  businessName?: string | null;
+  detailsSubmitted?: boolean;
+  chargesEnabled?: boolean;
+  payoutsEnabled?: boolean;
+};
 
 export default function SettingsTab({
   draft,
@@ -20,6 +38,8 @@ export default function SettingsTab({
 }) {
   const { source } = useMenu();
   const [sys, setSys] = useState<SysConfig | null>(null);
+  const [locAcct, setLocAcct] = useState<LocAccount | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
     fetch('/api/config')
@@ -27,6 +47,39 @@ export default function SettingsTab({
       .then(setSys)
       .catch(() => setSys(null));
   }, []);
+
+  useEffect(() => {
+    if (!sys?.stripe) return;
+    setLocAcct(null);
+    fetch('/api/stripe/account')
+      .then((r) => r.json())
+      .then(setLocAcct)
+      .catch(() => setLocAcct(null));
+  }, [sys?.stripe]);
+
+  /* Bouton « Connecter Stripe » : crée le compte My Chicken (1er clic)
+     et envoie sur la page d'inscription hébergée par Stripe (identité
+     + RIB à remplir par le gérant — conforme à la réglementation FR). */
+  const connectStripe = async () => {
+    setConnecting(true);
+    try {
+      const res = await fetch('/api/stripe/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ name: 'My Chicken' }),
+      });
+      const json = (await res.json()) as { url?: string; error?: string };
+      if (json.url) {
+        window.location.href = json.url;
+        return;
+      }
+      alert(json.error || 'Impossible de créer le lien Stripe.');
+    } catch {
+      alert('Connexion au serveur impossible.');
+    }
+    setConnecting(false);
+  };
 
   const num = (v: string) => Math.round(Number(v.replace(',', '.')) * 100) / 100;
 
@@ -72,6 +125,115 @@ export default function SettingsTab({
 
       <section className="admin-panel">
         <h3 className="ap-title">
+          <Icon name="tag" size={16} /> Paiement en ligne — Stripe
+        </h3>
+
+        {sys === null ? (
+          <p className="ap-help">Vérification de la connexion Stripe…</p>
+        ) : sys.stripe ? (
+          <div className="stripe-ok">
+            <p className="sys-badge ok">
+              <Icon name="check" size={14} /> Stripe connecté — mode {sys.stripeMode === 'live' ? 'PRODUCTION' : 'TEST'}
+            </p>
+
+            {/* Compte unique My Chicken (Persan + Saint-Mard) : bouton + état en direct */}
+            <div className="stripe-loc">
+              <h4>Compte du restaurant — Persan &amp; Saint-Mard</h4>
+              {locAcct === null ? (
+                <p className="ap-help">Vérification du compte My Chicken…</p>
+              ) : !locAcct.connected ? (
+                <>
+                  <p className="ap-help">
+                    Aucun compte Stripe n&apos;est encore relié : pour l&apos;instant, les paiements des deux restaurants
+                    arrivent sur le compte du site. Reliez le compte My Chicken en 15 minutes — identité et RIB
+                    renseignés par le gérant sur la page Stripe. Un seul compte suffit (même compte bancaire).
+                  </p>
+                  <button className="btn" onClick={connectStripe} disabled={connecting}>
+                    {connecting ? 'Création du lien…' : 'Connecter le compte Stripe My Chicken'}
+                  </button>
+                </>
+              ) : locAcct.chargesEnabled && locAcct.payoutsEnabled ? (
+                <>
+                  <p className="loc-status ok">
+                    <Icon name="check" size={14} /> Compte actif ({locAcct.accountId}
+                    {locAcct.businessName ? ` — ${locAcct.businessName}` : ''}) : les paiements Persan et Saint-Mard
+                    vont directement au restaurant.
+                  </p>
+                  {locAcct.source === 'dashboard' && (
+                    <button className="btn btn-ghost" onClick={connectStripe} disabled={connecting}>
+                      {connecting ? 'Création du lien…' : 'Mettre à jour les informations'}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="loc-status pending">
+                    Inscription en cours ({locAcct.accountId}) — le gérant doit la compléter (identité + RIB) pour que
+                    les paiements arrivent au restaurant.
+                  </p>
+                  <button className="btn" onClick={connectStripe} disabled={connecting}>
+                    {connecting ? 'Création du lien…' : 'Reprendre l\u2019inscription'}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <ul className="sys-list">
+              <li className={sys.connect ? 'ok' : ''}>
+                <b>Compte</b>
+                {sys.connect
+                  ? 'Stripe Connect — chaque restaurant encaisse directement sur son propre compte.'
+                  : 'Compte standard — les paiements arrivent sur le compte Stripe relié au site.'}
+              </li>
+              <li className={sys.connect ? 'ok' : ''}>
+                <b>Commission plateforme</b>
+                {sys.connect
+                  ? sys.feePercent > 0
+                    ? `${sys.feePercent} % par commande, tout compris — frais Stripe à notre charge, la part du restaurant est nette.`
+                    : '0 % — aucun prélèvement.'
+                  : '0 % — aucune commission en mode standard : le restaurant ne paye que les frais Stripe de son propre compte.'}
+              </li>
+              {sys.stripeMode === 'test' && (
+                <li>
+                  <b>Mode test</b>
+                  Les paiements sont simulés (carte 4242 4242 4242 4242). Passe les clés en production (sk_live…) pour
+                  encaisser réellement.
+                </li>
+              )}
+            </ul>
+            <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer" className="btn btn-ghost">
+              Ouvrir le tableau de bord Stripe <Icon name="arrowRight" size={14} />
+            </a>
+          </div>
+        ) : (
+          <div className="stripe-setup">
+            <p className="ap-help">
+              Le paiement en ligne n&apos;est pas encore activé — les clients peuvent déjà commander par téléphone.
+              Pour l&apos;activer, il faut une clé secrète Stripe (gratuit, ~15 min) :
+            </p>
+            <ol className="stripe-steps">
+              <li>
+                Créer un compte sur <b>stripe.com</b> (c&apos;est la plateforme qui encaisse, le restaurant reliera
+                ensuite son propre compte).
+              </li>
+              <li>
+                Récupérer la <b>clé secrète</b> (Dashboard Stripe → Développeurs → Clés API → sk_test… puis sk_live… en
+                production) et l&apos;enregistrer dans le serveur sous <code>STRIPE_SECRET_KEY</code>, puis redéployer.
+              </li>
+              <li>
+                Revenir ici : le bouton <b>« Connecter le compte Stripe »</b> permettra au gérant de relier son compte
+                (identité + RIB) et de recevoir les paiements directement.
+              </li>
+            </ol>
+            <a href="https://stripe.com/fr" target="_blank" rel="noreferrer" className="btn btn-ghost">
+              Créer un compte Stripe <Icon name="arrowRight" size={14} />
+            </a>
+          </div>
+        )}
+      </section>
+
+      <section className="admin-panel">
+        <h3 className="ap-title">
           <Icon name="flame" size={16} /> État du système
         </h3>
         <ul className="sys-list">
@@ -80,12 +242,6 @@ export default function SettingsTab({
             {source === 'firebase'
               ? 'Firebase connecté — les modifications sont visibles par tous les visiteurs instantanément.'
               : 'Mode démo — les modifications ne sont visibles que dans ce navigateur. Ajoutez la configuration Firebase (voir README) pour passer en temps réel global.'}
-          </li>
-          <li className={sys?.stripe ? 'ok' : ''}>
-            <b>Paiement en ligne</b>
-            {sys?.stripe
-              ? `Stripe actif${sys.connect ? ' — encaissement direct sur le compte du restaurant (Connect)' : ''}.`
-              : 'En attente des clés Stripe (STRIPE_SECRET_KEY). Les clients peuvent déjà commander par téléphone.'}
           </li>
           <li className={sys?.firebaseWrite ? 'ok' : ''}>
             <b>Enregistrement des commandes</b>

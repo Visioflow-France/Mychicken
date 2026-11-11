@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAdminDb, getServerMenu } from '@/lib/server/firebase-admin';
+import { getStripe as stripeClient, getConnectAccount } from '@/lib/server/stripe';
 import { ORDERS_COLLECTION } from '@/lib/firebase';
 import { LOCATIONS, clamp, orderPrefix, promoPrice, round2, serviceStart, type Order, type OrderItem, type OrderMode } from '@/lib/data';
 
@@ -44,22 +45,30 @@ function originOf(req: Request): string {
 }
 
 async function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) return null;
-  const { default: Stripe } = await import('stripe');
-  return new Stripe(key);
+  return stripeClient();
 }
 
-/** Compte Stripe Connect du restaurant qui encaisse (undefined = plateforme). */
-function stripeAccountFor(locationId?: string): string | undefined {
-  const perLocation =
-    locationId === 'persan'
-      ? process.env.STRIPE_CONNECT_ACCOUNT_PERSAN
-      : locationId === 'saint-mard'
-        ? process.env.STRIPE_CONNECT_ACCOUNT_SAINT_MARD
-        : undefined;
-  const acct = perLocation || process.env.STRIPE_CONNECT_ACCOUNT_ID;
-  return acct && acct.startsWith('acct_') ? acct : undefined;
+/* Compte Connect de My Chicken (COMPTE UNIQUE : Persan et Saint-Mard
+   partagent le même compte bancaire) : l'argent va directement sur le
+   compte Stripe du resto, pas sur celui de la plateforme.
+   Priorité : compte enregistré par le bouton « Connecter Stripe » du
+   dashboard (Firestore stripe/connect), puis variables d'environnement
+   (par resto ou commun). */
+const stripeAccountFor = (locationId?: string) => getConnectAccount(locationId).then((c) => c?.accountId);
+
+/* Commission plateforme (« tout compris ») : uniquement en mode Connect —
+   en mode standard (compte Stripe du restaurant), zéro commission.
+   L'objectif est que le restaurant touche (100 − STRIPE_FEE_PERCENT) % NET :
+   Stripe prélève ses frais de paiement sur le compte connecté, on les
+   retire donc de notre part. Estimation carte européenne (1,5 % + 0,25 €) ;
+   une carte plus chère rogne notre marge, jamais la part du restaurant…
+   au centime d'arrondi près. */
+function platformFeeCents(totalCents: number, acct?: string): number | undefined {
+  if (!acct) return undefined;
+  const pct = Number(process.env.STRIPE_FEE_PERCENT || 0);
+  if (!pct || pct <= 0) return undefined;
+  const stripeFeeEstimate = Math.round(totalCents * 0.015 + 25);
+  return Math.max(0, Math.round((totalCents * pct) / 100) - stripeFeeEstimate);
 }
 
 const euro = (n: number) => Math.round(n * 100); // € → centimes
@@ -193,6 +202,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    const acct = await stripeAccountFor(location.id);
     let couponId: string | undefined;
     if (discount > 0) {
       const coupon = await stripe.coupons.create(
@@ -202,13 +212,15 @@ export async function POST(req: Request) {
       couponId = coupon.id;
     }
 
+    const appFee = platformFeeCents(euro(total), acct);
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
         locale: 'fr',
         line_items: lineItems as never,
         ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
-        success_url: `${origin}/commander?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+        ...(appFee ? { application_fee_amount: appFee } : {}),
+        success_url: `${origin}/commander?paid=1&location=${location.id}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/commander?canceled=1`,
         /* ref = docId Firestore : c'est LUI que le webhook utilise pour
            marquer la commande payée (num n'est que le numéro affiché). */
@@ -264,14 +276,17 @@ export async function POST(req: Request) {
   }
 }
 
-/** Vérification après retour de Stripe : ?session_id=…&location=persan|saint-mard */
+/** Vérification après retour de Stripe : ?session_id=…&location=… */
 export async function GET(req: Request) {
   const params = new URL(req.url).searchParams;
   const sessionId = params.get('session_id');
+  /* Le restaurant est renvoyé dans l'URL de retour : nécessaire pour
+     relire la session sur le bon compte Connect. */
+  const locId = params.get('location') || undefined;
   if (!sessionId) return NextResponse.json({ error: 'session_id manquant' }, { status: 400 });
   const stripe = await getStripe();
   if (!stripe) return NextResponse.json({ error: 'stripe_not_configured' }, { status: 503 });
-  const acct = stripeAccountFor(params.get('location') || undefined);
+  const acct = await stripeAccountFor(locId);
   try {
     let session;
     try {

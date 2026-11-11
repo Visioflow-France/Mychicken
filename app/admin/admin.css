@@ -311,3 +311,23 @@
   .ap-price{margin-left:auto}
   .orders-stats{grid-template-columns:1fr}
 }
+
+/* Renvoi vers les sous-domaines (dashboard ouvert sur le domaine principal) */
+.al-domains{display:grid;gap:.8rem}
+.al-domain{display:flex;flex-direction:column;gap:.15rem;padding:.9rem 1.1rem;border:1px solid rgba(255,255,255,.18);border-radius:.8rem;text-decoration:none;color:var(--cream,#fff);background:rgba(255,255,255,.05)}
+.al-domain span{font-size:.8rem;opacity:.7}
+.al-domain:hover{border-color:rgba(255,255,255,.45)}
+
+/* Panneau Stripe (Réglages → Paiement en ligne) */
+.sys-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .8rem;border-radius:999px;font-size:.85rem;font-weight:600;margin-bottom:.9rem}
+.sys-badge.ok{background:rgba(74,222,128,.15);color:#4ade80}
+.stripe-steps{margin:0 0 1rem;padding-left:1.2rem;display:grid;gap:.6rem;font-size:.9rem;line-height:1.5}
+.stripe-steps code{background:rgba(255,255,255,.1);padding:.1rem .35rem;border-radius:.3rem;font-size:.8rem}
+.stripe-ok .btn,.stripe-setup .btn{margin-top:.2rem;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem}
+
+/* Compte Stripe du restaurant courant (bouton + état en direct) */
+.stripe-loc{margin:.4rem 0 1rem;padding:.9rem 1rem;border:1px solid rgba(255,255,255,.15);border-radius:.8rem;display:grid;gap:.65rem;background:rgba(255,255,255,.04)}
+.stripe-loc h4{margin:0;font-size:.95rem}
+.loc-status{display:flex;align-items:flex-start;gap:.45rem;font-size:.9rem;line-height:1.45;margin:0}
+.loc-status.ok{color:#4ade80}
+.loc-status.pending{color:#fbbf24}

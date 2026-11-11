@@ -8,9 +8,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 export function middleware(req: NextRequest) {
   const host = (req.headers.get('host') || '').toLowerCase().split(':')[0];
   if (req.nextUrl.pathname !== '/') return NextResponse.next();
-  if (host.startsWith('persan.')) return NextResponse.redirect(new URL('/admin/persan', req.url));
+  if (host.startsWith('persan.')) return NextResponse.redirect(new URL('/admin', req.url));
   if (host.startsWith('saint-mard.') || host.startsWith('saintmard.') || host.startsWith('sm.')) {
-    return NextResponse.redirect(new URL('/admin/saint-mard', req.url));
+    return NextResponse.redirect(new URL('/admin', req.url));
   }
   return NextResponse.next();
 }

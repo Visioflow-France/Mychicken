@@ -2,16 +2,14 @@
 
 /* ================================================================
    MenuProvider — la carte pour tout le site, OPTIMISÉ QUOTA SPARK.
-   • Firebase configuré → UNE SEULE lecture Firestore par visite :
-     le menu complet (produits, catégories, promos, réglages,
-     restaurants) vit dans le document unique « menu/published ».
-     Résultat mis en cache par onglet (sessionStorage) → navigation
-     dans le site = 0 lecture supplémentaire.
-     Exception : dans le DASHBOARD (/admin…), la carte est suivie en
-     direct (onSnapshot) — une publication depuis un autre appareil
-     s'affiche sans recharger. Le site client, lui, ne fait qu'une
-     lecture par visite (événement MENU_UPDATED_EVENT en plus après
-     une publication admin réussie).
+   • Site public → fetch /api/menu (cache serveur 60 s) : des
+     centaines de visiteurs = 1 SEULE lecture Firestore. Puis cache
+     session 10 min (navigation = 0 lecture). AUCUN polling, la
+     carte est chargée UNE fois par visite.
+   • DASHBOARD (/admin…) SEULEMENT : carte en direct (onSnapshot)
+     — une publication depuis un autre appareil s'affiche sans
+     recharger. Les commandes (collection orders) sont aussi
+     suivies en direct, uniquement dans le dashboard.
    • Firebase absent → MODE DÉMO : overrides dans le localStorage
      (clé mc_menu_overrides), synchronisés entre onglets.
    • En cas d'erreur réseau → valeurs embarquées de lib/data.ts.
@@ -26,7 +24,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import {
   DEFAULT_MENU,
   promoPrice,
@@ -145,15 +143,17 @@ export function MenuProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    // MODE FIREBASE — UNE lecture unique du document menu/published
+    // MODE FIREBASE — le site public passe par /api/menu (cache
+    // serveur), le dashboard suit la carte en direct (onSnapshot).
     const db = getClientDb();
-    if (!db) return;
 
     /* DASHBOARD (/admin…) : carte en DIRECT via onSnapshot — une publication
        depuis un AUTRE appareil apparaît sans recharger (le dashboard reste
-       ouvert au comptoir toute la journée). Le site client garde sa lecture
-       unique + cache session (quota Spark). */
+       ouvert au comptoir toute la journée). Le site client, lui, interroge
+       /api/menu (1 lecture Firestore partagée entre tous les visiteurs,
+       cache session en plus côté navigateur). */
     if (window.location.pathname.startsWith('/admin')) {
+      if (!db) return;
       const unsub = onSnapshot(
         doc(db, PUBLISHED_DOC),
         (snap) => {
@@ -174,9 +174,13 @@ export function MenuProvider({ children }: { children: ReactNode }) {
         return;
       }
       try {
-        const snap = await getDoc(doc(db, PUBLISHED_DOC));
+        /* Le site public ne touche PAS Firestore : il interroge
+           /api/menu, mis en cache 60 s côté serveur (edge) → des
+           centaines de visiteurs = 1 SEULE lecture Firestore. */
+        const res = await fetch('/api/menu');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const d = (await res.json()) as Partial<MenuData>;
         if (cancelled) return;
-        const d = snap.data() as Partial<MenuData> | undefined;
         if (d && Array.isArray(d.products) && d.products.length) {
           const merged = mergePublished(d);
           setMenu(merged);

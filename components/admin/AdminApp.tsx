@@ -38,8 +38,7 @@ const TABS: { id: Tab; label: string; icon: Parameters<typeof Icon>[0]['name'] }
   { id: 'settings', label: 'Réglages', icon: 'scooter' },
 ];
 
-/* initialLocation : restaurant présélectionné (PWA par restaurant, ex. /admin/persan). */
-export default function AdminApp({ initialLocation }: { initialLocation?: string } = {}) {
+export default function AdminApp() {
   const toast = useToast();
   const { menu, source } = useMenu();
   const { locations, current, choose, locationId } = useLocationCtx();
@@ -55,16 +54,27 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
   const [draft, setDraft] = useState<MenuData>(menu);
   const [publishing, setPublishing] = useState(false);
 
-  /* Sous-domaine dédié (ex. persan.mondomaine.fr) : le restaurant est
-     déduit du nom d'hôte — même verrou que la PWA du resto, quel que soit
-     le domaine futur. Déterminé après montage (pas d'écart d'hydratation). */
-  const [hostLocation, setHostLocation] = useState<string>();
+  /* Sous-domaine dédié (ex. persan.mondomaine.fr) : SEULE adresse du
+     dashboard — le restaurant est déduit du nom d'hôte et verrouillé.
+     hostState : undefined = vérification en cours, null = pas de
+     sous-domaine (écran de renvoi), sinon l'id du restaurant.
+     Déterminé après montage (pas d'écart d'hydratation). En local
+     (localhost), le sélecteur libre est conservé pour le développement. */
+  const [hostState, setHostState] = useState<string | null | undefined>();
   useEffect(() => {
     const h = window.location.hostname.toLowerCase();
-    if (h.startsWith('persan.')) setHostLocation('persan');
-    else if (h.startsWith('saint-mard.') || h.startsWith('saintmard.') || h.startsWith('sm.')) setHostLocation('saint-mard');
+    if (h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost')) return;
+    if (h.startsWith('persan.')) setHostState('persan');
+    else if (h.startsWith('saint-mard.') || h.startsWith('saintmard.') || h.startsWith('sm.')) setHostState('saint-mard');
+    else setHostState(null);
   }, []);
-  const lockedLocation = initialLocation || hostLocation;
+  const lockedLocation = hostState || undefined;
+  /* Domaine racine pour proposer les liens vers les sous-domaines */
+  const rootDomain = useMemo(() => {
+    if (typeof window === 'undefined') return '';
+    const parts = window.location.hostname.toLowerCase().split('.');
+    return parts.length >= 3 ? parts.slice(1).join('.') : parts.join('.');
+  }, []);
 
   /* Session au chargement */
   useEffect(() => {
@@ -77,7 +87,7 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
       .catch(() => setAuthed(false));
   }, []);
 
-  /* Restaurant imposé par la PWA (ex. /admin/persan) : on force le choix
+  /* Restaurant imposé par le sous-domaine : on force le choix
      à chaque ouverture pour que l'app ouvre toujours sur « son » resto. */
   useEffect(() => {
     if (lockedLocation) choose(lockedLocation);
@@ -160,6 +170,33 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
       toast(e instanceof Error ? e.message : 'Réinitialisation impossible');
     }
   };
+
+  /* ---------- Domaine principal : renvoi vers le sous-domaine du resto ---------- */
+  if (hostState === null) {
+    return (
+      <div className="admin-root">
+        <div className="admin-login">
+          <span className="al-mark" aria-hidden="true">
+            <RoosterMark />
+          </span>
+          <h1>Quel restaurant ?</h1>
+          <p className="al-sub">
+            Chaque restaurant a son propre dashboard, sur son sous-domaine dédié.
+          </p>
+          <div className="al-domains">
+            <a href={`https://persan.${rootDomain}/admin`} className="al-domain">
+              <b>Persan</b>
+              <span>persan.{rootDomain}</span>
+            </a>
+            <a href={`https://saint-mard.${rootDomain}/admin`} className="al-domain">
+              <b>Saint-Mard</b>
+              <span>saint-mard.{rootDomain}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ---------- Écran de connexion ---------- */
   if (authed === null) {
@@ -254,7 +291,7 @@ export default function AdminApp({ initialLocation }: { initialLocation?: string
         </div>
         <div className="at-right">
           {/* Où êtes-vous ? — filtre les commandes affichées.
-              App dédiée (/admin/persan, /admin/saint-mard) : restaurant
+              Sous-domaine dédié (persan…/saint-mard…) : restaurant
               VERROUILLÉ — le personnel ne peut pas basculer sur l'autre. */}
           {lockedLocation ? (
             <span className="at-loc at-loc-locked" title="Application dédiée à ce restaurant">
