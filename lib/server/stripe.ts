@@ -19,7 +19,10 @@ export async function getStripe(): Promise<import('stripe').default | null> {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return null;
   const { default: Stripe } = await import('stripe');
-  return new Stripe(key);
+  /* Cloudflare Workers : le client HTTP Node (https) GÈLE silencieusement
+     dans le worker (requête qui ne revient jamais). On force le client
+     « fetch » natif du runtime — solution documentée par Stripe. */
+  return new Stripe(key, { httpClient: Stripe.createFetchHttpClient() });
 }
 
 export type ConnectInfo = { accountId: string; source: 'dashboard' | 'env' } | null;

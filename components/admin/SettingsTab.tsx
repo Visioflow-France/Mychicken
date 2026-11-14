@@ -133,20 +133,21 @@ export default function SettingsTab({
         ) : sys.stripe ? (
           <div className="stripe-ok">
             <p className="sys-badge ok">
-              <Icon name="check" size={14} /> Stripe connecté — mode {sys.stripeMode === 'live' ? 'PRODUCTION' : 'TEST'}
+              <Icon name="check" size={14} /> Clé Stripe active — mode {sys.stripeMode === 'live' ? 'PRODUCTION' : 'TEST'}
             </p>
 
-            {/* Compte unique My Chicken (Persan + Saint-Mard) : bouton + état en direct */}
+            {/* Compte du restaurant courant : bouton + état en direct */}
             <div className="stripe-loc">
               <h4>Compte du restaurant — Persan &amp; Saint-Mard</h4>
               {locAcct === null ? (
                 <p className="ap-help">Vérification du compte My Chicken…</p>
               ) : !locAcct.connected ? (
                 <>
+                  <p className="loc-status pending">Compte du restaurant : NON connecté</p>
                   <p className="ap-help">
-                    Aucun compte Stripe n&apos;est encore relié : pour l&apos;instant, les paiements des deux restaurants
-                    arrivent sur le compte du site. Reliez le compte My Chicken en 15 minutes — identité et RIB
-                    renseignés par le gérant sur la page Stripe. Un seul compte suffit (même compte bancaire).
+                    Pour l&apos;instant, les paiements des deux restaurants arrivent sur le compte du site. Reliez le
+                    compte My Chicken en 15 minutes — identité et RIB renseignés par le gérant sur la page Stripe. Un
+                    seul compte suffit (même compte bancaire).
                   </p>
                   <button className="btn" onClick={connectStripe} disabled={connecting}>
                     {connecting ? 'Création du lien…' : 'Connecter le compte Stripe My Chicken'}
@@ -155,7 +156,7 @@ export default function SettingsTab({
               ) : locAcct.chargesEnabled && locAcct.payoutsEnabled ? (
                 <>
                   <p className="loc-status ok">
-                    <Icon name="check" size={14} /> Compte actif ({locAcct.accountId}
+                    <Icon name="check" size={14} /> Compte du restaurant ACTIF ({locAcct.accountId}
                     {locAcct.businessName ? ` — ${locAcct.businessName}` : ''}) : les paiements Persan et Saint-Mard
                     vont directement au restaurant.
                   </p>
@@ -168,8 +169,8 @@ export default function SettingsTab({
               ) : (
                 <>
                   <p className="loc-status pending">
-                    Inscription en cours ({locAcct.accountId}) — le gérant doit la compléter (identité + RIB) pour que
-                    les paiements arrivent au restaurant.
+                    Inscription du restaurant EN COURS ({locAcct.accountId}) — le gérant doit la compléter (identité +
+                    RIB) pour que les paiements arrivent au restaurant.
                   </p>
                   <button className="btn" onClick={connectStripe} disabled={connecting}>
                     {connecting ? 'Création du lien…' : 'Reprendre l\u2019inscription'}
