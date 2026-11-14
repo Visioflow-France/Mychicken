@@ -11,7 +11,6 @@ type SysConfig = {
   stripe: boolean;
   stripeMode: 'test' | 'live' | null;
   connect: boolean;
-  feePercent: number;
   firebaseWrite: boolean;
 };
 
@@ -183,16 +182,8 @@ export default function SettingsTab({
               <li className={sys.connect ? 'ok' : ''}>
                 <b>Compte</b>
                 {sys.connect
-                  ? 'Stripe Connect — chaque restaurant encaisse directement sur son propre compte.'
+                  ? 'Stripe Connect — le restaurant encaisse directement sur son propre compte.'
                   : 'Compte standard — les paiements arrivent sur le compte Stripe relié au site.'}
-              </li>
-              <li className={sys.connect ? 'ok' : ''}>
-                <b>Commission plateforme</b>
-                {sys.connect
-                  ? sys.feePercent > 0
-                    ? `${sys.feePercent} % par commande, tout compris — frais Stripe à notre charge, la part du restaurant est nette.`
-                    : '0 % — aucun prélèvement.'
-                  : '0 % — aucune commission en mode standard : le restaurant ne paye que les frais Stripe de son propre compte.'}
               </li>
               {sys.stripeMode === 'test' && (
                 <li>
