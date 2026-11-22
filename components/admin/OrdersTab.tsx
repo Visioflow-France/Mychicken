@@ -170,10 +170,8 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
     : orders;
   const active = orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee');
 
-  /* Recettes de CE restaurant (annulées exclues) — du jour et total. */
-  const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+  /* Recette de CE restaurant (annulées exclues) — total de l'historique. */
   const counted = orders.filter((o) => o.status !== 'annulee');
-  const dayRevenue = counted.filter((o) => o.createdAt >= dayStart.getTime()).reduce((s, o) => s + o.total, 0);
   const allRevenue = counted.reduce((s, o) => s + o.total, 0);
 
   /* Recherche dans les anciennes commandes : n°, nom, téléphone, adresse */
@@ -205,17 +203,9 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
           <b>{active.length}</b>
           <span>en cours</span>
         </div>
-        <div className="ostat">
-          <b>{orders.filter((o) => o.paid).length}</b>
-          <span>payées en ligne</span>
-        </div>
         {/* Recette calculée sur les commandes de CE restaurant uniquement
             (chaque dashboard voit sa propre recette, même si l'argent
             arrive sur un compte Stripe unique). Annulées exclues. */}
-        <div className="ostat">
-          <b>{fmt(dayRevenue)} €</b>
-          <span>recette du jour</span>
-        </div>
         {variant === 'all' && (
           <div className="ostat">
             <b>{fmt(allRevenue)} €</b>
@@ -319,11 +309,6 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
                 </option>
               ))}
             </select>
-            {!o.paid && (
-              <button className="btn btn-ghost small" onClick={() => set(o, { paid: true })}>
-                <Icon name="check" size={13} /> Marquer payée
-              </button>
-            )}
             <button
               className="btn btn-ghost small"
               onClick={() => printTicket(o, loc?.name || 'My Chicken', loc ? `${loc.address}, ${loc.postal} ${loc.city}` : '')}
