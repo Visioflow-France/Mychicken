@@ -55,3 +55,9 @@ export const LOCATIONS_DOC = 'locations/settings';
 /* QUOTA SPARK : tout le menu public tient dans CE document unique —
    1 seule lecture Firestore par chargement de page (cache session en plus). */
 export const PUBLISHED_DOC = 'menu/published';
+
+/* Mini-document « version de la carte » : les navigateurs des visiteurs
+   l'écoutent (0 lecture au repos) — dès qu'il change (publication admin),
+   chacun recharge la carte. C'est ce qui rend « épuisé », prix, promos…
+   visibles EN DIRECT chez le client, sans polling ni lectures en boucle. */
+export const MENU_VERSION_DOC = 'menu/version';

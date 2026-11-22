@@ -33,7 +33,7 @@ import {
   type ProductPromo,
   type PromoCode,
 } from './data';
-import { firebaseEnabled, getClientDb, PUBLISHED_DOC } from './firebase';
+import { firebaseEnabled, getClientDb, PUBLISHED_DOC, MENU_VERSION_DOC } from './firebase';
 
 export type LivePrice = { price: number; oldPrice: number | null; promo?: ProductPromo };
 
@@ -167,17 +167,22 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     }
 
     let cancelled = false;
-    const load = async () => {
-      const cached = readCache();
-      if (cached) {
-        if (!cancelled) setMenu(cached);
-        return;
+    /* Dernière version connue de la carte — sert à forcer le
+       rafraîchissement après une publication (cache edge + navigateur). */
+    let menuVersion = 0;
+    const load = async (version?: number) => {
+      if (version === undefined) {
+        const cached = readCache();
+        if (cached) {
+          if (!cancelled) setMenu(cached);
+          return;
+        }
       }
       try {
         /* Le site public ne touche PAS Firestore : il interroge
            /api/menu, mis en cache 60 s côté serveur (edge) → des
            centaines de visiteurs = 1 SEULE lecture Firestore. */
-        const res = await fetch('/api/menu');
+        const res = await fetch(`/api/menu${version ? `?v=${version}` : ''}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const d = (await res.json()) as Partial<MenuData>;
         if (cancelled) return;
@@ -196,11 +201,31 @@ export function MenuProvider({ children }: { children: ReactNode }) {
     };
     load();
 
+    /* DIRECT CHEZ LE CLIENT : écoute du mini-document « version »
+       (0 lecture Firestore au repos). Dès qu'une publication admin le
+       fait changer, chaque visiteur recharge la carte instantanément
+       (épuisé, prix, promos…) — l'URL ?v= contourne le cache edge. */
+    let unsubVersion: (() => void) | undefined;
+    if (db) {
+      unsubVersion = onSnapshot(
+        doc(db, MENU_VERSION_DOC),
+        (snap) => {
+          const at = Number((snap.data() as { at?: number } | undefined)?.at || 0);
+          if (!at || at === menuVersion) return;
+          const first = menuVersion === 0;
+          menuVersion = at;
+          if (!first) load(at); // 1er signalement = état initial, pas de rechargement
+        },
+        () => {} // indisponible réseau : silencieux, la carte reste affichée
+      );
+    }
+
     // Rafraîchissement ponctuel (publication admin) — 1 re-lecture max
-    const onRefresh = () => load();
+    const onRefresh = () => load(Date.now());
     window.addEventListener(MENU_UPDATED_EVENT, onRefresh);
     return () => {
       cancelled = true;
+      unsubVersion?.();
       window.removeEventListener(MENU_UPDATED_EVENT, onRefresh);
     };
   }, []);

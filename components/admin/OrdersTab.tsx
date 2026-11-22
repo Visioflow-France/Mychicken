@@ -170,10 +170,6 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
     : orders;
   const active = orders.filter((o) => o.status !== 'terminee' && o.status !== 'annulee');
 
-  /* Recette de CE restaurant (annulées exclues) — total de l'historique. */
-  const counted = orders.filter((o) => o.status !== 'annulee');
-  const allRevenue = counted.reduce((s, o) => s + o.total, 0);
-
   /* Recherche dans les anciennes commandes : n°, nom, téléphone, adresse */
   const [search, setSearch] = useState('');
   const needle = search.trim().toLowerCase();
@@ -203,15 +199,6 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
           <b>{active.length}</b>
           <span>en cours</span>
         </div>
-        {/* Recette calculée sur les commandes de CE restaurant uniquement
-            (chaque dashboard voit sa propre recette, même si l'argent
-            arrive sur un compte Stripe unique). Annulées exclues. */}
-        {variant === 'all' && (
-          <div className="ostat">
-            <b>{fmt(allRevenue)} €</b>
-            <span>recette totale</span>
-          </div>
-        )}
       </div>
 
       {/* La recherche n'a de sens que dans l'historique complet */}
@@ -248,7 +235,6 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
       {visible.map((o) => (
         <div className={`order-card st-${o.status}`} key={o.id}>
           <div className="oc-head">
-            <b className="oc-num">{o.num}</b>
             <span className="oc-time">{timeFmt(o.createdAt)}</span>
             <span className="oc-mode">
               <Icon name={MODE_LABELS[o.mode]?.icon || 'bag'} size={13} /> {MODE_LABELS[o.mode]?.label || o.mode}

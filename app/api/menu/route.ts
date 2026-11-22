@@ -13,10 +13,12 @@ export const dynamic = 'force-dynamic';
    la réponse fraîche (stale-while-revalidate côté navigateur).
    ================================================================ */
 
-export async function GET() {
-  /* Cache API Cloudflare (Workers) — absent en dev Next : on saute. */
+export async function GET(req: Request) {
+  /* Cache API Cloudflare (Workers) — absent en dev Next : on saute.
+     La clé est l'URL complète : /api/menu?v=123 (rafraîchissement forcé
+     après une publication) est donc une entrée distincte de /api/menu. */
   const cache = (globalThis as { caches?: { default?: Cache } }).caches?.default;
-  const key = new Request('https://menu-cache.my-chicken.internal/api/menu');
+  const key = new Request(req.url);
 
   if (cache) {
     const hit = await cache.match(key);

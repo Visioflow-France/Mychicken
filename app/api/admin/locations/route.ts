@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/server/auth';
 import { getAdminDb } from '@/lib/server/firebase-admin';
-import { PUBLISHED_DOC } from '@/lib/firebase';
+import { PUBLISHED_DOC, MENU_VERSION_DOC } from '@/lib/firebase';
 import { LOCATIONS, type MenuData, type RestaurantLocation } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
@@ -42,6 +42,9 @@ export async function PUT(req: Request) {
       ),
     } as MenuData;
     await db.doc(PUBLISHED_DOC).set({ ...base, locations: body.locations });
+    // Même mécanisme direct que la carte : bump de version → les
+    // visiteurs rechargent (horaires, frais/minimum de livraison…).
+    await db.doc(MENU_VERSION_DOC).set({ at: Date.now() });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('[admin/locations] échec de publication :', e);

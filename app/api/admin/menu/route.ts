@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/server/auth';
 import { getAdminDb, sweepOrphanImages } from '@/lib/server/firebase-admin';
-import { PUBLISHED_DOC } from '@/lib/firebase';
+import { PUBLISHED_DOC, MENU_VERSION_DOC } from '@/lib/firebase';
 import { LOCATIONS, type MenuData } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +41,10 @@ export async function PUT(req: Request) {
       promoCodes: body.promoCodes || [],
       locations: prevData?.locations || LOCATIONS,
     });
+
+    // Version bumpée : tous les navigateurs des visiteurs recharge la
+    // carte instantanément (ils écoutent ce mini-document).
+    await db.doc(MENU_VERSION_DOC).set({ at: Date.now() });
 
     // Nettoyage Storage : images du bucket plus référencées par la carte
     const newImages = body.products.map((p) => p.img).filter(Boolean);
