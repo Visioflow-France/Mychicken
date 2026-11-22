@@ -9,6 +9,12 @@
   "assets": {
     "directory": ".open-next/assets"
   },
+  // Domaine officiel + sous-domaines par restaurant (zone mychicken.fr chez Cloudflare).
+  "routes": [
+    { "pattern": "mychicken.fr", "custom_domain": true },
+    { "pattern": "persan.mychicken.fr", "custom_domain": true },
+    { "pattern": "saint-mard.mychicken.fr", "custom_domain": true }
+  ],
   // Variables d'environnement publiques (visibles côté client).
   // Les secrets (ADMIN_PASSWORD, STRIPE_SECRET_KEY, FIREBASE_SERVICE_ACCOUNT…)
   // se définissent avec :  npx wrangler secret put NOM
