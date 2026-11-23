@@ -331,3 +331,74 @@
 .loc-status{display:flex;align-items:flex-start;gap:.45rem;font-size:.9rem;line-height:1.45;margin:0}
 .loc-status.ok{color:#4ade80}
 .loc-status.pending{color:#fbbf24}
+
+/* ================================================================
+   MOBILE — dashboards pensés pour le téléphone du comptoir :
+   rien qui déborde, rien qui zoome au focus, boutons tapables.
+   ================================================================ */
+@media (max-width:640px){
+  .admin-root{padding:1rem 0 9rem;overflow-x:hidden}
+
+  /* Connexion */
+  .admin-login{margin:2.5rem auto 0;padding:2.2rem 1.4rem}
+
+  /* Barre supérieure : le titre peut passer sur sa propre ligne */
+  .admin-top{flex-wrap:wrap;row-gap:.6rem;padding:.7rem 1rem}
+  .admin-top .at-left b{font-size:1rem}
+  .admin-top .at-right{margin-left:auto;flex-wrap:wrap;row-gap:.5rem}
+  .admin-top .at-link{padding:.5rem .8rem;letter-spacing:.1em}
+  .admin-top .at-loc{font-size:.66rem}
+  .admin-warn{margin:1rem 1rem}
+
+  /* Onglets plus compacts (2-3 par ligne) */
+  .admin-tabs{gap:.45rem;padding:1rem 1rem 0}
+  .admin-tab{padding:.65rem 1rem;font-size:.66rem;letter-spacing:.08em}
+
+  .admin-main{padding:1.2rem 1rem 0}
+  .admin-panel{padding:1.1rem;border-radius:14px}
+  .admin-panel .ap-title{font-size:1.08rem}
+  .ap-toolbar{gap:.6rem}
+
+  /* iOS/Android : un champ < 16px fait ZOOMER la page au focus —
+     c'est LA cause classique de « ça bouge tout seul » sur téléphone */
+  .ap-filters select,.ap-filters input,.ap-addrow input,.ap-addrow select,
+  .pe-add select,.pe-add input,.oc-actions select,.ap-rename,
+  .orders-search input,.f-group input,.f-group select{
+    font-size:16px;
+  }
+
+  /* Cibles tactiles un peu plus grandes */
+  .icon-btn{width:40px;height:40px}
+  .btn.small{padding:.7rem 1.1rem}
+
+  /* Lignes produits/catégories : vignette + actions jamais écrasées */
+  .ap-row{gap:.7rem}
+  .ap-actions{flex:0 0 auto}
+  .ap-thumb{width:52px;height:52px}
+
+  /* Modales */
+  .modal{max-height:92vh}
+  .modal-head{padding:1rem 1.1rem}
+  .modal-body{padding:1.1rem}
+  .modal-foot{padding:.9rem 1.1rem}
+  .modal-foot .btn{flex:1;justify-content:center}
+
+  /* Cartes de commande */
+  .order-card{padding:1rem 1.1rem;border-radius:12px}
+  .oc-actions select{min-width:150px;flex:1}
+  .oc-actions .btn{flex:1;justify-content:center}
+
+  /* Barre de publication : boutons pleine largeur + zone safe iPhone */
+  .admin-publish-bar{padding-bottom:calc(1rem + env(safe-area-inset-bottom))}
+  .admin-publish-bar > span{font-size:.78rem}
+  .apb-actions{width:100%}
+  .apb-actions .btn{flex:1;justify-content:center;padding:.85rem 1rem}
+
+  /* Longs textes (adresses, notes, e-mails) : jamais de débordement */
+  .ap-info b,.oc-customer,.oc-items span,.sys-list li,.stripe-loc{overflow-wrap:anywhere}
+}
+
+/* PWA installée (standalone) : respecter l'encoche / la barre de statut */
+@media (display-mode:standalone){
+  .admin-root{padding-top:calc(2rem + env(safe-area-inset-top))}
+}

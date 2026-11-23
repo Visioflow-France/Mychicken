@@ -156,7 +156,10 @@ export function createFirestoreRestClient(sa: ServiceAccount): FirestoreRestClie
   /* Merge partiel via updateMask */
   async function updateDoc(path: string, patch: Record<string, unknown>): Promise<void> {
     const mask = Object.keys(patch).map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
-    const res = await fetch(`${root}/${path}?${mask}`, {
+    // Précondition « le document doit exister » : sans elle, le PATCH
+    // CRÉERAIT silencieusement le document (upsert) — un id erroné
+    // fabriquerait une commande fantôme dans le dashboard.
+    const res = await fetch(`${root}/${path}?${mask}&currentDocument.exists=true`, {
       method: 'PATCH',
       headers: await authHeaders(),
       body: JSON.stringify({ fields: toFsFields(patch) }),
