@@ -84,10 +84,14 @@ export default function CartSection() {
       ? Math.round(sub * promo!.value) / 100
       : Math.min(promo!.value, sub);
   const discounted = Math.round((sub - discount) * 100) / 100;
-  const fee = mode === 'delivery' ? current.deliveryFee : 0;
-  /* Frais de service en ligne : payés par le client (emporter comme
-     livraison), financent la plateforme. */
-  const serviceFee = Math.round(Math.max(0, menu.config.serviceFee || 0) * 100) / 100;
+  /* Commission service en ligne (payée par le client) : une part est
+     fondue dans les frais de livraison affichés, le reste en « frais
+     de service ». Le restaurant garde panier + livraison de base. */
+  const pctComm = Math.max(0, menu.config.platformPct || 0);
+  const commission = Math.round(discounted * pctComm) / 100;
+  const inDelivery = mode === 'delivery' ? Math.round((commission * Math.min(100, Math.max(0, menu.config.platformInDeliveryPct ?? 40))) / 1) / 100 : 0;
+  const serviceFee = Math.round((Math.max(0, commission - inDelivery)) * 100) / 100;
+  const fee = Math.round(((mode === 'delivery' ? current.deliveryFee : 0) + inDelivery) * 100) / 100;
   const lacks = current.minDelivery - discounted;
   const deliveryBlocked = mode === 'delivery' && lacks > 0;
 

@@ -25,16 +25,18 @@ export type PromoCode = {
 export type Banner = { active: boolean; text: string };
 
 export type SiteConfig = {
-  deliveryFee: number; // frais de livraison
+  deliveryFee: number; // frais de livraison (=> au restaurant : l'essence)
   minDelivery: number; // livraison à partir de X € d'achat
   open: boolean; // restaurant ouvert à la commande
-  /* Frais de service en ligne (€), payés par le CLIENT en plus du
-     panier (emporter comme livraison) : ils financent la plateforme,
-     le restaurant garde 100 % de son panier. */
-  serviceFee?: number;
-  /* Part des frais de livraison reversée à la plateforme (%) :
-     ex. 50 → la moitié des frais de livraison affichés au client. */
-  deliveryShare?: number;
+  /* Commission service en ligne (%), payée par le CLIENT en plus du
+     panier — le restaurant garde 100 % de son panier ET 100 % de ses
+     frais de livraison. */
+  platformPct?: number;
+  /* Part de cette commission fondue dans les frais de livraison
+     affichés (%) — le reste apparaît en « frais de service en ligne ».
+     Ex. 40 avec platformPct 5 : sur un panier de 30 € → +0,60 € dans
+     la livraison affichée + 0,90 € de frais de service. */
+  platformInDeliveryPct?: number;
 };
 
 /* Restaurant physique — la carte est commune, ces infos sont par établissement */
@@ -259,7 +261,7 @@ export const DEFAULT_MENU: MenuData = {
   promos: {},
   promoCodes: [],
   banner: { active: false, text: '' },
-  config: { deliveryFee: 2.9, minDelivery: 25, open: true, serviceFee: 0.9, deliveryShare: 0 },
+  config: { deliveryFee: 2.9, minDelivery: 25, open: true, platformPct: 5, platformInDeliveryPct: 40 },
   locations: LOCATIONS,
 };
 

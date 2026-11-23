@@ -56,22 +56,21 @@ async function getStripe() {
    (par resto ou commun). */
 const stripeAccountFor = (locationId?: string) => getConnectAccount(locationId).then((c) => c?.accountId);
 
-/* Commission plateforme — MODE « FRAIS PAYÉS PAR LE CLIENT » :
-   le client paie des frais de service (et éventuellement une part des
-   frais de livraison), et la commission prélevée est PLAFONNÉE à ces
-   frais-là : le restaurant garde 100 % de son panier et de sa part de
-   livraison, quoi qu'il arrive. Les frais Stripe restent à notre charge
-   (rognent notre part, jamais la sienne).
-   Retour au mode % (STRIPE_FEE_PERCENT) uniquement si aucun frais
-   client n'est configuré. */
-function platformFeeCents(totalCents: number, acct: string | undefined, serviceFeeCents: number, deliveryFeeCents: number, deliverySharePct: number): number | undefined {
+/* Commission service en ligne — MODE « FRAIS PAYÉS PAR LE CLIENT » :
+   platformPct % du panier sont ajoutés CÔTÉ CLIENT, répartis entre
+   les frais de livraison affichés (platformInDeliveryPct % de la
+   commission) et une ligne « frais de service en ligne ». La commission
+   prélevée est PLAFONNÉE à ce que le client a payé en plus : le
+   restaurant garde 100 % de son panier ET 100 % de ses frais de
+   livraison de base (l'essence). Les frais Stripe restent à notre
+   charge. Retour au mode % env (STRIPE_FEE_PERCENT) uniquement si
+   aucune commission client n'est configurée. */
+function platformFeeCents(totalCents: number, acct: string | undefined, clientFeesCents: number): number | undefined {
   if (!acct) return undefined;
-  const deliveryShare = Math.min(100, Math.max(0, Number(deliverySharePct || 0)));
-  const clientFees = serviceFeeCents + Math.round((deliveryFeeCents * deliveryShare) / 100);
   const stripeFeeEstimate = Math.round(totalCents * 0.015 + 25);
-  if (clientFees > 0) {
-    // Plafonné aux frais payés par le client : son panier est intouchable.
-    return Math.max(0, Math.min(clientFees, clientFees - stripeFeeEstimate));
+  if (clientFeesCents > 0) {
+    // Plafonné aux frais payés par le client : panier + essence intouchables.
+    return Math.max(0, Math.min(clientFeesCents, clientFeesCents - stripeFeeEstimate));
   }
   const pct = Number(process.env.STRIPE_FEE_PERCENT || 0);
   if (!pct || pct <= 0) return undefined;
@@ -138,13 +137,10 @@ export async function POST(req: Request) {
   }
 
   const subtotal = round2(items.reduce((s, it) => s + it.price * it.qty, 0));
-  const fee = mode === 'delivery' ? location.deliveryFee : 0;
   if (mode === 'delivery' && subtotal < location.minDelivery) {
     return NextResponse.json({ error: `Livraison possible dès ${location.minDelivery} € d'achat` }, { status: 400 });
   }
-  /* Frais de service en ligne — payés par le CLIENT, financent la
-     plateforme : le restaurant garde 100 % de son panier. */
-  const serviceFee = round2(Math.max(0, Number(menu.config.serviceFee || 0)));
+  const feeBase = mode === 'delivery' ? location.deliveryFee : 0; // l'essence — au resto
 
   /* ---- 2. Code promo (validé côté serveur) ---- */
   let discount = 0;
@@ -160,6 +156,24 @@ export async function POST(req: Request) {
       appliedCode = code.code;
     }
   }
+
+  /* ---- 2. Commission service en ligne, payée par le CLIENT ----
+     platformPct % du panier (après code promo), répartis :
+     • en livraison : une part (platformInDeliveryPct) est FONDUE dans
+       les frais de livraison affichés au client, le reste en « frais
+       de service en ligne » ;
+     • à emporter : tout en « frais de service » (pas de ligne livraison).
+     Le restaurant garde 100 % du panier + 100 % de ses frais de
+     livraison de base (l'essence). */
+  const pctComm = Math.max(0, Number(menu.config.platformPct || 0));
+  const commission = round2(((subtotal - discount) * pctComm) / 100);
+  const inDelivery =
+    mode === 'delivery'
+      ? round2((commission * Math.min(100, Math.max(0, Number(menu.config.platformInDeliveryPct ?? 40)))) / 100)
+      : 0;
+  const serviceFee = round2(Math.max(0, commission - inDelivery));
+  const fee = round2(feeBase + inDelivery); // frais de livraison AFFICHÉS au client
+  const clientFees = round2(inDelivery + serviceFee); // ce que le client paie en plus pour la plateforme
 
   const total = round2(Math.max(0.5, subtotal - discount + fee + serviceFee)); // Stripe : minimum 0,50 €
 
@@ -232,7 +246,7 @@ export async function POST(req: Request) {
       couponId = coupon.id;
     }
 
-    const appFee = platformFeeCents(euro(total), acct, euro(serviceFee), euro(fee), Number(menu.config.deliveryShare || 0));
+    const appFee = platformFeeCents(euro(total), acct, euro(clientFees));
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',

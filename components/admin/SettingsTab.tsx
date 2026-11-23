@@ -123,27 +123,28 @@ export default function SettingsTab({
 
         <div className="form-grid">
           <div className="f-group">
-            <label>Frais de service en ligne (€)</label>
+            <label>Commission service en ligne (%)</label>
             <input
               type="number"
-              step="0.10"
+              step="0.5"
               min="0"
-              value={draft.config.serviceFee ?? 0}
-              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, serviceFee: num(e.target.value) } }))}
+              max="30"
+              value={draft.config.platformPct ?? 0}
+              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, platformPct: Math.min(30, Math.max(0, num(e.target.value))) } }))}
             />
-            <small className="f-help">Payés par le client en plus du panier (emporter comme livraison). Le restaurant garde 100 % de son panier.</small>
+            <small className="f-help">Ajoutée au client en plus du panier. Le restaurant garde 100 % de son panier et de ses frais de livraison.</small>
           </div>
           <div className="f-group">
-            <label>Part des frais de livraison au site (%)</label>
+            <label>Dont fondue dans la livraison (%)</label>
             <input
               type="number"
               step="5"
               min="0"
               max="100"
-              value={draft.config.deliveryShare ?? 0}
-              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, deliveryShare: Math.min(100, Math.max(0, num(e.target.value))) } }))}
+              value={draft.config.platformInDeliveryPct ?? 40}
+              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, platformInDeliveryPct: Math.min(100, Math.max(0, num(e.target.value))) } }))}
             />
-            <small className="f-help">Ex. 50 → la moitié des frais de livraison affichés au client revient au site. 0 = tout au restaurant.</small>
+            <small className="f-help">Part de la commission incluse dans les frais de livraison affichés (en livraison) ; le reste s&apos;affiche en « frais de service en ligne ». À emporter : tout en frais de service.</small>
           </div>
         </div>
       </section>
