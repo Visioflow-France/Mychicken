@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/server/auth';
-import { getAdminDb, sweepOrphanImages } from '@/lib/server/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { PUBLISHED_DOC, MENU_VERSION_DOC } from '@/lib/firebase';
 import { LOCATIONS, type MenuData } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
 /** Publie le menu complet dans le DOCUMENT UNIQUE menu/published
-    (1 doc = 1 lecture par visiteur sur le site public — quota Spark).
-    Supprime aussi du Storage les images devenues orphelines. */
+    (1 doc = 1 lecture par visiteur sur le site public — quota Spark). */
 export async function PUT(req: Request) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
@@ -29,8 +28,7 @@ export async function PUT(req: Request) {
   try {
     // Les fiches restaurants sont préservées (éditées via /api/admin/locations)
     const existing = await db.doc(PUBLISHED_DOC).get();
-    const prevData = existing.data() as Partial<MenuData> | undefined;
-    const prevImages = (prevData?.products || []).map((p) => p.img).filter(Boolean);
+      const prevData = existing.data() as Partial<MenuData> | undefined;
 
     await db.doc(PUBLISHED_DOC).set({
       products: body.products,
@@ -45,10 +43,6 @@ export async function PUT(req: Request) {
     // Version bumpée : tous les navigateurs des visiteurs recharge la
     // carte instantanément (ils écoutent ce mini-document).
     await db.doc(MENU_VERSION_DOC).set({ at: Date.now() });
-
-    // Nettoyage Storage : images du bucket plus référencées par la carte
-    const newImages = body.products.map((p) => p.img).filter(Boolean);
-    void sweepOrphanImages(newImages); // asynchrone — ne bloque pas la publication
 
     return NextResponse.json({ ok: true });
   } catch (e) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/server/auth';
-import { getAdminDb, sweepOrphanImages } from '@/lib/server/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { PUBLISHED_DOC } from '@/lib/firebase';
 import { DEFAULT_MENU } from '@/lib/data';
 
@@ -16,13 +16,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Firebase non configuré sur le serveur' }, { status: 503 });
   }
   try {
-    const existing = await db.doc(PUBLISHED_DOC).get();
-    const prevData = existing.data() as Partial<typeof DEFAULT_MENU> | undefined;
-
     await db.doc(PUBLISHED_DOC).set({ ...DEFAULT_MENU });
-
-    // Les images du bucket ne sont plus référencées par les valeurs du flyer
-    void sweepOrphanImages(DEFAULT_MENU.products.map((p) => p.img).filter(Boolean));
 
     return NextResponse.json({ ok: true });
   } catch (e) {

@@ -4,6 +4,11 @@ import { useMemo, useState } from 'react';
 import Icon from '@/components/Icon';
 import { useToast } from '@/lib/toast';
 import { fmt, promoPrice, type MenuData, type Product } from '@/lib/data';
+import variants from '@/lib/photo-variants.json';
+
+/* Bibliothèque photo locale (public/photos, livrée avec le site —
+   zéro Firebase Storage, donc zéro besoin du plan Blaze). */
+const LIBRARY: string[] = Object.keys(variants as Record<string, number[]>);
 
 type Mutate = (fn: (d: MenuData) => MenuData) => void;
 
@@ -28,62 +33,7 @@ export default function ProductsTab({ draft, mutate }: { draft: MenuData; mutate
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Product | null>(null); // produit en cours d'édition (copie)
   const [isNew, setIsNew] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadInfo, setUploadInfo] = useState('');
-  const [uploadError, setUploadError] = useState('');
-
-  /* ---- Upload quota-friendly : compression WebP côté client ----
-     Max 800 px de large, qualité 0.80 puis décroissante jusqu'à
-     rester sous 150 Ko. L'ancienne image bucket est nettoyée à la
-     publication (sweep côté serveur). */
-  const handleUpload = async (file: File) => {
-    setUploadInfo('');
-    setUploadError('');
-    setUploading(true);
-    try {
-      const bitmap = await createImageBitmap(file);
-      const scale = Math.min(1, 800 / bitmap.width);
-      const w = Math.round(bitmap.width * scale);
-      const h = Math.round(bitmap.height * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h);
-      bitmap.close();
-
-      // Qualité décroissante jusqu'à passer sous 150 Ko
-      let blob: Blob | null = null;
-      let quality = 0.8;
-      while (quality >= 0.4) {
-        blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', quality));
-        if (blob && blob.size <= 150 * 1024) break;
-        quality -= 0.1;
-      }
-      if (!blob) throw new Error('Compression impossible');
-      if (blob.size > 150 * 1024) {
-        // Dernier recours : on réduit la largeur
-        canvas.width = Math.round(w * 0.7);
-        canvas.height = Math.round(h * 0.7);
-        canvas.getContext('2d')!.drawImage(canvas, 0, 0);
-        blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/webp', 0.7));
-      }
-      if (!blob || blob.size > 150 * 1024) throw new Error('Image trop lourde même compressée');
-
-      const form = new FormData();
-      form.append('file', new File([blob], 'photo.webp', { type: 'image/webp' }));
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
-      const data = (await res.json()) as { url?: string; size?: number; error?: string };
-      if (!res.ok || !data.url) throw new Error(data.error || 'Upload refusé');
-
-      setEditing((e) => (e ? { ...e, img: data.url! } : e));
-      setUploadInfo(`WebP ${(blob.size / 1024).toFixed(0)} Ko ✓`);
-      toast('Photo compressée et envoyée !');
-    } catch (e) {
-      setUploadError(e instanceof Error ? e.message : 'Échec de l\'envoi');
-    } finally {
-      setUploading(false);
-    }
-  };
+  const [photoSearch, setPhotoSearch] = useState('');
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -286,43 +236,76 @@ export default function ProductsTab({ draft, mutate }: { draft: MenuData; mutate
               </div>
 
               <div className="f-group">
-                <label>Lien de l&apos;image — ou téléverser une photo</label>
+                <label>Photo — bibliothèque locale (aucun stockage cloud)</label>
+                <input
+                  type="search"
+                  value={photoSearch}
+                  onChange={(e) => setPhotoSearch(e.target.value)}
+                  placeholder="Filtrer les photos (ex. menu, poulet, frites)…"
+                  aria-label="Filtrer la bibliothèque photo"
+                />
+                <div
+                  className="photo-library"
+                  role="listbox"
+                  aria-label="Bibliothèque de photos"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+                    gap: 6,
+                    maxHeight: 180,
+                    overflowY: 'auto',
+                    marginTop: 6,
+                  }}
+                >
+                  {LIBRARY.filter((src) =>
+                    !photoSearch.trim() || src.toLowerCase().includes(photoSearch.trim().toLowerCase())
+                  ).map((src) => (
+                    <button
+                      type="button"
+                      key={src}
+                      role="option"
+                      aria-selected={editing.img === src}
+                      title={src}
+                      onClick={() => setEditing({ ...editing, img: src })}
+                      style={{
+                        padding: 0,
+                        border: editing.img === src ? '2px solid var(--accent, #f59e0b)' : '2px solid transparent',
+                        borderRadius: 8,
+                        background: 'none',
+                        cursor: 'pointer',
+                        lineHeight: 0,
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={src}
+                        alt=""
+                        loading="lazy"
+                        style={{ width: '100%', height: 54, objectFit: 'cover', borderRadius: 6 }}
+                      />
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="text"
                   value={editing.img}
                   onChange={(e) => setEditing({ ...editing, img: e.target.value })}
-                  placeholder="https://…"
+                  placeholder="/photos/… ou https://…"
+                  style={{ marginTop: 6 }}
                 />
-                <div className="upload-row">
-                  <label className="btn btn-ghost small upload-btn">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) handleUpload(f);
-                        e.target.value = '';
-                      }}
-                    />
-                    📷 Choisir un fichier
-                  </label>
-                  {uploading && <span className="upload-status">Compression &amp; envoi…</span>}
-                  {uploadInfo && <span className="upload-status ok">{uploadInfo}</span>}
-                  {uploadError && <span className="upload-status ko">{uploadError}</span>}
-                  {editing.img && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost small"
-                      onClick={() => setEditing({ ...editing, img: '' })}
-                    >
-                      <Icon name="trash" size={13} /> Retirer la photo
-                    </button>
-                  )}
-                </div>
+                {editing.img && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost small"
+                    style={{ marginTop: 6 }}
+                    onClick={() => setEditing({ ...editing, img: '' })}
+                  >
+                    <Icon name="trash" size={13} /> Retirer la photo
+                  </button>
+                )}
                 <p className="upload-hint">
-                  Compressée automatiquement en WebP (max 800 px, ≤ 150 Ko). L&apos;ancienne
-                  image du bucket est supprimée à la publication.
+                  Nouvelle photo ? Déposez le fichier dans <code>public/photos/</code> puis lancez
+                  <code> node scripts/optimize-photos.mjs</code> — elle apparaîtra ici au prochain déploiement.
                 </p>
                 {editing.img && (
                   <span className="ap-thumb big">
