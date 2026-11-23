@@ -120,6 +120,32 @@ export default function SettingsTab({
             />
           </div>
         </div>
+
+        <div className="form-grid">
+          <div className="f-group">
+            <label>Frais de service en ligne (€)</label>
+            <input
+              type="number"
+              step="0.10"
+              min="0"
+              value={draft.config.serviceFee ?? 0}
+              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, serviceFee: num(e.target.value) } }))}
+            />
+            <small className="f-help">Payés par le client en plus du panier (emporter comme livraison). Le restaurant garde 100 % de son panier.</small>
+          </div>
+          <div className="f-group">
+            <label>Part des frais de livraison au site (%)</label>
+            <input
+              type="number"
+              step="5"
+              min="0"
+              max="100"
+              value={draft.config.deliveryShare ?? 0}
+              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, deliveryShare: Math.min(100, Math.max(0, num(e.target.value))) } }))}
+            />
+            <small className="f-help">Ex. 50 → la moitié des frais de livraison affichés au client revient au site. 0 = tout au restaurant.</small>
+          </div>
+        </div>
       </section>
 
       <section className="admin-panel">

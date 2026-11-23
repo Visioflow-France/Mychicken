@@ -85,6 +85,9 @@ export default function CartSection() {
       : Math.min(promo!.value, sub);
   const discounted = Math.round((sub - discount) * 100) / 100;
   const fee = mode === 'delivery' ? current.deliveryFee : 0;
+  /* Frais de service en ligne : payés par le client (emporter comme
+     livraison), financent la plateforme. */
+  const serviceFee = Math.round(Math.max(0, menu.config.serviceFee || 0) * 100) / 100;
   const lacks = current.minDelivery - discounted;
   const deliveryBlocked = mode === 'delivery' && lacks > 0;
 
@@ -331,9 +334,15 @@ export default function CartSection() {
                     <span id="sumFee">{fmt(fee)}</span>
                   </div>
                 )}
+                {serviceFee > 0 && (
+                  <div className="sum-row">
+                    <span>Frais de service en ligne</span>
+                    <span>{fmt(serviceFee)}</span>
+                  </div>
+                )}
                 <div className="sum-row total">
                   <span>Total</span>
-                  <span id="sumTotal">{fmt(discounted + fee)}</span>
+                  <span id="sumTotal">{fmt(discounted + fee + serviceFee)}</span>
                 </div>
 
                 {/* Code promo */}

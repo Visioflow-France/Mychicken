@@ -93,6 +93,7 @@ function printTicket(o: Order, locName: string, locAddress: string) {
   <div class="row"><span>Sous-total</span><span>${esc(fmt(o.subtotal))}</span></div>
   ${o.discount > 0 ? `<div class="row"><span>Code ${esc(o.promoCode || '')}</span><span>−${esc(fmt(o.discount))}</span></div>` : ''}
   ${o.fee > 0 ? `<div class="row"><span>Livraison</span><span>${esc(fmt(o.fee))}</span></div>` : ''}
+  ${(o.serviceFee || 0) > 0 ? `<div class="row"><span>Service en ligne</span><span>${esc(fmt(o.serviceFee!))}</span></div>` : ''}
   <div class="row total"><span>TOTAL</span><span>${esc(fmt(o.total))}</span></div>
   <hr>
   <div class="row"><span><b>Client</b></span></div>
@@ -255,6 +256,7 @@ export default function OrdersTab({ locationId, variant = 'active' }: { location
             <span>Sous-total {fmt(o.subtotal)}</span>
             {o.discount > 0 && <span>Code {o.promoCode} −{fmt(o.discount)}</span>}
             {o.fee > 0 && <span>Livraison {fmt(o.fee)}</span>}
+            {(o.serviceFee || 0) > 0 && <span>Service en ligne {fmt(o.serviceFee!)}</span>}
             <b>Total {fmt(o.total)}</b>
           </div>
 

@@ -56,18 +56,25 @@ async function getStripe() {
    (par resto ou commun). */
 const stripeAccountFor = (locationId?: string) => getConnectAccount(locationId).then((c) => c?.accountId);
 
-/* Commission plateforme (« tout compris ») : uniquement en mode Connect —
-   en mode standard (compte Stripe du restaurant), zéro commission.
-   L'objectif est que le restaurant touche (100 − STRIPE_FEE_PERCENT) % NET :
-   Stripe prélève ses frais de paiement sur le compte connecté, on les
-   retire donc de notre part. Estimation carte européenne (1,5 % + 0,25 €) ;
-   une carte plus chère rogne notre marge, jamais la part du restaurant…
-   au centime d'arrondi près. */
-function platformFeeCents(totalCents: number, acct?: string): number | undefined {
+/* Commission plateforme — MODE « FRAIS PAYÉS PAR LE CLIENT » :
+   le client paie des frais de service (et éventuellement une part des
+   frais de livraison), et la commission prélevée est PLAFONNÉE à ces
+   frais-là : le restaurant garde 100 % de son panier et de sa part de
+   livraison, quoi qu'il arrive. Les frais Stripe restent à notre charge
+   (rognent notre part, jamais la sienne).
+   Retour au mode % (STRIPE_FEE_PERCENT) uniquement si aucun frais
+   client n'est configuré. */
+function platformFeeCents(totalCents: number, acct: string | undefined, serviceFeeCents: number, deliveryFeeCents: number, deliverySharePct: number): number | undefined {
   if (!acct) return undefined;
+  const deliveryShare = Math.min(100, Math.max(0, Number(deliverySharePct || 0)));
+  const clientFees = serviceFeeCents + Math.round((deliveryFeeCents * deliveryShare) / 100);
+  const stripeFeeEstimate = Math.round(totalCents * 0.015 + 25);
+  if (clientFees > 0) {
+    // Plafonné aux frais payés par le client : son panier est intouchable.
+    return Math.max(0, Math.min(clientFees, clientFees - stripeFeeEstimate));
+  }
   const pct = Number(process.env.STRIPE_FEE_PERCENT || 0);
   if (!pct || pct <= 0) return undefined;
-  const stripeFeeEstimate = Math.round(totalCents * 0.015 + 25);
   return Math.max(0, Math.round((totalCents * pct) / 100) - stripeFeeEstimate);
 }
 
@@ -135,6 +142,9 @@ export async function POST(req: Request) {
   if (mode === 'delivery' && subtotal < location.minDelivery) {
     return NextResponse.json({ error: `Livraison possible dès ${location.minDelivery} € d'achat` }, { status: 400 });
   }
+  /* Frais de service en ligne — payés par le CLIENT, financent la
+     plateforme : le restaurant garde 100 % de son panier. */
+  const serviceFee = round2(Math.max(0, Number(menu.config.serviceFee || 0)));
 
   /* ---- 2. Code promo (validé côté serveur) ---- */
   let discount = 0;
@@ -151,7 +161,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const total = round2(Math.max(0.5, subtotal - discount + fee)); // Stripe : minimum 0,50 €
+  const total = round2(Math.max(0.5, subtotal - discount + fee + serviceFee)); // Stripe : minimum 0,50 €
 
   /* Numérotation par service (déjeuner / dîner) : le compteur repart à 1
      à chaque service. docId reste unique (base36) pour Firestore, seul
@@ -200,6 +210,16 @@ export async function POST(req: Request) {
       },
     });
   }
+  if (serviceFee > 0) {
+    lineItems.push({
+      quantity: 1,
+      price_data: {
+        currency: 'eur',
+        unit_amount: euro(serviceFee),
+        product_data: { name: 'Frais de service en ligne' },
+      },
+    });
+  }
 
   try {
     const acct = await stripeAccountFor(location.id);
@@ -212,7 +232,7 @@ export async function POST(req: Request) {
       couponId = coupon.id;
     }
 
-    const appFee = platformFeeCents(euro(total), acct);
+    const appFee = platformFeeCents(euro(total), acct, euro(serviceFee), euro(fee), Number(menu.config.deliveryShare || 0));
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
@@ -242,6 +262,7 @@ export async function POST(req: Request) {
       subtotal,
       discount,
       fee,
+      ...(serviceFee > 0 ? { serviceFee } : {}),
       total,
       ...(appliedCode ? { promoCode: appliedCode } : {}),
       customer: {

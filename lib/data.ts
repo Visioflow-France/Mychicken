@@ -28,6 +28,13 @@ export type SiteConfig = {
   deliveryFee: number; // frais de livraison
   minDelivery: number; // livraison à partir de X € d'achat
   open: boolean; // restaurant ouvert à la commande
+  /* Frais de service en ligne (€), payés par le CLIENT en plus du
+     panier (emporter comme livraison) : ils financent la plateforme,
+     le restaurant garde 100 % de son panier. */
+  serviceFee?: number;
+  /* Part des frais de livraison reversée à la plateforme (%) :
+     ex. 50 → la moitié des frais de livraison affichés au client. */
+  deliveryShare?: number;
 };
 
 /* Restaurant physique — la carte est commune, ces infos sont par établissement */
@@ -129,7 +136,8 @@ export type Order = {
   items: OrderItem[];
   subtotal: number;
   discount: number;
-  fee: number;
+  fee: number; // frais de livraison
+  serviceFee?: number; // frais de service en ligne (payés par le client)
   total: number;
   promoCode?: string;
   customer: {
@@ -251,7 +259,7 @@ export const DEFAULT_MENU: MenuData = {
   promos: {},
   promoCodes: [],
   banner: { active: false, text: '' },
-  config: { deliveryFee: 2.9, minDelivery: 25, open: true },
+  config: { deliveryFee: 2.9, minDelivery: 25, open: true, serviceFee: 0.9, deliveryShare: 0 },
   locations: LOCATIONS,
 };
 
