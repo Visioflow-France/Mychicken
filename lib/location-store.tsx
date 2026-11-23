@@ -55,6 +55,10 @@ type LocationContextValue = {
   current: RestaurantLocation;
   locationId: string | null; // null = pas encore choisi (popup d'entrée)
   choose: (id: string) => void;
+  /** Restaurant IMPOSÉ par le sous-domaine (ex. persan.mychicken.fr) :
+      l'espace client est verrouillé dessus — pas de parcours de choix,
+      pas de bascule. null = domaine principal / choix libre. */
+  locked: string | null;
   /** Popup d'entrée / changement de restaurant */
   gateOpen: boolean;
   openGate: () => void;
@@ -76,9 +80,21 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   const [locationId, setLocationId] = useState<string | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
   const [entryMode, setEntryModeState] = useState<'takeaway' | 'delivery' | null>(null);
+  const [hostLock, setHostLock] = useState<string | null>(null);
 
-  /* Choix mémorisé + overrides locaux (mode démo) */
+  /* Choix mémorisé + overrides locaux (mode démo) — SAUF sur un
+     sous-domaine dédié : là, le restaurant est imposé par l'adresse
+     (persan.mychicken.fr → Persan, saint-mard.mychicken.fr → Saint-Mard). */
   useEffect(() => {
+    const h = window.location.hostname.toLowerCase();
+    let lock: string | null = null;
+    if (h.startsWith('persan.')) lock = 'persan';
+    else if (h.startsWith('saint-mard.') || h.startsWith('saintmard.') || h.startsWith('sm.')) lock = 'saint-mard';
+    setHostLock(lock);
+    if (lock) {
+      choose(lock);
+      return; // pas de popup d'entrée, pas de choix mémorisé à relire
+    }
     try {
       const saved = localStorage.getItem(LOCAL_LOCATION_KEY);
       if (saved) setLocationId(saved);
@@ -96,6 +112,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('storage', sync);
       window.removeEventListener(LOCATIONS_UPDATED_EVENT, sync);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const locations = useMemo(
@@ -143,6 +160,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       current,
       locationId,
       choose,
+      locked: hostLock,
       gateOpen,
       openGate: () => setGateOpen(true),
       closeGate: () => setGateOpen(false),
@@ -150,7 +168,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       setEntryMode,
       findByPostal,
     }),
-    [locations, source, current, locationId, choose, gateOpen, entryMode, setEntryMode, findByPostal]
+    [locations, source, current, locationId, choose, hostLock, gateOpen, entryMode, setEntryMode, findByPostal]
   );
 
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;

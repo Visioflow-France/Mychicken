@@ -28,7 +28,10 @@ const distanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
 };
 
 export default function LocationGate() {
-  const { gateOpen, closeGate, choose, locations, findByPostal, setEntryMode } = useLocationCtx();
+  const { gateOpen, closeGate, choose, locations, findByPostal, setEntryMode, locked } = useLocationCtx();
+  /* Sous-domaine dédié (persan./saint-mard.mychicken.fr) : le
+     restaurant est imposé — le parcours de choix n'a pas lieu d'être. */
+  if (locked) return null;
   const [step, setStep] = useState<Step>('mode');
   const [mode, setMode] = useState<'delivery' | 'pickup'>('delivery');
   const [cp, setCp] = useState('');
