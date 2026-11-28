@@ -158,19 +158,20 @@ export async function POST(req: Request) {
   }
 
   /* ---- 2. Commission service en ligne, payée par le CLIENT ----
-     platformPct % du panier (après code promo), répartis :
-     • en livraison : une part (platformInDeliveryPct) est FONDUE dans
-       les frais de livraison affichés au client, le reste en « frais
-       de service en ligne » ;
-     • à emporter : tout en « frais de service » (pas de ligne livraison).
-     Le restaurant garde 100 % du panier + 100 % de ses frais de
-     livraison de base (l'essence). */
+     5 % (platformPct) de (panier + livraison de base) en livraison,
+     5 % du panier à emporter. Répartition intelligente :
+     • une part (platformInDeliveryPct) est FONDUE dans la livraison
+       affichée, mais PLAFONNÉE à +1,00 € → le client ne voit jamais
+       une livraison délirante (max 3,99 + 1,00 = 4,99 €) ;
+     • le reste en « frais de service en ligne ».
+     Le restaurant garde 100 % du panier ET 100 % de sa livraison
+     fixe (l'essence). */
   const pctComm = Math.max(0, Number(menu.config.platformPct || 0));
-  const commission = round2(((subtotal - discount) * pctComm) / 100);
+  const commissionBasis = round2(subtotal - discount + feeBase);
+  const commission = round2((commissionBasis * pctComm) / 100);
+  const sharePct = Math.min(100, Math.max(0, Number(menu.config.platformInDeliveryPct ?? 40)));
   const inDelivery =
-    mode === 'delivery'
-      ? round2((commission * Math.min(100, Math.max(0, Number(menu.config.platformInDeliveryPct ?? 40)))) / 100)
-      : 0;
+    mode === 'delivery' ? Math.min(1, round2((commission * sharePct) / 100)) : 0; // plafond +1,00 €
   const serviceFee = round2(Math.max(0, commission - inDelivery));
   const fee = round2(feeBase + inDelivery); // frais de livraison AFFICHÉS au client
   const clientFees = round2(inDelivery + serviceFee); // ce que le client paie en plus pour la plateforme

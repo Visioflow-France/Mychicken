@@ -98,28 +98,10 @@ export default function SettingsTab({
           {draft.config.open ? 'Restaurant OUVERT aux commandes' : 'Restaurant FERMÉ aux commandes'}
         </label>
 
-        <div className="form-grid">
-          <div className="f-group">
-            <label>Frais de livraison (€)</label>
-            <input
-              type="number"
-              step="0.10"
-              min="0"
-              value={draft.config.deliveryFee}
-              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, deliveryFee: num(e.target.value) } }))}
-            />
-          </div>
-          <div className="f-group">
-            <label>Livraison à partir de (€)</label>
-            <input
-              type="number"
-              step="1"
-              min="0"
-              value={draft.config.minDelivery}
-              onChange={(e) => mutate((d) => ({ ...d, config: { ...d.config, minDelivery: num(e.target.value) } }))}
-            />
-          </div>
-        </div>
+        <p className="ap-help">
+          Frais de livraison, minimum de commande et horaires : réglés <b>par restaurant</b> dans l&apos;onglet
+          « Restaurants ».
+        </p>
 
         <div className="form-grid">
           <div className="f-group">
