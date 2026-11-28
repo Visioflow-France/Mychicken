@@ -172,6 +172,11 @@ export async function POST(req: Request) {
   const sharePct = Math.min(100, Math.max(0, Number(menu.config.platformInDeliveryPct ?? 40)));
   const inDelivery =
     mode === 'delivery' ? Math.min(1, round2((commission * sharePct) / 100)) : 0; // plafond +1,00 €
+  /* PAS de plafond sur les frais de service : ils suivent le prix de
+     la commande. C'est ce qui garantit que les frais Stripe (1,5 % du
+     total) sont TOUJOURS couverts par ce que le client paie en plus
+     (5 %) — sur n'importe quelle taille de commande, ni la plateforme
+     ni le restaurant ne peuvent être mis à contribution. */
   const serviceFee = round2(Math.max(0, commission - inDelivery));
   const fee = round2(feeBase + inDelivery); // frais de livraison AFFICHÉS au client
   const clientFees = round2(inDelivery + serviceFee); // ce que le client paie en plus pour la plateforme
